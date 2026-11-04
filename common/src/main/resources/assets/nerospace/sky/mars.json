@@ -181,5 +181,29 @@
     "durationTicks": 12,
     "nightOnly": true,
     "minPitch": 12.0
-  }
+  },
+  "galaxy": {
+    "texture": "nerospace:textures/sky/galaxy.png",
+    "opacity": 0.32,
+    "yaw": 35,
+    "pitch": 38
+  },
+  "decals": [
+    {
+      "id": "mineral_filaments",
+      "texture": "nerospace:textures/sky/dust_copper.png",
+      "anchor": "fixed",
+      "yaw": 55,
+      "pitch": 42,
+      "size": 64,
+      "aspect": 1.8,
+      "roll": -22,
+      "color": "#FFFFFF",
+      "opacity": 0.3,
+      "additive": true,
+      "visibility": {
+        "night": true
+      }
+    }
+  ]
 }

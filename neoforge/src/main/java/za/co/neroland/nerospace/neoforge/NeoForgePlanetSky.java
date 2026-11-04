@@ -7,16 +7,16 @@ package za.co.neroland.nerospace.neoforge;
 // Layers, in order: zenith disc, horizon ramp, stars (two twinkle halves), galaxy, aurora curtains (persistent
 // buffers rewritten from the fold model when the aurora clock moves), fixed decals, bodies with their glows, night
 // shades, city lights, eclipse corona and anchored decals, cloud deck + underglow, shooting stars, haze.
-// No per-frame allocation: scratch matrix / vector for the uniforms, primitive-keyed mesh maps, the scene is the
+// Pooled per-draw matrices and tints, primitive-keyed mesh maps, the scene is the
 // renderer's reused instance. GPU meshes are released on a sky-profile reload and when the sky disables itself.
 //? if >=26.3 {
 /*import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.List;
 import java.util.Optional;
-import java.util.OptionalDouble;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
@@ -34,6 +34,7 @@ import com.mojang.renderpearl.api.vertex.VertexFormat;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 import net.minecraft.client.renderer.state.level.LevelRenderState;
 import net.minecraft.client.renderer.state.level.SkyRenderState;
 import net.minecraft.client.renderer.texture.AbstractTexture;
@@ -46,13 +47,13 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
-import org.joml.Vector4f;
 
 import za.co.neroland.nerospace.NerospaceCommon;
 import za.co.neroland.nerospace.client.sky.PlanetSkyRenderer;
 import za.co.neroland.nerospace.client.sky.SkyProfile;
 import za.co.neroland.nerospace.client.sky.SkyProfiles;
 import za.co.neroland.nerospace.client.sky.SkyScene;
+import za.co.neroland.nerospace.client.sky.SkyTransforms;
 
 public final class NeoForgePlanetSky implements net.neoforged.neoforge.client.CustomSkyboxRenderer {
 
@@ -81,9 +82,8 @@ public final class NeoForgePlanetSky implements net.neoforged.neoforge.client.Cu
     private final double[] curtain = new double[4];
     private final Matrix4f scratch = new Matrix4f();
     private final Matrix4f view = new Matrix4f();
-    // Uniform scratch: writeTransform copies them into the uniform ring, so one pair serves every draw.
-    private final Matrix4f uniformMatrix = new Matrix4f();
-    private final Vector4f uniformColor = new Vector4f();
+    private final SkyTransforms transforms = new SkyTransforms();
+    private ProjectionMatrixBuffer skyProjection;
     // What the aurora buffers hold, so an unchanged scene (paused, frozen gallery sky) skips the rewrite.
     private boolean auroraValid;
     private SkyProfile.Aurora auroraShape;
@@ -120,7 +120,16 @@ public final class NeoForgePlanetSky implements net.neoforged.neoforge.client.Cu
         double time = levelRenderState.gameTime + (double) levelRenderState.worldPartialTicks;
         SkyScene scene = PlanetSkyRenderer.scene(frame, PlanetSkyRenderer.blendPosition(frame, cam.x, cam.z), time);
         try {
-            draw(mc, scene, this.view.set(modelViewMatrix), skyFog);
+            build();
+            this.transforms.beginFrame();
+            RenderSystem.backupProjectionMatrix();
+            try {
+                RenderSystem.setProjectionMatrix(this.skyProjection.getBuffer(levelRenderState.cameraRenderState.projectionMatrix),
+                        ProjectionType.PERSPECTIVE);
+                draw(mc, scene, this.view.set(modelViewMatrix), skyFog, !"station".equals(frame.planet().langId()));
+            } finally {
+                RenderSystem.restoreProjectionMatrix();
+            }
             return true;
         } catch (RuntimeException ex) {
             // Never crash a frame over the sky: fall back to the vanilla sky for the rest of the session.
@@ -128,8 +137,8 @@ public final class NeoForgePlanetSky implements net.neoforged.neoforge.client.Cu
             NerospaceCommon.LOGGER.warn("[Nerospace] planet sky disabled after a render error", ex);
             try {
                 release();
-            } catch (RuntimeException ignored) {
-                // Best effort: the sky is off for the session either way.
+            } catch (RuntimeException cleanupError) {
+                NerospaceCommon.LOGGER.warn("[Nerospace] could not release disabled sky resources", cleanupError);
             }
             return false;
         }
@@ -137,6 +146,10 @@ public final class NeoForgePlanetSky implements net.neoforged.neoforge.client.Cu
 
     // Closes every GPU buffer and forgets the meshes; build() and the lazy getters recreate what a later frame needs.
     private void release() {
+        if (this.skyProjection != null) {
+            this.skyProjection.close();
+            this.skyProjection = null;
+        }
         close(this.disc);
         this.disc = null;
         close(this.quadTex);
@@ -175,7 +188,7 @@ public final class NeoForgePlanetSky implements net.neoforged.neoforge.client.Cu
         }
     }
 
-    private void draw(Minecraft mc, SkyScene s, Matrix4f view, GpuBufferSlice skyFog) {
+    private void draw(Minecraft mc, SkyScene s, Matrix4f view, GpuBufferSlice skyFog, boolean terrainHorizon) {
         build();
         // Buffer writes are not allowed inside a render pass: rewrite the aurora curtains first.
         int auroraSlots = uploadAurora(s);
@@ -183,8 +196,9 @@ public final class NeoForgePlanetSky implements net.neoforged.neoforge.client.Cu
         RenderSystem.setShaderFog(skyFog);
         RenderTarget target = mc.gameRenderer.mainRenderTarget();
         GpuSampler repeat = RenderSystem.getSamplerCache().getRepeat(FilterMode.LINEAR);
+        GpuSampler clamp = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
         try (RenderPass pass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Nerospace sky",
-                target.getColorTextureView(), Optional.empty(), target.getDepthTextureView(), OptionalDouble.empty())) {
+                target.getColorTextureView(), Optional.empty())) {
             RenderSystem.bindDefaultUniforms(pass);
             // Zenith colour disc (the vanilla sky shader fades it into the dimension's fog colour at the horizon).
             pass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.SKY));
@@ -192,7 +206,7 @@ public final class NeoForgePlanetSky implements net.neoforged.neoforge.client.Cu
             pass.setVertexBuffer(0, this.disc.slice());
             pass.draw(10, 1, 0, 0);
             // Zenith-to-horizon gradient.
-            drawTextured(pass, RenderPipelines.END_SKY, ramp(s.rampTopDeg), RAMP_QUADS, s.rampTexture, null, view,
+            drawTextured(pass, RenderPipelines.END_SKY, ramp(s.rampTopDeg), RAMP_QUADS, s.rampTexture, clamp, view,
                     s.horizon, 1.0F, mc);
             if (s.starAlpha > 0.01F) {
                 GpuBuffer[] buf = starBuffers(s.starCount, s.starSizeScale);
@@ -227,8 +241,14 @@ public final class NeoForgePlanetSky implements net.neoforged.neoforge.client.Cu
             drawQuads(pass, s.shootingStars, view, mc);
             if (s.hazeAlpha > 0.01F) {
                 this.scratch.set(view).scale(1.0F, 0.45F, 1.0F);
-                drawTextured(pass, RenderPipelines.END_SKY, ramp(55.0F), RAMP_QUADS, RAMP, null, this.scratch,
+                drawTextured(pass, RenderPipelines.END_SKY, ramp(55.0F), RAMP_QUADS, RAMP, clamp, this.scratch,
                         s.hazeColor, s.hazeAlpha, mc);
+            }
+            // Match the ground fog at the horizon.
+            // The station keeps its homeworld visible below the horizon.
+            if (terrainHorizon) {
+                drawTextured(pass, RenderPipelines.END_SKY, ramp(12.0F), RAMP_QUADS, s.rampTexture, clamp, view,
+                        s.fog, 1.0F, mc);
             }
         }
     }
@@ -302,9 +322,8 @@ public final class NeoForgePlanetSky implements net.neoforged.neoforge.client.Cu
     }
 
     private GpuBufferSlice transform(Matrix4f m, int rgb, float alpha) {
-        return RenderSystem.getDynamicUniforms().writeTransform(this.uniformMatrix.set(m),
-                this.uniformColor.set(((rgb >> 16) & 0xFF) / 255.0F, ((rgb >> 8) & 0xFF) / 255.0F, (rgb & 0xFF) / 255.0F,
-                        alpha));
+        SkyTransforms.Entry entry = this.transforms.next(m, rgb, alpha);
+        return RenderSystem.getDynamicUniforms().writeTransform(entry.matrix(), entry.color());
     }
 
     private void drawTextured(RenderPass pass, RenderPipeline pipeline, GpuBuffer vertices, int quads, Identifier texture,
@@ -444,6 +463,7 @@ public final class NeoForgePlanetSky implements net.neoforged.neoforge.client.Cu
         if (this.disc != null) {
             return;
         }
+        this.skyProjection = new ProjectionMatrixBuffer("Nerospace stable sky");
         try (ByteBufferBuilder bytes = ByteBufferBuilder.exactlySized(10 * DefaultVertexFormat.POSITION.getVertexSize())) {
             BufferBuilder b = new BufferBuilder(bytes, PrimitiveTopology.TRIANGLE_FAN, DefaultVertexFormat.POSITION);
             b.addVertex(0.0F, 16.0F, 0.0F);
@@ -487,7 +507,7 @@ public final class NeoForgePlanetSky implements net.neoforged.neoforge.client.Cu
         });
     }
 
-    // Horizon ramp: a ring of quads from rampTopDeg down to the horizon (texture ramp), then down to -30 (solid).
+    // Horizon ramp: a ring of quads from rampTopDeg down to the horizon (texture ramp), then to the nadir (solid).
     // One mesh per distinct top elevation (the shipped profiles use two values: 72 and the haze's 55).
     private GpuBuffer ramp(float topDeg) {
         GpuBuffer existing = this.ramps.get(topDeg);
@@ -495,7 +515,7 @@ public final class NeoForgePlanetSky implements net.neoforged.neoforge.client.Cu
             return existing;
         }
         int seg = 32;
-        float[][] rows = {{topDeg, 0.0F}, {0.0F, 1.0F}, {-30.0F, 1.0F}};
+        float[][] rows = {{topDeg, 0.0F}, {0.0F, 1.0F}, {-90.0F, 1.0F}};
         GpuBuffer buf = mesh("Nerospace sky ramp", DefaultVertexFormat.POSITION_TEX_COLOR, RAMP_QUADS, b -> {
             for (int r = 0; r < 2; r++) {
                 for (int i = 0; i < seg; i++) {
@@ -581,18 +601,21 @@ public final class NeoForgePlanetSky implements net.neoforged.neoforge.client.Cu
             int[] n = {0};
             made[half] = mesh("Nerospace stars", DefaultVertexFormat.POSITION_TEX, count * 2, b -> {
                 for (int i = 0; i < count; i++) {
-                    double x = random.nextFloat() * 2.0F - 1.0F;
-                    double y = random.nextFloat() * 2.0F - 1.0F;
-                    double z = random.nextFloat() * 2.0F - 1.0F;
-                    double len = Math.sqrt(x * x + y * y + z * z);
-                    float size = (0.35F + random.nextFloat() * 0.45F) * sizeScale;
-                    int cell = random.nextInt(16);
-                    if (len < 0.1 || len > 1.0 || (i & 1) != want) {
+                    double y = random.nextDouble() * 2.0 - 1.0;
+                    double longitude = random.nextDouble() * Math.PI * 2.0;
+                    double latitudeRadius = Math.sqrt(1.0 - y * y);
+                    double x = Math.cos(longitude) * latitudeRadius;
+                    double z = Math.sin(longitude) * latitudeRadius;
+                    float magnitude = (float) Math.pow(random.nextFloat(), 5.0);
+                    float size = (0.24F + magnitude * 0.7F) * sizeScale;
+                    int cell = random.nextFloat() < 0.92F ? random.nextInt(4) * 4 + random.nextInt(2)
+                            : random.nextInt(16);
+                    if ((i & 1) != want) {
                         continue;
                     }
-                    double dx = x / len;
-                    double dy = y / len;
-                    double dz = z / len;
+                    double dx = x;
+                    double dy = y;
+                    double dz = z;
                     // Two axes perpendicular to the star direction.
                     double ax = Math.abs(dy) < 0.9 ? 0.0 : 1.0;
                     double ay = Math.abs(dy) < 0.9 ? 1.0 : 0.0;

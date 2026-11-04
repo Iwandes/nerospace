@@ -39,7 +39,7 @@
   "moons": [
     {
       "id": "rime",
-      "texture": "nerospace:textures/sky/moon_small.png",
+      "texture": "nerospace:textures/sky/rime.png",
       "size": 1.5,
       "color": "#DCEFFF",
       "glow": 0.3,
@@ -55,7 +55,7 @@
     },
     {
       "id": "hoar",
-      "texture": "nerospace:textures/sky/moon_small.png",
+      "texture": "nerospace:textures/sky/hoar.png",
       "size": 1.0,
       "color": "#CFE3F5",
       "glow": 0.2,
@@ -188,6 +188,22 @@
           "strength": 1.7
         }
       }
+    },
+    {
+      "id": "mineral_filaments",
+      "texture": "nerospace:textures/sky/dust_ice.png",
+      "anchor": "fixed",
+      "yaw": 80,
+      "pitch": 42,
+      "size": 64,
+      "aspect": 1.8,
+      "roll": 28,
+      "color": "#FFFFFF",
+      "opacity": 0.3,
+      "additive": true,
+      "visibility": {
+        "night": true
+      }
     }
   ],
   "shootingStars": {
@@ -199,5 +215,11 @@
     "durationTicks": 12,
     "nightOnly": true,
     "minPitch": 12.0
+  },
+  "galaxy": {
+    "texture": "nerospace:textures/sky/galaxy.png",
+    "opacity": 0.28,
+    "yaw": 70,
+    "pitch": 38
   }
 }

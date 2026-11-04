@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [2.0.0-alpha.1] - Unreleased
+## [2.0.0-beta.1] - 2026-11-04
 
-The first 2.0 alpha combines the planets and stations rework with the subsequent compatibility and visual changes. It is a test build: planet performance and sky rendering still need work, and Nyxara auroras are not currently visible in the NeoForge 26.3 client. Back up worlds before testing.
+The first 2.0 beta combines the planets and stations rework with the subsequent compatibility and visual changes. It is a test build: planet performance and sky rendering still need work, and Nyxara auroras are not currently visible in the NeoForge 26.3 client. Back up worlds before testing.
 
 ### Added
 

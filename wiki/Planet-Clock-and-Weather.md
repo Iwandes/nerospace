@@ -7,7 +7,7 @@ with nobody there, so unattended machines see the same day and storms as visitor
 ## Planet clocks
 
 | World | Day length | In real time | Notes |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | [Luna](Luna) | 672 000 ticks | about 9 h 20 min (28 Overworld days) | Earth rises late in the long night, adding a faint earthshine |
 | [Mars](Mars) | 24 600 ticks | 20.5 min (one sol) | a blue sunset |
 | [Cindara](Cindara) | 48 000 ticks | 40 min (two Overworld days) | a 4-minute *Eclipse* in the late afternoon, running into dusk |
@@ -47,7 +47,7 @@ the peaks are higher to make up for the nights. The orbital station stays at a c
 Vanilla time stands still on the worlds with their own clock, so a bed there follows the planet's clock instead:
 
 | World | When you can sleep | What a full night's sleep does |
-|---|---|---|
+| --- | --- | --- |
 | Luna, Mars, Cindara, Glacira | in the planet's night: from just after sunset until shortly before sunrise | once enough players on that planet are asleep, the clock jumps to sunrise and the day count (Mars: the sol) goes up by one, as if you had waited the night out |
 | Greenxertz | at night, as in the Overworld | the Overworld's own night skip: Greenxertz shares the Overworld's day |
 | Nyxara | in a bed on the **Nightside**, at any time | you rest and get up on your own a few seconds later; nothing is skipped, the sun never moves. In the Twilight Band and on the Dayside: "The sun never sets here" |
@@ -74,7 +74,7 @@ Each world has one weather event (none on Luna or the station). An event builds 
 holds at its peak for the time below, then fades. Each event rolls its own strength, from 40 % to full.
 
 | World | Event | How often (average) | Peak lasts | What it does |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | [Luna](Luna) | — | — | — | Clear skies always |
 | [Mars](Mars) | **Dust storm** | every 2.5 sols (about 51 min) | 5–15 min | Brown sky; solar output falls; the open surface outside a sealed oxygen field is irradiated (radiation 2); Red Regolith drifts downwind; Dust Devil Pits release Dust Devils |
 | [Cindara](Cindara) | **Ash fall** | about every 30 min (1.5 Overworld days) | 2.5–7.5 min | Ash Layers pile up (up to four); in the strongest part, ember strikes hit open ground near players (never Basalt Spires, never setting blocks alight) |
@@ -95,7 +95,7 @@ chime as a flare begins. With `hud.weatherLine` on, the HUD shows the current we
 ## Commands (operators)
 
 | Command | What it does |
-|---|---|
+| --- | --- |
 | `/nerospace clock <planet>` or `... get` | Shows the phase (0 = sunrise, 0.25 = noon, 0.5 = sunset, 0.75 = midnight), the daylight and the day count |
 | `/nerospace clock <planet> set <phase>` | Jumps the clock to a phase from 0 to 1 |
 | `/nerospace clock <planet> freeze` / `thaw` | Stops or restarts the clock |
@@ -112,7 +112,7 @@ or frozen. The commands need operator permission (level 2).
 world looks. It needs operator permission (level 2), like the clock and weather commands, and is run by a player.
 
 | Command | What it does |
-|---|---|
+| --- | --- |
 | `/nerospace gallery sky` | Lists every world and its states |
 | `/nerospace gallery sky <planet> <state>` | Sets that world's clock to the state's time and holds it there, and starts its weather at full strength or clears it. Everyone on that world sees the change at once |
 | `/nerospace gallery sky <planet> <state> here` | The same, and moves you to a viewing spot on that world (your own spot if you are already there; Nyxara picks the band or a side), facing the view |
@@ -121,7 +121,7 @@ world looks. It needs operator permission (level 2), like the clock and weather 
 Tab completion only offers the states the chosen world has:
 
 | World | States |
-|---|---|
+| --- | --- |
 | Greenxertz | `dawn`, `noon`, `dusk`, `night`, `twin_noon`, `spore_bloom` |
 | Cindara | `dawn`, `noon`, `dusk`, `night`, `eclipse`, `ash_fall` |
 | Glacira | `dawn`, `noon`, `dusk`, `night`, `twilight`, `aurora`, `diamond_dust` |
@@ -144,7 +144,7 @@ Tab completion only offers the states the chosen world has:
 Server settings (in `config/nerospace.properties`, see [Configuration](Configuration)):
 
 | Key | Default | Range | Effect |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `clock.enabled` | `true` | | `false` holds every planet clock at noon (Greenxertz keeps its real day) |
 | `solar.clockDriven` | `true` | | `false` = the 1.x flat double solar rate everywhere |
 | `weather.enabled` | `true` | | `false` = clear skies everywhere |
@@ -157,7 +157,7 @@ Server settings (in `config/nerospace.properties`, see [Configuration](Configura
 Client settings (each player's own, never forced by the server):
 
 | Key | Default | Effect |
-|---|---|---|
+| --- | --- | --- |
 | `particles.enabled` | `true` | `false` = no ambient planet particles at all |
 | `particles.<type>.perPlayerPerTick` | dust 0.6, ash 0.5, spore 0.4, diamond_dust 0.8, ember 0.2, nebula_mote 0.3 | particles per tick around you at full weather (0–8) |
 | `hud.clockDial` | `true` | show the clock dial |
@@ -165,6 +165,15 @@ Client settings (each player's own, never forced by the server):
 | `hud.weatherLine` | `true` | show the weather line |
 
 ## Skies
+
+The star fields mix many faint points with a few brighter stars. Galaxies have branching dust lanes and fine star
+clusters; their light fades with the stars during storms. Mars adds orange and violet dust filaments, Greenxertz has
+emerald and blue wisps, and Glacira has cyan and lilac clouds and two individually cratered ice moons. These faint
+structures brighten at night. Nyxara's galaxy combines magenta, violet and turquoise light. Earth has spherical coastlines, cloud swirls,
+polar ice and night lights, with its phase still following the sun.
+
+The sky stays steady while walking, even with view bobbing enabled. Your normal world view keeps its bobbing setting.
+The horizon gradients blend smoothly into the lower sky, without a speckled strip below the horizon.
 
 Each world has its own sky: Earth hanging over Luna, the butterscotch Martian day with Phobos racing across it,
 Cindara's red giant and its eclipse, Glacira's pale sun, two moons and auroras, Greenxertz's twin suns, Nyxara's pinned

@@ -18,7 +18,7 @@
     "count": 1600,
     "brightness": 0.5,
     "alwaysVisible": false,
-    "tint": "#A6FF4D",
+    "tint": "#DCE8D2",
     "palette": "natural",
     "twinkle": 0.6,
     "sizeScale": 0.75
@@ -148,5 +148,29 @@
     "durationTicks": 12,
     "nightOnly": true,
     "minPitch": 12.0
-  }
+  },
+  "galaxy": {
+    "texture": "nerospace:textures/sky/galaxy.png",
+    "opacity": 0.18,
+    "yaw": 145,
+    "pitch": 38
+  },
+  "decals": [
+    {
+      "id": "mineral_filaments",
+      "texture": "nerospace:textures/sky/dust_jade.png",
+      "anchor": "fixed",
+      "yaw": 145,
+      "pitch": 42,
+      "size": 64,
+      "aspect": 1.8,
+      "roll": -15,
+      "color": "#FFFFFF",
+      "opacity": 0.3,
+      "additive": true,
+      "visibility": {
+        "night": true
+      }
+    }
+  ]
 }

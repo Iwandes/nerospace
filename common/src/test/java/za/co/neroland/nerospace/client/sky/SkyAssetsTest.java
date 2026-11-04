@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import javax.imageio.ImageIO;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -85,6 +86,22 @@ class SkyAssetsTest {
 
     private static SkyProfile decode(JsonElement json) {
         return SkyProfile.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow();
+    }
+
+    @Test
+    void horizonGradientsClampTheirOpaqueEdgeInsteadOfRepeatingTheTransparentEdge() throws IOException {
+        for (String ramp : List.of("horizon_ramp", "horizon_ramp_soft")) {
+            Path texture = assets().resolve("textures/sky/" + ramp + ".png");
+            JsonObject sampling = read(Path.of(texture + ".mcmeta")).getAsJsonObject("texture");
+            assertTrue(sampling.get("clamp").getAsBoolean(), ramp + " must not wrap at UV=1 below the horizon");
+            assertTrue(sampling.get("blur").getAsBoolean(), ramp + " must interpolate its gradient");
+            var image = ImageIO.read(texture.toFile());
+            assertNotNull(image, ramp);
+            for (int x = 0; x < image.getWidth(); x++) {
+                assertEquals(0, image.getRGB(x, 0) >>> 24, ramp + " transparent zenith edge");
+                assertTrue((image.getRGB(x, image.getHeight() - 1) >>> 24) >= 250, ramp + " near-opaque lower sky");
+            }
+        }
     }
 
     @Test
@@ -733,6 +750,33 @@ class SkyAssetsTest {
 
     private static double state(String planet, String name) {
         return za.co.neroland.nerospace.command.GallerySkyStates.find(planet, name).orElseThrow().phase();
+    }
+
+    @Test
+    void mineralFilamentsAppearAtNightAndFadeInDaylight() throws IOException {
+        for (String planet : List.of("mars", "glacira", "greenxertz")) {
+            SkyScene night = sceneAt(planet, 0.75, "NONE", 0.0F, 0.0, SkyScene.Config.FULL);
+            SkyScene day = sceneAt(planet, 0.25, "NONE", 0.0F, 0.0, SkyScene.Config.FULL);
+            assertTrue(night.galaxyAlpha > 0.1F, planet);
+            assertTrue(day.galaxyAlpha < night.galaxyAlpha * 0.25F, planet);
+            assertTrue(night.fixedQuads.stream().anyMatch(q -> q.texture().getPath().contains("/dust_")), planet);
+            assertFalse(day.fixedQuads.stream().anyMatch(q -> q.texture().getPath().contains("/dust_")
+                    && q.alpha() > 0.03F), planet);
+        }
+    }
+
+    @Test
+    void dustStormOccludesTheGalaxyAndFilaments() throws IOException {
+        SkyScene clear = sceneAt("mars", 0.75, "NONE", 0.0F, 0.0, SkyScene.Config.FULL);
+        SkyScene storm = sceneAt("mars", 0.75, "DUST_STORM", 1.0F, 0.0, SkyScene.Config.FULL);
+        assertTrue(clear.galaxyAlpha > 0.1F);
+        assertEquals(0.0F, storm.galaxyAlpha, 1e-6F);
+        double clearDust = clear.fixedQuads.stream().filter(q -> q.texture().getPath().contains("/dust_"))
+                .mapToDouble(SkyScene.Quad::alpha).sum();
+        double stormDust = storm.fixedQuads.stream().filter(q -> q.texture().getPath().contains("/dust_"))
+                .mapToDouble(SkyScene.Quad::alpha).sum();
+        assertTrue(clearDust > 0.1);
+        assertTrue(stormDust < clearDust * 0.2);
     }
 
     @Test

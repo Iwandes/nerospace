@@ -148,5 +148,11 @@
     "durationTicks": 12,
     "nightOnly": true,
     "minPitch": 12.0
+  },
+  "galaxy": {
+    "texture": "nerospace:textures/sky/galaxy.png",
+    "opacity": 0.2,
+    "yaw": 210,
+    "pitch": 38
   }
 }

@@ -33,8 +33,8 @@ Conventions
   ``corona``, ``limb_glow``, ``flare_rays``) are drawn on a flat tangent quad, so an angular radius ``a`` inside a
   quad of half-angle ``h`` sits at ``tan(a) / tan(h)`` of the half-size - the constants below say which ``h``
   they assume.
-* Existing textures are never changed by the upgrade (their functions are untouched); ``--check`` therefore still
-  passes on a tree that has only the old files plus the new ones.
+* Detailed celestial surfaces use spherical volume noise; dust bands use cylindrical volume noise for seamless
+  wrapping. Art is baked offline; the runtime uses the existing lightweight sky meshes.
 * ``stars.png`` is a 4x4 sheet of 16x16 sprites (point, soft, cross, 6-ray at two brightnesses); the renderer
   picks a sprite per star by hash and tints with ``stars.tint``.
 * Particle sprites are 8x8 like vanilla's and come in four frames per type (``<type>_0..3``), listed in that order
@@ -132,6 +132,44 @@ def radial(size):
     return dx, dy, np.sqrt(dx * dx + dy * dy)
 
 
+def noise_space(name):
+    """A seeded periodic volume: evaluate on a sphere/cylinder rather than painting flat noise onto a disc."""
+    lattice = rng_of(name).random((64, 64, 64), dtype=np.float32)
+
+    def sample(x, y, z):
+        ix, iy, iz = np.floor(x).astype(int), np.floor(y).astype(int), np.floor(z).astype(int)
+        tx, ty, tz = smoothstep(x - ix), smoothstep(y - iy), smoothstep(z - iz)
+        value = np.zeros(np.broadcast_shapes(np.shape(x), np.shape(y), np.shape(z)), dtype=np.float32)
+        for dz in (0, 1):
+            for dy in (0, 1):
+                for dx in (0, 1):
+                    weight = (tx if dx else 1 - tx) * (ty if dy else 1 - ty) * (tz if dz else 1 - tz)
+                    value += lattice[(iz + dz) % 64, (iy + dy) % 64, (ix + dx) % 64] * weight
+        return value
+
+    return sample
+
+
+def volume_fbm(sample, x, y, z, octaves=5):
+    if not 1 <= octaves <= 8:
+        raise ValueError("volume noise requires 1..8 octaves")
+    value = np.zeros(np.broadcast_shapes(np.shape(x), np.shape(y), np.shape(z)), dtype=np.float32)
+    amplitude, total = 0.5, 0.0
+    for _ in range(octaves):
+        value += amplitude * sample(x, y, z)
+        total += amplitude
+        x, y, z = x * 2.07 + 7.3, y * 2.07 + 13.1, z * 2.07 + 19.7
+        amplitude *= 0.51
+    return value / total
+
+
+def sphere(size, radius):
+    x, y, r = radial(size)
+    x, y = x / radius, y / radius
+    z = np.sqrt(np.maximum(0, 1 - x * x - y * y))
+    return x, y, z, r
+
+
 def to_image(rgb, alpha):
     rgb = np.clip(rgb, 0.0, 1.0)
     alpha = np.clip(alpha, 0.0, 1.0)
@@ -163,7 +201,9 @@ def sun_disc(name, size, radius, glow, rays=0, rim=None):
         ray = np.abs(np.cos(ang * rays / 2.0)) ** 60.0
         ray *= np.exp(-((r - radius) / (glow * 2.4))) * (r > radius)
         a = np.clip(a + ray * 0.8, 0, 1)
-    grain = fbm(rng, size, size, base=6, octaves=3) * 0.05
+    sx, sy, sz, _ = sphere(size, radius)
+    granules = volume_fbm(noise_space(name), sx * 18, sy * 18, sz * 18, 4)
+    grain = (0.03 + 0.12 * granules) * (r < radius)
     rgb = np.stack([lum - grain * (r < radius)] * 3, axis=-1)
     if rim is not None:
         rimc = hexc(rim)
@@ -176,7 +216,8 @@ def red_giant(name="red_giant", size=256):
     rng = rng_of(name)
     dx, dy, r = radial(size)
     radius = 0.72
-    gran = fbm(rng, size, size, base=12, octaves=4, persistence=0.55)
+    sx, sy, sz, _ = sphere(size, radius)
+    gran = volume_fbm(noise_space(name), sx * 24, sy * 24, sz * 24, 6)
     cells = fbm(rng, size, size, base=5, octaves=2)
     spots = (fbm(rng, size, size, base=4, octaves=3) > 0.66).astype(np.float32)
     spots = np.array(Image.fromarray((spots * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(2))) / 255.0
@@ -215,24 +256,26 @@ def dark_moon(name="dark_moon", size=256):
 
 def rocky_moon(name, size, radius, base_grey, crater_count, potato=0.0):
     rng = rng_of(name)
-    dx, dy, r = radial(size)
-    ang = np.arctan2(dy, dx)
-    bump = 1.0
-    if potato > 0:
-        bump = 1.0 + potato * (0.5 * np.sin(ang * 3 + 0.7) + 0.5 * np.cos(ang * 5 + 2.1)) * 0.5
-    rr = r / bump
-    n = fbm(rng, size, size, base=6, octaves=4)
-    lum = base_grey * (0.75 + 0.5 * n)
-    lum *= 1.0 - 0.5 * np.clip(rr / radius, 0, 1) ** 2  # limb darkening
-    for _ in range(crater_count):
-        cx, cy = rng.uniform(-radius * 0.8, radius * 0.8, 2)
-        cr = rng.uniform(0.06, 0.22) * radius
-        d = np.sqrt((dx - cx) ** 2 + (dy - cy) ** 2)
-        lum *= 1.0 - 0.35 * np.clip(1 - d / cr, 0, 1)
-        lum += 0.25 * np.exp(-((d - cr) / (cr * 0.25)) ** 2) * (dx - cx < 0)
-    a = np.clip((radius - rr) / 0.03, 0, 1)
-    rgb = np.stack([lum] * 3, axis=-1)
-    return to_image(rgb, a)
+    x, y, z, r = sphere(size, radius)
+    sample = noise_space(name)
+    height = volume_fbm(sample, x * 5, y * 5, z * 5, 5)
+    for _ in range(crater_count * 5):
+        centre = rng.normal(size=3)
+        centre /= np.linalg.norm(centre)
+        reach = rng.uniform(0.04, 0.28)
+        distance = np.sqrt((x - centre[0]) ** 2 + (y - centre[1]) ** 2 + (z - centre[2]) ** 2) / reach
+        height += 0.24 * np.exp(-((distance - 1) / 0.15) ** 2) - 0.22 * np.clip(1 - distance ** 2, 0, 1)
+    gy, gx = np.gradient(height)
+    relief = np.clip(1 + (gy - gx) * size * 0.08, 0.45, 1.35)
+    lum = base_grey * (0.4 + height * 0.8) * relief * (0.65 + 0.35 * z)
+    if name.startswith('rime') or name.startswith('hoar'):
+        cracks = np.exp(-((height - 0.5) / 0.015) ** 2)
+        rgb = lum[..., None] * hexc('#B9D6DD') + cracks[..., None] * hexc('#468B9B') * 0.3
+    else:
+        rgb = np.repeat(lum[..., None], 3, axis=-1)
+    outline = radius * (1 + potato * (np.sin(np.arctan2(y, x) * 3 + 0.7) * 0.18))
+    alpha = np.clip((outline - r) * size / 2, 0, 1)
+    return to_image(rgb, alpha)
 
 
 def earth(name, size):
@@ -248,80 +291,63 @@ def earth_globe(name, size, source):
 
 
 def earth_parts(name, size, baked_light=True):
-    """The earth render plus its land mask (same RNG order as the 2.0.0 ``earth``; output is byte-identical)."""
-    rng = rng_of(name)
-    dx, dy, r = radial(size)
-    radius = 0.86
-    land = fbm(rng, size, size, base=3, octaves=6, persistence=0.55)
-    landmask = np.clip((land - 0.52) / 0.035, 0, 1)
-    ocean = hexc("#2B6FD6")
-    ocean_deep = hexc("#1B4FA8")
-    veg = hexc("#4F8F3A")
-    dirt = hexc("#A58B55")
-    terrain = fbm(rng, size, size, base=9, octaves=3)
-    landc = veg * (1 - terrain[..., None]) + dirt * terrain[..., None]
-    oceanc = ocean * (1 - terrain[..., None] * 0.6) + ocean_deep * (terrain[..., None] * 0.6)
-    rgb = oceanc * (1 - landmask[..., None]) + landc * landmask[..., None]
-    # polar ice
-    lat = np.abs(dy) / radius
-    ice = np.clip((lat - 0.78) / 0.1, 0, 1) * (1 - 0.3 * fbm(rng, size, size, base=10, octaves=2))
-    rgb = rgb * (1 - ice[..., None]) + hexc("#F2F7FF")[None, None, :] * ice[..., None]
-    # clouds: streaky bands + swirls
-    cl = fbm(rng, size, size, base=5, octaves=5, persistence=0.6, aspect=0.5)
-    cloud = np.clip((cl - 0.5) / 0.12, 0, 1)
-    rgb = rgb * (1 - cloud[..., None] * 0.95) + hexc("#FFFFFF")[None, None, :] * cloud[..., None] * 0.95
-    # day-side shading (light from upper-left) and limb darkening
-    light = np.clip(0.55 + 0.45 * (-(dx + dy) / 1.414), 0.15, 1.0) if baked_light else 0.92
-    limb = 1.0 - 0.35 * np.clip(r / radius, 0, 1) ** 3
-    rgb *= (light * limb)[..., None]
-    # atmosphere rim inside + glow outside
-    rim = np.exp(-((radius - r) / 0.05) ** 2) * (r < radius)
-    rgb = rgb * (1 - rim[..., None] * 0.5) + hexc("#9FD2FF")[None, None, :] * rim[..., None] * 0.5
-    glow = np.exp(-(np.abs(r - radius) / 0.07) ** 1.5) * (r > radius)
-    rgb = np.where((r > radius)[..., None], hexc("#7FB8FF")[None, None, :], rgb)
-    a = np.clip((radius - r) / 0.008, 0, 1) + glow * 0.8
-    return rgb, a, landmask * (r < radius)
+    x, y, z, r = sphere(size, 0.86)
+    sample = noise_space(name)
+    warp = volume_fbm(sample, x * 2 + 11, y * 2, z * 2, 3) - 0.5
+    land = volume_fbm(sample, x * 3.8 + warp, y * 3.8, z * 3.8, 6)
+    landmask = smoothstep(np.clip((land - 0.50) / 0.045, 0, 1))
+    terrain = volume_fbm(sample, x * 19, y * 19, z * 19, 4)
+    coast = np.exp(-((land - 0.51) / 0.022) ** 2)
+    desert = np.clip(1 - np.abs(y - 0.25) * 3, 0, 1) * terrain
+    landc = hexc('#345B42') * (1 - desert[..., None]) + hexc('#B49B72') * desert[..., None]
+    ocean = hexc('#102C53') + coast[..., None] * hexc('#286A79') * 0.7
+    rgb = ocean * (1 - landmask[..., None]) + landc * landmask[..., None]
+    gy, gx = np.gradient(terrain)
+    rgb *= np.clip(1 + (gy - gx) * size * 0.025 * landmask, 0.7, 1.2)[..., None]
+    ice = smoothstep(np.clip((np.abs(y) - 0.76 + (terrain - 0.5) * 0.18) / 0.14, 0, 1))
+    rgb = rgb * (1 - ice[..., None]) + hexc('#D7E4DD') * ice[..., None]
+    swirl = np.sin(y * 12 + warp * 6) * 0.25
+    cloud = volume_fbm(sample, x * 7 + swirl + 23, y * 10 + warp, z * 7, 6)
+    cloud = smoothstep(np.clip((cloud - 0.50) / 0.22, 0, 1)) * 0.9
+    rgb *= 1 - cloud[..., None] * 0.3
+    rgb = rgb * (1 - cloud[..., None]) + hexc('#EDF0E7') * cloud[..., None]
+    light = np.clip(0.75 - 0.3 * (x + y), 0.2, 1) if baked_light else np.ones_like(z)
+    rgb *= (light * (0.55 + 0.45 * z ** 0.4))[..., None]
+    rim = (1 - z) ** 4 * (r < 0.86)
+    rgb = rgb * (1 - rim[..., None] * 0.55) + hexc('#6FA4C1') * rim[..., None] * 0.55
+    glow = np.exp(-((r - 0.86) / 0.025) ** 2) * (r > 0.86)
+    rgb = np.where((r > 0.86)[..., None], hexc('#629ABF'), rgb)
+    alpha = np.clip((0.86 - r) * size / 2, 0, 1) + glow * 0.5
+    return rgb, alpha, landmask * (r < 0.86) * (1 - cloud)
 
-
-# ======================================================================================= bands
 
 def galaxy_band(name, w, h, core, outer, lane, star_tint, density=1.0, nebula=None):
-    rng = rng_of(name)
-    ys = np.linspace(-1, 1, h, dtype=np.float32)[:, None]
-    wobble = (fbm(rng, w, 1, base=2, octaves=3, wrap_x=True)[0] - 0.5) * 0.5
-    profile = np.exp(-((ys - wobble[None, :]) / 0.42) ** 2)
-    cloud = fbm(rng, w, h, base=6, octaves=6, persistence=0.55, wrap_x=True, aspect=0.5)
-    lanes = fbm(rng, w, h, base=10, octaves=4, persistence=0.6, wrap_x=True, aspect=0.4)
-    lane_mask = np.clip((lanes - 0.56) / 0.08, 0, 1) * profile
-    inten = profile * (0.35 + 0.65 * cloud) * density
-    inten *= 1.0 - 0.75 * lane_mask
-    t = np.clip(np.abs(ys - wobble[None, :]) / 0.5, 0, 1)
-    rgb = hexc(core) * (1 - t[..., None]) + hexc(outer) * t[..., None]
+    sample = noise_space(name)
+    angle = np.linspace(0, 2 * math.pi, w, dtype=np.float32)[None, :]
+    vertical = np.linspace(-1, 1, h, dtype=np.float32)[:, None]
+    x, z = np.cos(angle) * 3.5, np.sin(angle) * 3.5
+    warp = volume_fbm(sample, x, vertical * 2, z, 4) - 0.5
+    cloud = volume_fbm(sample, x * 2 + warp * 2, vertical * 5, z * 2, 6)
+    dust = volume_fbm(sample, x * 4, vertical * 9 + warp * 3, z * 4, 5)
+    centre = vertical + 0.15 * np.sin(angle * 2) + warp * 0.3
+    envelope = np.exp(-(centre / 0.40) ** 2) * smoothstep(np.clip((1 - np.abs(vertical)) / 0.2, 0, 1))
+    split = np.exp(-((centre + (dust - 0.5) * 0.45) / 0.075) ** 2)
+    tendrils = smoothstep(np.clip((dust - 0.46) / 0.22, 0, 1))
+    emission = envelope * (0.18 + 1.6 * cloud ** 2) * (1 - split * 0.92) * (1 - tendrils * 0.65)
+    tint = np.clip(np.abs(centre) * 2 + warp * 0.5, 0, 1)[..., None]
+    rgb = hexc(core) * (1 - tint) + hexc(outer) * tint
+    rgb = rgb * (1 - split[..., None] * 0.5) + hexc(lane) * split[..., None] * 0.5
     if nebula:
-        n1 = fbm(rng, w, h, base=4, octaves=4, wrap_x=True, aspect=0.5)
-        n2 = fbm(rng, w, h, base=7, octaves=4, wrap_x=True, aspect=0.5)
-        c1, c2 = hexc(nebula[0]), hexc(nebula[1])
-        m1 = np.clip((n1 - 0.45) / 0.25, 0, 1)[..., None]
-        m2 = np.clip((n2 - 0.5) / 0.2, 0, 1)[..., None]
-        rgb = rgb * (1 - m1) + c1 * m1
-        rgb = rgb * (1 - m2 * 0.8) + c2 * m2 * 0.8
-    rgb = rgb * (1 - lane_mask[..., None] * 0.6) + hexc(lane) * lane_mask[..., None] * 0.6
-    # star specks inside the band
-    n_stars = int(w * h * 0.004 * density)
-    sx = rng.integers(0, w, n_stars)
-    sy = np.clip((rng.normal(0, 0.28, n_stars) + wobble[sx] * 0.5 + 1) * 0.5 * h, 0, h - 1).astype(int)
-    sb = rng.uniform(0.3, 1.0, n_stars)
-    stars = np.zeros((h, w), dtype=np.float32)
-    stars[sy, sx] = sb
-    bright = rng.random(n_stars) > 0.9
-    for x, y in zip(sx[bright], sy[bright]):
-        for ox, oy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-            xx, yy = (x + ox) % w, y + oy
-            if 0 <= yy < h:
-                stars[yy, xx] = max(stars[yy, xx], 0.5)
-    rgb = rgb * (1 - stars[..., None]) + hexc(star_tint) * stars[..., None]
-    a = np.clip(inten * 0.9 + stars, 0, 1)
-    return to_image(rgb, a)
+        knots = np.clip((cloud - 0.54) * 4, 0, 1)[..., None]
+        hue = smoothstep(np.clip((dust - 0.36) / 0.26, 0, 1))[..., None]
+        emission_color = hexc(nebula[0]) * (1 - hue) + hexc(nebula[1]) * hue
+        rgb = rgb * (1 - knots) + emission_color * knots
+    stars = rng_of(name + '_clusters').random((h, w), dtype=np.float32)
+    points = np.where(stars > 0.995, (stars - 0.995) / 0.005, 0) * envelope
+    rgb = rgb * (1 - points[..., None]) + hexc(star_tint) * points[..., None]
+    alpha = np.clip(emission * density + points * 0.85, 0, 1)
+    rgb[:, -1], alpha[:, -1] = rgb[:, 0], alpha[:, 0]
+    return to_image(rgb, alpha)
 
 
 def aurora_strip(name, w, h, phase):
@@ -353,11 +379,11 @@ def star_sheet(name="stars", cell=16, n=4):
         cy = (i // n) * cell
         dx, dy, r = radial(cell)
         if kind == "point":
-            spr = (r < 0.08).astype(np.float32) * 0.8
+            spr = np.exp(-(r / 0.13) ** 2) * 0.8
         elif kind == "point2":
             spr = np.clip(1 - r / 0.16, 0, 1)
         elif kind == "pointw":
-            spr = (r < 0.08).astype(np.float32) * 0.5
+            spr = np.exp(-(r / 0.13) ** 2) * 0.5
         elif kind == "soft":
             spr = np.exp(-(r / 0.22) ** 2)
         elif kind == "soft2":
@@ -446,11 +472,11 @@ def star_sheet_natural(name="stars_natural", cell=16, n=4):
         cy = (i // n) * cell
         dx, dy, r = radial(cell)
         if kind == "point":
-            spr = (r < 0.08).astype(np.float32) * 0.8
+            spr = np.exp(-(r / 0.13) ** 2) * 0.8
         elif kind == "point2":
             spr = np.clip(1 - r / 0.16, 0, 1)
         elif kind == "pointw":
-            spr = (r < 0.08).astype(np.float32) * 0.5
+            spr = np.exp(-(r / 0.13) ** 2) * 0.5
         elif kind == "soft":
             spr = np.exp(-(r / 0.22) ** 2)
         elif kind == "soft2":
@@ -732,32 +758,21 @@ def caustic_band(name="caustic_band", w=512, h=64):
 
 
 def nebula_patch(name, size, cols, density=1.0):
-    """A soft nebula cloud: fbm blobs in two or three colours with a feathered circular edge and a few embedded
-    stars. Drawn additively on a fixed dome quad; two patches at different sizes give the depth cue."""
-    rng = rng_of(name)
-    dx, dy, r = radial(size)
-    edge = np.clip((0.95 - r) / 0.35, 0, 1) ** 1.5
-    n1 = fbm(rng, size, size, base=3, octaves=6, persistence=0.58)
-    n2 = fbm(rng, size, size, base=5, octaves=5, persistence=0.55)
-    n3 = fbm(rng, size, size, base=9, octaves=3)
-    m1 = np.clip((n1 - 0.42) / 0.3, 0, 1)
-    m2 = np.clip((n2 - 0.48) / 0.25, 0, 1)
-    lanes = np.clip((n3 - 0.58) / 0.1, 0, 1)
-    rgb = hexc(cols[0])[None, None, :] * m1[..., None]
-    rgb = rgb * (1 - m2[..., None] * 0.7) + hexc(cols[1])[None, None, :] * m2[..., None] * 0.7
-    if len(cols) > 2:
-        m3 = np.clip((n3 - 0.5) / 0.3, 0, 1) * m1
-        rgb = rgb * (1 - m3[..., None] * 0.5) + hexc(cols[2])[None, None, :] * m3[..., None] * 0.5
-    a = np.clip((m1 * 0.8 + m2 * 0.5) * (1 - lanes * 0.25) * edge * density, 0, 1)
-    n_st = int(size * size * 0.0015)
-    sx = rng.integers(0, size, n_st)
-    sy = rng.integers(0, size, n_st)
-    keep = a[sy, sx] > 0.15
-    stars = np.zeros((size, size), dtype=np.float32)
-    stars[sy[keep], sx[keep]] = rng.uniform(0.4, 1.0, keep.sum())
-    rgb = rgb * (1 - stars[..., None]) + np.ones(3)[None, None, :] * stars[..., None]
-    a = np.clip(a + stars * 0.9, 0, 1)
-    return to_image(rgb, a)
+    x, y, r = radial(size)
+    sample = noise_space(name)
+    warp = volume_fbm(sample, x * 2 + 9, y * 2, np.full_like(x, 4), 4) - 0.5
+    u, v = x * 3 + warp * 2, y * 3 - warp
+    cloud = volume_fbm(sample, u, v, np.full_like(x, 17), 6)
+    dust = volume_fbm(sample, u * 2.7, v * 2.7, np.full_like(x, 29), 5)
+    ridge = np.exp(-((cloud - 0.51) / 0.055) ** 2)
+    dark = smoothstep(np.clip((dust - 0.48) / 0.18, 0, 1))
+    edge = smoothstep(np.clip((0.96 - r) / 0.38, 0, 1))
+    alpha = (ridge * 0.45 + np.clip((cloud - 0.43) * 2.8, 0, 1)) * (1 - dark * 0.88) * edge * density
+    mix = np.clip((dust - 0.3) * 2, 0, 1)[..., None]
+    rgb = hexc(cols[0]) * (1 - mix) + hexc(cols[1]) * mix
+    hot = (ridge * np.clip((cloud - 0.48) * 9, 0, 1))[..., None]
+    rgb = rgb * (1 - hot * 0.55) + hexc(cols[2]) * hot * 0.55
+    return to_image(rgb, alpha)
 
 
 def clouds_ash(name="clouds_ash", size=512):
@@ -817,20 +832,23 @@ AURORA_GRADIENTS = {
 
 def sky_textures():
     return {
-        "sun_white": lambda: sun_disc("sun_white", 64, 0.34, 0.16, rays=4),
-        "sun_small": lambda: sun_disc("sun_small", 32, 0.42, 0.18),
-        "sun_pale": lambda: sun_disc("sun_pale", 64, 0.26, 0.28),
-        "sun_amber": lambda: sun_disc("sun_amber", 64, 0.36, 0.2, rim="#FFD27A"),
-        "red_giant": lambda: red_giant(),
+        "sun_white": lambda: sun_disc("sun_white", 256, 0.34, 0.16, rays=4),
+        "sun_small": lambda: sun_disc("sun_small", 128, 0.42, 0.18),
+        "sun_pale": lambda: sun_disc("sun_pale", 256, 0.26, 0.28),
+        "sun_amber": lambda: sun_disc("sun_amber", 256, 0.36, 0.2, rim="#FFD27A"),
+        "red_giant": lambda: red_giant(size=512),
         "dark_moon": lambda: dark_moon(),
         "earth": lambda: earth("earth", 128),
         "earth_disk": lambda: earth("earth_disk", 512),
-        "phobos": lambda: rocky_moon("phobos", 32, 0.7, 0.58, 4, potato=0.35),
-        "deimos": lambda: rocky_moon("deimos", 32, 0.62, 0.66, 2, potato=0.25),
-        "moon_small": lambda: rocky_moon("moon_small", 32, 0.8, 0.85, 5),
-        "galaxy": lambda: galaxy_band("galaxy", 1024, 256, "#FFF4E0", "#CFE4FF", "#1A1420", "#FFFFFF"),
-        "galaxy_nyx": lambda: galaxy_band("galaxy_nyx", 1024, 256, "#FF9EDC", "#5B2D8E", "#0D0A14", "#FFF0FF",
-                                          density=1.25, nebula=("#9B5DE5", "#4DD0E1")),
+        "phobos": lambda: rocky_moon("phobos", 128, 0.7, 0.58, 4, potato=0.35),
+        "deimos": lambda: rocky_moon("deimos", 128, 0.62, 0.66, 2, potato=0.25),
+        "rime": lambda: rocky_moon("rime", 256, 0.8, 0.95, 7),
+        "hoar": lambda: rocky_moon("hoar", 256, 0.8, 0.8, 12),
+        "moon_small": lambda: rocky_moon("moon_small", 128, 0.8, 0.85, 5),
+        "galaxy": lambda: galaxy_band("galaxy", 2048, 512, "#FFD0EF", "#697CFF", "#170E35", "#E8F5FF",
+                                      nebula=("#E95ABD", "#3DE4E1")),
+        "galaxy_nyx": lambda: galaxy_band("galaxy_nyx", 2048, 512, "#FFC0EC", "#7E3FE0", "#180A2E", "#FFF0FF",
+                                          density=1.25, nebula=("#C64DFF", "#34E6DE")),
         "aurora_0": lambda: aurora_strip("aurora_0", 512, 128, 0.0),
         "aurora_1": lambda: aurora_strip("aurora_1", 512, 128, 0.5),
         "stars": lambda: star_sheet(),
@@ -850,9 +868,9 @@ def sky_textures():
         "terminator": lambda: terminator(),
         **{"terminator_%02d" % i: (lambda i=i: terminator_phase("terminator_%02d" % i, i / (TERMINATOR_FRAMES - 1.0)))
            for i in range(TERMINATOR_FRAMES)},
-        "earth_globe": lambda: earth_globe("earth_globe", 128, "earth"),
+        "earth_globe": lambda: earth_globe("earth_globe", 512, "earth"),
         "earth_disk_globe": lambda: earth_globe("earth_disk_globe", 1024, "earth_disk"),
-        "earth_lights": lambda: city_lights("earth_lights", 128, "earth"),
+        "earth_lights": lambda: city_lights("earth_lights", 512, "earth"),
         "earth_disk_lights": lambda: city_lights("earth_disk_lights", 1024, "earth_disk"),
         "corona": lambda: corona(),
         "diamond_ring": lambda: diamond_ring(),
@@ -860,8 +878,11 @@ def sky_textures():
         "rainbow_arc": lambda: rainbow_arc(),
         "flare_rays": lambda: flare_rays(),
         "caustic_band": lambda: caustic_band(),
-        "nebula_a": lambda: nebula_patch("nebula_a", 512, ("#FF6EC7", "#9B5DE5", "#FFD6EC")),
-        "nebula_b": lambda: nebula_patch("nebula_b", 512, ("#4DD0E1", "#2D6F9E", "#A9E3FF"), density=0.8),
+        "dust_copper": lambda: nebula_patch("dust_copper", 512, ("#FF754A", "#A34DD9", "#FFE0A0"), 0.7),
+        "dust_jade": lambda: nebula_patch("dust_jade", 512, ("#34E9B2", "#397BCC", "#DAFF9A"), 0.8),
+        "dust_ice": lambda: nebula_patch("dust_ice", 512, ("#48D9FF", "#7E64F4", "#FFD0F0"), 0.6),
+        "nebula_a": lambda: nebula_patch("nebula_a", 1024, ("#FF57B5", "#9147E8", "#FFD6F1")),
+        "nebula_b": lambda: nebula_patch("nebula_b", 1024, ("#36DFDB", "#4363DC", "#B1EDFF"), density=0.8),
         "clouds_ash": lambda: clouds_ash(),
         "sun_aureole": lambda: sun_aureole(),
         "horizon_ramp_soft": lambda: horizon_ramp_soft(),

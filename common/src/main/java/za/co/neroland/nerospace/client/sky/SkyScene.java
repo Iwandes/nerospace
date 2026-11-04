@@ -679,7 +679,8 @@ public final class SkyScene {
             this.galaxyYaw = g.yaw();
             this.galaxyPitch = g.pitch();
             this.galaxyAlpha = clamp01(g.opacity()
-                    * (float) ("constant".equals(p.background().blend()) ? 1.0 : Math.pow(night, 1.5)));
+                    * (float) ("constant".equals(p.background().blend()) ? 1.0 : Math.pow(night, 1.5)))
+                    * (1.0F - starFade);
         }
 
         sideWeightsInto(p.positionBlend().isPresent(), in.position, in.bandWidth, this.sides);
