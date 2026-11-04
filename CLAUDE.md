@@ -247,3 +247,7 @@
 - Run git through the sandbox bash mount — use the native gradle-init-script technique.
 - Edit `common/` for loader-specific work — reuse the existing seams.
 - Hand-paint textures or hand-author trivial model JSON — use the generators.
+
+## Translation workflow
+
+English is the source language for new and changed text. Community translations are intended to be contributed through Weblate; other-language translations are not required when implementing a feature. Preserve existing translations. This supersedes older instructions that require translating every change.
