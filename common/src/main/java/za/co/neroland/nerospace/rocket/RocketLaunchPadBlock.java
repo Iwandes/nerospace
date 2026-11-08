@@ -80,9 +80,9 @@ public class RocketLaunchPadBlock extends Block {
             if (level instanceof ServerLevel serverLevel) {
                 Component custom = stack.get(DataComponents.CUSTOM_NAME);
                 Set<BlockPos> cluster = LaunchPadMultiblock.connectedPads(level, pos);
-                // No renaming a pad out from under someone else's crewed rocket.
+                // No renaming a pad out from under someone else's crewed rocket (2.1: anyone else aboard, any seat).
                 RocketEntity parked = LaunchPadMultiblock.rocketAbove(level, cluster);
-                if (parked != null && parked.getFirstPassenger() instanceof Player rider && rider != player) {
+                if (parked != null && Crew.seated(parked).stream().anyMatch(rider -> rider != player)) {
                     player.sendSystemMessage(Component.translatable("block.nerospace.rocket_launch_pad.in_use"));
                     return InteractionResult.SUCCESS;
                 }

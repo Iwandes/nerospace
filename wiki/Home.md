@@ -49,12 +49,14 @@ eventually **terraform** a dead planet into livable, rained-on ground.
 In the order you usually reach them:
 
 - **[Luna](Luna)**: grey, airless moon; titanium (Ilmenite), Helium-3, Crater Glass. Tier 1.
-- **[Mars](Mars)**: rust-red dunes, canyons and a Dry Ice cap; Hematite, dust storms, rover wrecks. Tier 2.
+- **[Mars](Mars)**: rust-red dunes, canyons and a Dry Ice cap; Hematite, dust storms, rover wrecks and the [Mars Rover](Rover). Tier 2.
 - **[Cindara](Cindara)**: volcanic ash world under a red giant; Cindrite, Sulfur, ash fall, the Ember-kin. Tier 3.
 - **[Glacira](Glacira)**: ice plains, methane shores and spires; Glacite, diamond dust, auroras, the Frostbound. Tier 4.
 - **[Greenxertz](Greenxertz)**: bioluminescent jungle under twin suns; Nerosteel, Xertz Quartz, spore blooms, the Xertz. Tier 2.
 - **[Nyxara](Nyxara)**: tidally locked; Dayside, Twilight Band and Nightside; Voidglass, Void Crystal, flares, the Duskborn. Tier 4 after Deep Space progress.
-- **[Orbital Stations](Orbital-Stations)**: your own habitats in orbit, with classes, members and modules.
+- **[Orbital Stations](Orbital-Stations)**: your own habitats in orbit, with classes, members and modules. Found one
+  [where you stand](Orbital-Stations#placing-your-own-station), or land on a hand-placed
+  [free dock](Orbital-Stations#free-docks).
 
 Every world keeps its own time and weather: see **[Planet Clock and Weather](Planet-Clock-and-Weather)**. Rockets
 land centred on a pad, or on an automatic Landing Pod: see **[Landing Pads](Landing-Pads)**.
@@ -82,8 +84,9 @@ land centred on a pad, or on an automatic Landing Pod: see **[Landing Pads](Land
 
   and off-world ores; track them with the Meteor Tracker.
 
-- **[Rockets](Rockets)** — the four crewed hulls, their lit cockpits and windows, and what they do on
-  the pad and during launch.
+- **[Rockets](Rockets)** — the four crewed hulls, their lit cockpits and windows, what they do on
+  the pad and during launch, and [flying with up to four players](Rockets#flying-with-friends-crew).
+- **[Mars Rover](Rover)** — a two-seat electric buggy with a cargo bay for driving around any world.
 - **[Cargo Pad](Cargo-Pad)** and **[Cargo Rocket](Cargo-Rocket)** — automated freight between pads and
   stations: load a hold, pick a destination, and cargo flies with nobody at either end.
 - **[Star Guide](Star-Guide)** — the in-game progression guide.

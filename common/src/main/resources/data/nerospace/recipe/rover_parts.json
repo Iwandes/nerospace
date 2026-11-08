@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "H": "nerospace:raw_hematite",
+    "I": "#c:ingots/iron",
+    "R": "#c:dusts/redstone"
+  },
+  "pattern": [
+    "HIH",
+    "IRI",
+    "HIH"
+  ],
+  "result": {
+    "count": 2,
+    "id": "nerospace:rover_parts"
+  }
+}

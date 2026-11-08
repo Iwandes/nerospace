@@ -64,6 +64,8 @@ Every fuel recipe needs **Blaze Powder**, so go to the Nether and get some blaze
 - A Tier 1 rocket only needs **one** launch pad block. Bigger rockets need bigger pads: see the
   [Launch Pad Build Guide](Launch-Pad-Build-Guide).
 - Fill the rocket with fuel: right-click it with canisters.
+- Flying with friends? Up to four players fit in one rocket: right-click it and press **Take seat** on the
+  console to board. The first aboard is the pilot and presses Launch. See [Rockets](Rockets#flying-with-friends-crew).
 - A trip to another world costs **2,500 mB** of fuel. **Bring at least 2 extra canisters** to fly home.
 
 ## Step 7 — Get ready to breathe
@@ -109,5 +111,6 @@ launch a Tier 2 rocket from there.
 - **Machine at 0% power** → [Powering Machines](Powering-Machines).
 - **Got ore blocks instead of raw items** → your pickaxe has Silk Touch. Smelt the block, or grind it.
 - **Can't find Nerosteel** → dig lower, below y 16. It is much more common on Greenxertz.
-- **Rocket won't launch** → not enough fuel, or the pad is too small for that rocket tier.
+- **Rocket won't launch** → not enough fuel, or the pad is too small for that rocket tier. With a crew,
+  it also needs oxygen for every seat ("NEEDS OXYGEN"), and only the pilot (first aboard) can launch.
 - Still stuck? Ask on [Discord](https://discord.gg/ArPXvYUzJG).

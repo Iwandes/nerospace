@@ -87,6 +87,9 @@ public final class ModNetwork {
         // Founded-station names: server → a player opening a rocket, so the "Dock:" cycler shows real names.
         clientbound(StationSyncPayload.TYPE, StationSyncPayload.STREAM_CODEC,
                 za.co.neroland.nerospace.client.ClientStations::accept);
+        // Free docks: server → a player opening a rocket's console, the hand-built rings that rocket may pick.
+        clientbound(FreeDockSyncPayload.TYPE, FreeDockSyncPayload.STREAM_CODEC,
+                za.co.neroland.nerospace.client.ClientStations::acceptFreeDocks);
         // Landing-node labels: server → a player opening a rocket, so the planet card names the chosen pad.
         clientbound(PadSyncPayload.TYPE, PadSyncPayload.STREAM_CODEC,
                 za.co.neroland.nerospace.client.ClientPads::accept);
@@ -100,7 +103,8 @@ public final class ModNetwork {
                 za.co.neroland.nerospace.client.ClientPlanetWeather::accept);
         // Station Charter: client (naming screen) → server, founds the named station without teleporting.
         serverbound(FoundStationPayload.TYPE, FoundStationPayload.STREAM_CODEC,
-                (payload, player) -> za.co.neroland.nerospace.item.StationCharterItem.foundFromUi(player, payload.name()));
+                (payload, player) -> za.co.neroland.nerospace.item.StationCharterItem.foundFromUi(player, payload.name(),
+                        payload.claimHere(), payload.buildStarter()));
         // Station Core rename: client (rename screen) → server, renames the station by slot.
         serverbound(RenameStationPayload.TYPE, RenameStationPayload.STREAM_CODEC,
                 (payload, player) -> za.co.neroland.nerospace.item.StationCharterItem.renameStation(

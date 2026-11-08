@@ -98,6 +98,16 @@ public final class ModEntities {
             key -> EntityType.Builder.<FallingMeteorEntity>of(FallingMeteorEntity::new, MobCategory.MISC)
                     .sized(1.6F, 1.6F).clientTrackingRange(12).build(key));
 
+    /**
+     * 2.1: the Mars rover (D16), a server-driven two-seat vehicle. Hitbox per the rover model spec; updated every
+     * other tick so the server-driven motion interpolates smoothly for the riders.
+     */
+    public static final RegistryEntry<EntityType<za.co.neroland.nerospace.entity.RoverEntity>> ROVER =
+            ENTITY_TYPES.register("rover",
+                    key -> EntityType.Builder.<za.co.neroland.nerospace.entity.RoverEntity>of(
+                            za.co.neroland.nerospace.entity.RoverEntity::new, MobCategory.MISC)
+                            .sized(1.8F, 1.45F).clientTrackingRange(10).updateInterval(2).build(key));
+
     private ModEntities() {
     }
 

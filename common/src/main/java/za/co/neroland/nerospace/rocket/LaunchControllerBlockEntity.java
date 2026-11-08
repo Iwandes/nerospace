@@ -74,8 +74,21 @@ public class LaunchControllerBlockEntity extends BlockEntity implements MenuProv
     /** The tier the formation in front of the controller actually forms right now (0 = none). */
     private int builtTier;
 
-    /** Synced data slots (0..21). The menu sizes its client-side mirror from this — keep them in lockstep. */
-    public static final int DATA_COUNT = 22;
+    /**
+     * Synced data slots (0..23): [22] the docked rocket's {@code StationSlot}, [23] its pad index (append-only). The
+     * menu sizes its client-side mirror from this — keep them in lockstep.
+     */
+    public static final int DATA_COUNT = 27;
+    /** Data index of the docked rocket's docking slot ({@link DockSelection}). */
+    public static final int DATA_STATION = 22;
+    /** Data index of the docked rocket's landing-pad index ({@link PadSelection}). */
+    public static final int DATA_PAD = 23;
+    /** 2.1: data index of the players aboard the docked rocket. */
+    public static final int DATA_CREW = 24;
+    /** 2.1: data index of how many seats the docked rocket's oxygen covers for its flight ("O₂ for N"). */
+    public static final int DATA_OXYGEN_FOR = 25;
+    /** 2.1: data index of the server's seats per rocket ({@code rockets.maxCrew}). */
+    public static final int DATA_MAX_CREW = 26;
     private boolean hologram;
     private int mode; // 0 = pad build, 1 = launch
     private final SimpleContainer inputs = new SimpleContainer(SLOTS);
@@ -87,8 +100,12 @@ public class LaunchControllerBlockEntity extends BlockEntity implements MenuProv
     private int rocketO2Pct;
     private int rocketPowerPct;
     private int rocketDest;
+    private int rocketStation = DockSelection.ORIGIN;
+    private int rocketPad = PadSelection.AUTO;
     private int rocketMask;
     private boolean rocketLaunchable;
+    private int rocketCrew;
+    private int rocketOxygenFor;
 
     /** Resource hub: fuel + oxygen + power, fed by pipes/cables and pumped into the rocket on the pad. */
     private final FluidTank fuelTank = new FluidTank(FUEL_CAP, this::setChanged);
@@ -126,6 +143,11 @@ public class LaunchControllerBlockEntity extends BlockEntity implements MenuProv
                 case 19 -> rocketMask;
                 case 20 -> rocketLaunchable ? 1 : 0;
                 case 21 -> builtTier;
+                case DATA_STATION -> rocketStation;
+                case DATA_PAD -> rocketPad;
+                case DATA_CREW -> rocketCrew;
+                case DATA_OXYGEN_FOR -> rocketOxygenFor;
+                case DATA_MAX_CREW -> Crew.maxCrew();
                 default -> 0;
             };
         }
@@ -305,8 +327,16 @@ public class LaunchControllerBlockEntity extends BlockEntity implements MenuProv
             this.rocketDest = rocket.getDestinationIndex();
             this.rocketMask = rocket.destinationMask();
             this.rocketLaunchable = rocket.isLaunchReady();
+            this.rocketStation = rocket.getDockValue(); // station slot, or a free-dock value (2.1)
+            this.rocketPad = rocket.getPadIndex();
+            this.rocketCrew = Crew.count(rocket);
+            this.rocketOxygenFor = rocket.oxygenForSeats();
         } else {
+            this.rocketCrew = 0;
+            this.rocketOxygenFor = 0;
             this.rocketLaunchable = false;
+            this.rocketStation = DockSelection.ORIGIN;
+            this.rocketPad = PadSelection.AUTO;
         }
     }
 
@@ -385,6 +415,88 @@ public class LaunchControllerBlockEntity extends BlockEntity implements MenuProv
         DestinationSelection.Outcome outcome = rocket.selectDestination(index, player);
         this.cacheTick = -1L;
         return outcome;
+    }
+
+    /**
+     * Picks the docked rocket's docking target for {@code player} (launch mode). The rocket is the authority; the
+     * menu cache is invalidated so the same broadcast carries the new slot (the label never lags a tick).
+     */
+    public DestinationSelection.Outcome selectRocketStation(int slot, @Nullable Player player) {
+        RocketEntity rocket = dockedRocket();
+        if (rocket == null) {
+            return DestinationSelection.Outcome.NO_ROCKET;
+        }
+        DestinationSelection.Outcome outcome = rocket.selectStation(slot, player);
+        this.cacheTick = -1L;
+        return outcome;
+    }
+
+    /** {@link #selectRocketPad(int)} for {@code player}: only the docked rocket's pilot (or anyone while it is empty). */
+    public DestinationSelection.Outcome selectRocketPad(int index, @Nullable Player player) {
+        RocketEntity rocket = dockedRocket();
+        if (rocket == null) {
+            return DestinationSelection.Outcome.NO_ROCKET;
+        }
+        DestinationSelection.Outcome outcome = rocket.selectPad(index, player);
+        this.cacheTick = -1L;
+        return outcome;
+    }
+
+    /** Picks the docked rocket's landing pad (launch mode, API callers); invalidates the menu cache. */
+    public DestinationSelection.Outcome selectRocketPad(int index) {
+        return selectRocketPad(index, null);
+    }
+
+    /** Cycles the docked rocket's docking target like the Rocket screen's cycler (launch mode). */
+    public DestinationSelection.Outcome cycleRocketStation(@Nullable Player player) {
+        RocketEntity rocket = dockedRocket();
+        if (rocket == null) {
+            return DestinationSelection.Outcome.NO_ROCKET;
+        }
+        if (!rocket.mayCommand(player)) {
+            return DestinationSelection.Outcome.NOT_PILOT; // 2.1: only the pilot picks the dock
+        }
+        rocket.cycleStation(player);
+        this.cacheTick = -1L;
+        return DestinationSelection.Outcome.OK;
+    }
+
+    /** {@link #cycleRocketPad()} for {@code player}: only the docked rocket's pilot (or anyone while it is empty). */
+    public DestinationSelection.Outcome cycleRocketPad(@Nullable Player player) {
+        RocketEntity rocket = dockedRocket();
+        if (rocket == null) {
+            return DestinationSelection.Outcome.NO_ROCKET;
+        }
+        if (!rocket.mayCommand(player)) {
+            return DestinationSelection.Outcome.NOT_PILOT;
+        }
+        rocket.cyclePad(player);
+        this.cacheTick = -1L;
+        return DestinationSelection.Outcome.OK;
+    }
+
+    /** Cycles the docked rocket's landing pad like the Rocket screen's cycler (launch mode, API callers). */
+    public DestinationSelection.Outcome cycleRocketPad() {
+        return cycleRocketPad(null);
+    }
+
+    /**
+     * Before the console opens for {@code player}: the docked rocket's owner-first default dock and the station/pad
+     * labels for its lists (the 2.0.0 controller sent neither). Invalidates the menu cache.
+     */
+    public void prepareOpen(net.minecraft.server.level.ServerPlayer player) {
+        RocketEntity rocket = dockedRocket();
+        if (rocket != null) {
+            rocket.prepareConsoleFor(player);
+        } else {
+            za.co.neroland.nerospace.network.StationListSync.send(player);
+            if (this.level != null && this.level.getServer() != null) {
+                za.co.neroland.nerospace.network.ModNetwork.sendToPlayer(player,
+                        za.co.neroland.nerospace.network.PadSyncPayload.of(PadRegistry.get(this.level.getServer()),
+                                this.level.dimension(), getBlockPos()));
+            }
+        }
+        this.cacheTick = -1L;
     }
 
     /** Board the player onto the docked rocket and launch it. @return true if the ascent started. */

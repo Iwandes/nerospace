@@ -16,6 +16,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerAdvancementManager;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 
 import za.co.neroland.nerolandcore.link.LinkSnapshotProvider;
@@ -24,6 +25,7 @@ import za.co.neroland.nerospace.NerospaceCommon;
 import za.co.neroland.nerospace.api.NerospacePlanets;
 import za.co.neroland.nerospace.api.PlanetId;
 import za.co.neroland.nerospace.api.PlanetTraits;
+import za.co.neroland.nerospace.entity.RoverEntity;
 import za.co.neroland.nerospace.platform.Services;
 import za.co.neroland.nerospace.progression.StarGuide;
 import za.co.neroland.nerospace.progression.StarGuideProgress;
@@ -159,6 +161,8 @@ public final class NerospaceLinkSnapshots implements LinkSnapshotProvider {
         JsonArray padRows = new JsonArray();
         root.add("rockets", rocketRows);
         root.add("launch_pads", padRows);
+        JsonArray roverRows = new JsonArray(); // schema v4 (2.1): the requester's own rovers only
+        root.add("rovers", roverRows);
         root.addProperty("scan_radius", NerospaceLinkAccess.SCAN_RADIUS);
 
         ServerPlayer player = NerospaceLinkAccess.online(server, playerId);
@@ -171,6 +175,14 @@ public final class NerospaceLinkSnapshots implements LinkSnapshotProvider {
         for (RocketEntity rocket : level.getEntitiesOfClass(RocketEntity.class,
                 player.getBoundingBox().inflate(NerospaceLinkAccess.SCAN_RADIUS))) {
             rocketRows.add(rocketRow(rocket, rocket == ridden));
+        }
+
+        // Schema v4 (2.1): the requester's OWN rovers in the same 128-block, same-dimension, online-only scan. A rover
+        // records its placer only for pickup and this list; nobody else's rover is ever listed.
+        Entity seat = player.getVehicle();
+        for (RoverEntity rover : level.getEntitiesOfClass(RoverEntity.class,
+                player.getBoundingBox().inflate(NerospaceLinkAccess.SCAN_RADIUS), r -> r.isOwnedBy(playerId))) {
+            roverRows.add(roverRow(rover, rover == seat));
         }
 
         BlockPos here = player.blockPosition();
@@ -202,6 +214,8 @@ public final class NerospaceLinkSnapshots implements LinkSnapshotProvider {
         row.addProperty("power_percent", rocket.getPowerPercent());
         row.addProperty("launching", rocket.isLaunching());
         row.addProperty("launch_ready", rocket.isLaunchReady());
+        // Schema v3 (2.1): how many players are aboard. A count only, never who.
+        row.addProperty("crew_count", za.co.neroland.nerospace.rocket.Crew.count(rocket));
         row.addProperty("on_valid_pad", rocket.isOnValidPad());
         row.addProperty("ridden", ridden);
         ResourceKey<Level> destination = rocket.selectedDestination();
@@ -209,6 +223,19 @@ public final class NerospaceLinkSnapshots implements LinkSnapshotProvider {
             row.addProperty("destination", destination.identifier().toString());
         }
         row.add("position", position(rocket.blockPosition()));
+        return row;
+    }
+
+    private static JsonObject roverRow(RoverEntity rover, boolean ridden) {
+        JsonObject row = new JsonObject();
+        row.addProperty("id", rover.getUUID().toString()); // the entity's own id — world content, not a person
+        row.addProperty("energy", rover.getEnergy());
+        row.addProperty("energy_capacity", RoverEntity.capacity());
+        row.addProperty("energy_percent", rover.energyPercent());
+        row.addProperty("cargo_used", rover.cargoUsed());
+        row.addProperty("cargo_slots", RoverEntity.CARGO_SLOTS);
+        row.addProperty("ridden", ridden);
+        row.add("position", position(rover.blockPosition()));
         return row;
     }
 

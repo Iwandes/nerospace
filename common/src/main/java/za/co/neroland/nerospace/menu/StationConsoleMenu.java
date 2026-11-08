@@ -354,6 +354,8 @@ public class StationConsoleMenu extends AbstractContainerMenu {
                 StationAudit.op(StationAudit.Action.ABANDON, entry.slot());
             }
             sp.sendSystemMessage(Component.translatable("gui.nerospace.station_console.abandoned"));
+            // The former owner's dock list drops the "yours" tag at once.
+            za.co.neroland.nerospace.network.StationListSync.send(sp);
             return true;
         }
         if (id == BUTTON_CLAIM) {

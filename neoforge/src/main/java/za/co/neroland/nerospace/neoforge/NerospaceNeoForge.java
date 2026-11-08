@@ -67,6 +67,7 @@ public final class NerospaceNeoForge {
             if (event.getEntity() instanceof ServerPlayer serverPlayer) {
                 OxygenManager.tick(serverPlayer);
                 StarGuideGrants.tick(serverPlayer);
+                za.co.neroland.nerospace.network.StationListSync.tick(serverPlayer);
             }
         });
         // Natural meteor showers + oxygen-field diffusion + terraform drift: tick the per-level drivers once per server tick.

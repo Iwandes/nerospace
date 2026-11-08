@@ -97,6 +97,9 @@ public final class LandingResolverLevelAdapter {
      * ({@link OriginPlatformGuard}) — otherwise only its pad node is kept registered.
      */
     public static void ensureStation(ServerLevel level, int slot, BlockPos centre) {
+        if (slot == DockSelection.FREE_DOCK_SLOT) {
+            return; // a free dock is a hand-built ring: nothing to build, never the origin platform
+        }
         if (slot >= 0) {
             StationStructure.build(level, centre);
             return;
@@ -150,7 +153,10 @@ public final class LandingResolverLevelAdapter {
             }
             PadCandidate dock = dockNode != null ? candidate(level, registry, dockNode) : null;
             PadCandidate legacy = padNode != null ? candidate(level, registry, padNode) : null;
-            station = Optional.of(new StationTarget(flight.stationSlot(), centre, StationStructure.padCenter(centre),
+            // A free dock's "centre" is the ring itself; a pod (ring gone) goes beside it, not 13 blocks east.
+            BlockPos podAt = flight.stationSlot() == DockSelection.FREE_DOCK_SLOT ? centre
+                    : StationStructure.padCenter(centre);
+            station = Optional.of(new StationTarget(flight.stationSlot(), centre, podAt,
                     Optional.ofNullable(dock), Optional.ofNullable(legacy)));
         } else {
             BlockPos rp = flight.returnPos();

@@ -173,6 +173,10 @@ def generateModMetadata = tasks.register('generateModMetadata', ProcessResources
         mod_authors               : rootProject.mod_authors,
         mod_license               : rootProject.mod_license,
         forge_loader_version_range: "[${forgeMajor},)",
+        // Floor the forge dependency at the compiled build: Forge adds API inside a major (the HUD's
+        // AddGuiOverlayLayersEvent is missing from early 52.x/54.x builds), so "any 54.x" let Forge 54.1.2
+        // crash at mod construction (MC-NEROSPACE-11). loaderVersion (javafml) stays at the major.
+        forge_version_range       : "[${forgeBuild},)",
         minecraft_version_range   : "[${mcFloor},${mcCeiling})",
         // Floor the required Core version at what we compile against so Forge refuses to
         // load Nerospace against a Core too old to have the APIs it references (e.g. the

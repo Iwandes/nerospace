@@ -90,6 +90,15 @@ public final class MarsContent {
     /** Fuel Refinery oxidiser (+15 % output, one per four buckets). */
     public static final RegistryEntry<Item> PERCHLORATE_OXIDISER = item("perchlorate_oxidiser");
 
+    // --- Mars rover (2.1, D16–D17) -------------------------------------------------------------------------
+    /** Crafting intermediate: a wheel, strut and hub motor. */
+    public static final RegistryEntry<Item> ROVER_PARTS = item("rover_parts");
+    /** Rover Wreck salvage: a stripped frame that shortcuts the rover recipe. */
+    public static final RegistryEntry<Item> ROVER_CHASSIS = item("rover_chassis");
+    /** Places a Mars rover; packing a rover up returns it with its charge. */
+    public static final RegistryEntry<Item> ROVER = ModItems.ITEMS.register("rover",
+            key -> new za.co.neroland.nerospace.item.RoverItem(new Item.Properties().stacksTo(1).setId(key)));
+
     // --- Entities ------------------------------------------------------------------------------------------
     public static final RegistryEntry<EntityType<DustDevil>> DUST_DEVIL = ModEntities.ENTITY_TYPES.register("dust_devil",
             key -> EntityType.Builder.<DustDevil>of(DustDevil::new, MobCategory.MISC)
@@ -128,6 +137,9 @@ public final class MarsContent {
         out.add(RAW_HEMATITE);
         out.add(RUST_PIGMENT);
         out.add(PERCHLORATE_OXIDISER);
+        out.add(ROVER_PARTS);
+        out.add(ROVER_CHASSIS);
+        out.add(ROVER);
         return Collections.unmodifiableList(out);
     }
 

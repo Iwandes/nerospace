@@ -3,9 +3,12 @@ package za.co.neroland.nerospace.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.mojang.blaze3d.platform.InputConstants;
+
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
@@ -17,11 +20,16 @@ import org.jetbrains.annotations.Nullable;
 
 import za.co.neroland.nerospace.NerospaceCommon;
 import za.co.neroland.nerospace.client.ui.Glyphs;
+import za.co.neroland.nerospace.client.ui.LandingPicker;
 import za.co.neroland.nerospace.client.ui.PendingSelection;
 import za.co.neroland.nerospace.menu.LaunchControllerMenu;
 import za.co.neroland.nerospace.rocket.DestinationSelection;
 import za.co.neroland.nerospace.rocket.DestinationTrace;
+import za.co.neroland.nerospace.registry.ModDimensions;
 import za.co.neroland.nerospace.rocket.Destinations;
+import za.co.neroland.nerospace.rocket.DockSelection;
+import za.co.neroland.nerospace.rocket.PadSelection;
+import za.co.neroland.nerospace.rocket.RocketEntity;
 
 /**
  * The Launch Controller console with two modes. <b>Build mode</b>: pick a target pad tier, load Launch
@@ -51,6 +59,8 @@ public class LaunchControllerScreen extends TexturedContainerScreen<LaunchContro
     // Material slots (must match LaunchControllerMenu).
     private static final int[] SLOT_X = {44, 70, 96};
     private static final int SLOT_Y = 44;
+    /** The "Dock at" / "Land at" row inside the launch-mode well. */
+    private static final int LANDING_ROW_Y = 80;
 
     private final List<SpaceButton> tierButtons = new ArrayList<>();
     private SpaceButton modeButton;
@@ -60,6 +70,14 @@ public class LaunchControllerScreen extends TexturedContainerScreen<LaunchContro
     private IconButton prevDestButton;
     private IconButton nextDestButton;
     private SpaceButton launchButton;
+    /** "Dock at" / "Land at" row (opens the list) and the 2.0-style cycler beside it. */
+    private SpaceButton landingButton;
+    private SpaceButton landingCycleButton;
+    private final LandingPicker picker = new LandingPicker();
+    private boolean pickerDock;
+    /** Optimistic dock / pad picks ({@link DockSelection#encode} / {@link PadSelection#encode} values). */
+    private final PendingSelection dockPending = new PendingSelection();
+    private final PendingSelection padPending = new PendingSelection();
     /** The optimistic destination: a step shows at once, the synced index settles it. */
     private final PendingSelection pending = new PendingSelection();
     @Nullable
@@ -114,6 +132,16 @@ public class LaunchControllerScreen extends TexturedContainerScreen<LaunchContro
                 Component.translatable("gui.nerospace.rocket.launch"), ACCENT,
                 btn -> sendButton(LaunchControllerMenu.BUTTON_LAUNCH));
         this.addRenderableWidget(this.launchButton);
+        // Dock / pad selection, the same as the Rocket screen's: the row opens the list, » cycles (ids 10 / 11).
+        this.landingButton = new SpaceButton(this.leftPos + 8, this.topPos + LANDING_ROW_Y, 144, 12,
+                Component.empty(), O2, btn -> openPicker(isStationShown()));
+        this.addRenderableWidget(this.landingButton);
+        this.landingCycleButton = new SpaceButton(this.leftPos + 154, this.topPos + LANDING_ROW_Y, 14, 12,
+                Component.literal("»"), O2, btn -> sendButton(isStationShown()
+                        ? LaunchControllerMenu.BUTTON_CYCLE_STATION : LaunchControllerMenu.BUTTON_CYCLE_PAD));
+        this.landingCycleButton.setTooltip(Tooltip.create(Component.translatable("gui.nerospace.picker.cycle")));
+        this.addRenderableWidget(this.landingCycleButton);
+        this.picker.close();
     }
 
     @Override
@@ -181,12 +209,18 @@ public class LaunchControllerScreen extends TexturedContainerScreen<LaunchContro
                     ? Component.translatable("gui.nerospace.launch_controller.build") : neededText()));
         }
 
-        // Launch-mode widgets.
+        // Launch-mode widgets (hidden under the open dock / pad list).
         boolean rocket = this.menu.rocketPresent();
-        this.destButton.visible = launch && rocket;
-        this.prevDestButton.visible = launch && rocket;
-        this.nextDestButton.visible = launch && rocket;
-        this.launchButton.visible = launch && rocket;
+        if (this.picker.isOpen() && !(launch && rocket)) {
+            this.picker.close();
+        }
+        boolean live = launch && rocket && !this.picker.isOpen();
+        this.destButton.visible = live;
+        this.prevDestButton.visible = live;
+        this.nextDestButton.visible = live;
+        this.launchButton.visible = live;
+        this.landingButton.visible = live;
+        this.landingCycleButton.visible = live;
 
         if (!launch) {
             drawBuildMode(g);
@@ -236,6 +270,8 @@ public class LaunchControllerScreen extends TexturedContainerScreen<LaunchContro
     /** Tooltips over the glyph-only rows (slot glyphs, needed triplets, hub rows). */
     @Override
     public void extractContents(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
+        this.mouseX = mouseX;
+        this.mouseY = mouseY;
         super.extractContents(g, mouseX, mouseY, partialTick);
         if (this.menu.isLaunchMode()) {
             return;
@@ -275,12 +311,19 @@ public class LaunchControllerScreen extends TexturedContainerScreen<LaunchContro
             return;
         }
         label(g, Component.translatable("gui.nerospace.rocket.title", this.menu.rocketTier()), 10, 22, TITLE);
-        label(g, Component.translatable("gui.nerospace.rocket.fuel_label"), 10, 33, 0xFFFFC9B0);
-        hGauge(g, 10, 44, 156, 6, this.menu.rocketFuelFrac(), FUEL);
-        label(g, Component.translatable("gui.nerospace.rocket.oxygen_label"), 10, 53, 0xFFBFEFFF);
-        hGauge(g, 10, 64, 156, 6, this.menu.rocketOxygenFrac(), O2);
-        label(g, Component.translatable("gui.nerospace.rocket.power_label"), 10, 73, 0xFFF6DC8A);
-        hGauge(g, 10, 84, 156, 6, this.menu.rocketPowerFrac(), POWER);
+        // Gauges packed a little tighter (2.1) to make room for the "Dock at" / "Land at" row at the well's foot.
+        label(g, Component.translatable("gui.nerospace.rocket.fuel_label"), 10, 31, 0xFFFFC9B0);
+        hGauge(g, 10, 40, 156, 5, this.menu.rocketFuelFrac(), FUEL);
+        label(g, Component.translatable("gui.nerospace.rocket.oxygen_label"), 10, 47, 0xFFBFEFFF);
+        hGauge(g, 10, 56, 156, 5, this.menu.rocketOxygenFrac(), O2);
+        // 2.1 crew: players aboard of the seats, and how many seats the oxygen covers ("O₂ for N"), right of OXYGEN.
+        int crewAboard = this.menu.rocketCrew();
+        Component crew = SpaceButton.fit(this.font, Component.translatable("gui.nerospace.rocket.crew_line",
+                crewAboard, this.menu.maxCrew(), this.menu.rocketOxygenFor()), 110);
+        label(g, crew, 166 - this.font.width(crew), 47,
+                crewAboard >= 2 && this.menu.rocketOxygenFor() < crewAboard ? 0xFFF0A83C : 0xFFBFEFFF);
+        label(g, Component.translatable("gui.nerospace.rocket.power_label"), 10, 63, 0xFFF6DC8A);
+        hGauge(g, 10, 72, 156, 5, this.menu.rocketPowerFrac(), POWER);
 
         long now = System.currentTimeMillis();
         int synced = this.menu.rocketDestIndex();
@@ -298,9 +341,119 @@ public class LaunchControllerScreen extends TexturedContainerScreen<LaunchContro
         this.nextDestButton.active = choice;
         refreshDestTooltip(mask, shown);
         this.launchButton.active = this.menu.rocketLaunchable() && !this.pending.active();
+
+        // "Dock at" (Orbital Station) or "Land at" (any other destination), reconciled with the server.
+        reconcilePicks(now);
+        boolean station = ModDimensions.STATION_LEVEL.equals(key);
+        this.landingButton.active = key != null;
+        this.landingCycleButton.active = key != null;
+        this.landingButton.setMessage(station
+                ? Component.translatable("gui.nerospace.rocket.dock_at", ClientStations.label(shownDock()))
+                : Component.translatable("gui.nerospace.rocket.land_at", LandingLists.padLabel(key, shownPad())));
+        if (this.picker.isOpen()) {
+            if (this.pickerDock != station) {
+                this.picker.close(); // the destination changed under the list
+            } else {
+                this.picker.setEntries(station ? LandingLists.docks(hasCharter()) : LandingLists.pads(key));
+                this.picker.draw(g, this.font, this.mouseX, this.mouseY, station ? shownDock() : shownPad(), ACCENT);
+            }
+        }
         if (this.status != null && now < this.statusUntil) {
             drawNotice(g, this.status);
         }
+    }
+
+    // --- Dock / pad lists ----------------------------------------------------
+
+    private int mouseX;
+    private int mouseY;
+
+    private boolean hasCharter() {
+        return this.minecraft != null && this.minecraft.player != null && RocketEntity.hasCharter(this.minecraft.player);
+    }
+
+    /** Whether the shown (optimistic) destination is the Orbital Station. */
+    private boolean isStationShown() {
+        return ModDimensions.STATION_LEVEL.equals(Destinations.byIndex(this.pending.shown(this.menu.rocketDestIndex())));
+    }
+
+    private int shownDock() {
+        return this.dockPending.shown(DockSelection.encode(this.menu.rocketStationSlot())) - 2;
+    }
+
+    private int shownPad() {
+        return this.padPending.shown(PadSelection.encode(this.menu.rocketPadIndex())) - 1;
+    }
+
+    /** Settles the optimistic dock / pad picks; a refusal shows the amber banner with the server's reason. */
+    private void reconcilePicks(long now) {
+        int code = this.menu.lastPickOutcomeCode();
+        if (this.dockPending.reconcile(DockSelection.encode(this.menu.rocketStationSlot()), code, now)
+                == PendingSelection.Result.REFUSED) {
+            showStatus(Component.translatable(DestinationSelection.refusalKey(this.dockPending.refusal())), now);
+        }
+        if (this.padPending.reconcile(PadSelection.encode(this.menu.rocketPadIndex()), code, now)
+                == PendingSelection.Result.REFUSED) {
+            showStatus(Component.translatable(DestinationSelection.refusalKey(this.padPending.refusal())), now);
+        }
+    }
+
+    private void openPicker(boolean dock) {
+        this.pickerDock = dock;
+        playClick();
+        ResourceKey<Level> key = Destinations.byIndex(this.pending.shown(this.menu.rocketDestIndex()));
+        this.picker.open(Component.translatable(dock ? "gui.nerospace.picker.dock_title" : "gui.nerospace.picker.land_title"),
+                dock ? LandingLists.docks(hasCharter()) : LandingLists.pads(key), dock ? shownDock() : shownPad(),
+                this.leftPos + 8, this.topPos + 19, W - 16, 6);
+    }
+
+    /** Picks a row: highlighted at once, sent to the server (the rocket is the authority), reconciled after. */
+    private void pick(LandingPicker.Entry entry) {
+        long now = System.currentTimeMillis();
+        this.picker.close();
+        playClick();
+        int code = this.menu.lastPickOutcomeCode();
+        if (this.pickerDock) {
+            if (entry.value() == DockSelection.NEW_STATION && !hasCharter()) {
+                showStatus(Component.translatable(DestinationSelection.refusalKey(
+                        DestinationSelection.Outcome.NO_CHARTER)), now);
+                return;
+            }
+            this.dockPending.begin(DockSelection.encode(entry.value()),
+                    DockSelection.encode(this.menu.rocketStationSlot()), code, now);
+            sendButton(DockSelection.buttonFor(entry.value()));
+        } else {
+            this.padPending.begin(PadSelection.encode(entry.value()), PadSelection.encode(this.menu.rocketPadIndex()),
+                    code, now);
+            sendButton(PadSelection.buttonFor(entry.value()));
+        }
+        this.status = null;
+    }
+
+    //? if >=1.21.9 {
+    @Override
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+    //?} else {
+    /*@Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        MouseButtonEvent event = new MouseButtonEvent(mouseX, mouseY, button);
+    *///?}
+        if (this.picker.isOpen()) {
+            // The open list owns the mouse: a row picks, anywhere else closes it. Never a literal button number.
+            LandingPicker.Entry row = event.button() == InputConstants.MOUSE_BUTTON_LEFT
+                    ? this.picker.at(event.x(), event.y()) : null;
+            if (row != null) {
+                pick(row);
+            } else if (!this.picker.contains(event.x(), event.y())) {
+                this.picker.close();
+            }
+            return true;
+        }
+        //? if >=1.21.9 {
+        return super.mouseClicked(event, doubleClick);
+        //?} else {
+        /*return super.mouseClicked(event.x(), event.y(), event.button());
+        *///?}
     }
 
     /** The destination tooltip: every destination in range, the selected one marked, and the controls. */
@@ -354,6 +507,12 @@ public class LaunchControllerScreen extends TexturedContainerScreen<LaunchContro
     /** The mouse wheel over the destination row steps the destination. */
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (this.picker.isOpen()) {
+            if (scrollY != 0.0D && this.picker.contains(mouseX, mouseY)) {
+                this.picker.scrollBy(scrollY > 0.0D ? -1 : 1);
+            }
+            return true;
+        }
         int x = this.leftPos + 8;
         int y = this.topPos + 96;
         if (destControlsLive() && scrollY != 0.0D && mouseX >= x && mouseX < x + 160 && mouseY >= y
@@ -374,6 +533,24 @@ public class LaunchControllerScreen extends TexturedContainerScreen<LaunchContro
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         KeyEvent event = new KeyEvent(keyCode, scanCode, modifiers);
     *///?}
+        if (this.picker.isOpen()) {
+            // The open list owns the keyboard: Up/Down move, Enter picks, Escape closes the list (not the screen).
+            if (event.isUp() || event.isDown()) {
+                this.picker.moveFocus(event.isUp() ? -1 : 1);
+                return true;
+            }
+            if (event.isConfirmation()) {
+                LandingPicker.Entry row = this.picker.focused();
+                if (row != null) {
+                    pick(row);
+                }
+                return true;
+            }
+            if (event.isEscape()) {
+                this.picker.close();
+                return true;
+            }
+        }
         if (destControlsLive()) {
             if (event.isUp() || event.isDown()) {
                 playClick();

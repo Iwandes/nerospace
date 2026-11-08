@@ -32,6 +32,37 @@ cabin glows through the windows at night.
 The **hatch** on the south side stands open while nobody is aboard, with a ladder down to the pad, and
 seals the moment you launch. While it is open you can see straight into the cockpit through the doorway.
 
+## Flying with friends (crew)
+
+Every rocket seats **up to four players** (a server can lower this with `rockets.maxCrew`). All four tiers
+have four seats; bigger tiers go further, not fuller.
+
+- **Boarding.** Right-click the rocket to open its console and press **Take seat**. Nobody can put you in a
+  rocket: you always board yourself. The button reads **Seated** once you are aboard and **Full** when every
+  seat is taken; hover it to see how many are aboard. To climb out again before launch, close the console
+  and sneak.
+- **The pilot** is the first player aboard. Only the pilot can press **Launch**, pick the destination, or
+  choose where to dock or land. Anyone else who tries is told so. Boarding later never takes the pilot's
+  seat. On an empty rocket, pressing **Launch** boards you as the pilot, as before.
+- **Everyone goes.** The whole crew travels together, rides the descent down, and steps out beside the
+  rocket when it lands. Each of you gets the arrival message, your own Star Guide progress and your own
+  first-visit record.
+- **Oxygen is shared.** With two or more aboard, the rocket needs enough onboard oxygen for every seat
+  for the flight. The consoles show **CREW n/4 · O₂ FOR n**: if the oxygen covers fewer seats than are
+  filled, the status reads **NEEDS OXYGEN**. Load more from an Oxygen Generator or fly with fewer crew.
+  On arrival the rocket's leftover oxygen is shared out between the crew as your reserve. A solo flight
+  needs no onboard oxygen, as before.
+- **Cooldown.** Each player has their own short launch cooldown, so riding along doesn't skip yours. If
+  someone aboard is still cooling down, the pilot is told "a crew member" is, and that player sees their
+  own wait.
+- **Fees.** If the server runs NeroEconomy, the launch fee is charged **once per flight, to the pilot**.
+- **Stations.** A members-only station is checked against the **pilot**. Crew who aren't members still
+  arrive and are visitors there.
+- **Disconnects.** If the pilot drops out mid-flight, the next player aboard takes over for the landing
+  (their Station Charter is never spent on a "New Station" they didn't pick). A crew member who drops out
+  mid-flight rejoins beside the rocket, not in the sky, as long as the server hasn't restarted.
+- The rocket keeps no record of who flew in it.
+
 ## On the pad
 
 - Landing legs are planted; on Tier 3 the solar wings stand deployed.

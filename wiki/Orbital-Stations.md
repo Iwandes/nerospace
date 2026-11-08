@@ -9,6 +9,50 @@ Use a **Station Charter** (name it in the charter screen) or pick *New Station* 
 charter. A new station is a 7×7 room with an airlock and a **Docking Ring** where rockets arrive. Stations
 founded before 2.0 keep their original room and their 3×3 landing pad exactly as they were.
 
+### Placing your own station
+
+Use a charter **while you are in the station dimension** and the station is founded **where you stand**, not in the
+next free spot. The block under your feet becomes the station floor. The naming screen then shows **Build starter
+structure** (on by default):
+
+- **On:** the room, airlock, Station Core and Docking Ring are built around you.
+- **Off:** you get your claim (48 blocks each way from the centre) and a Docking Ring, nothing else. You build the
+  rest yourself. The game never stamps the starter room over your build later.
+
+A few rules keep stations apart:
+
+- The centre must be at least **512 blocks** from every other station and from the shared platform at 0,0
+  (measured on each axis). If it is not, you see *Too close to …* with the station's name.
+- It must be within **30,000 blocks** of 0,0 on each axis, or you see *Too far from the origin*.
+- The floor height is kept between Y 64 and Y 256.
+- A world holds up to 64 stations. When it is full you see *The station registry is full*.
+
+If the station cannot be placed, **your charter is not used up**. Move and try again. Use a charter anywhere else
+and it works as before: the station goes in the next free spot and is built for you.
+
+### Free docks
+
+You do not need a charter to build a place rockets can reach. Place a **Docking Ring** anywhere in the station
+dimension **outside every station's claim** (and away from the shared platform) and it becomes a **free dock**.
+
+- It shows up in a rocket's **Dock at** list, marked *free dock*, when it is within **2,048 blocks** of where that
+  rocket last stood in the station dimension. A rocket that has never been to the station measures from the
+  shared platform at 0,0. There is no list of every free dock on the server.
+- Rename the Docking Ring in an anvil before you place it to give the dock a name. An unnamed ring is listed as
+  *Free dock 1 (420 m)*: its position is never sent to other players' lists, only a rounded distance.
+- Anyone whose rocket can see a free dock can land on it and so find it. If you want to keep a base to yourself,
+  claim it with a charter and set its docking to members only.
+- Rockets land on the ring itself. If the ring is broken or swallowed by a new station's claim while you are in
+  flight, the rocket docks at the shared platform and the chat line says why.
+- A free dock has **no owner**, no members and no docking policy: anyone whose rocket can see it may land. If you
+  want those, found a station with a charter.
+
+### The shared platform
+
+The platform at 0,64,0 is listed as **Shared platform (origin)**. It belongs to nobody and is never one of the
+founded stations. A rocket docks there only when you pick it, when your chosen dock is gone, or when you have no
+station of your own (or as a member) yet.
+
 ## The Station Console
 
 Right-click the [Station Core](Station-Core) to open the console. It has four tabs:
@@ -128,9 +172,14 @@ farm under the station roof.
 |---|---|---|---|
 | `stations.maxMembers` | `16` | 0–16 | members an owner may add |
 | `stations.maxModules` | `8` | 0–8 | modules a station may have |
+| `stations.minSpacing` | `512` | 128–4,096 | blocks (on each axis) a placed station keeps from every other station and the shared platform |
+| `stations.maxRadius` | `30000` | 1,024–1,000,000 | how far from 0,0 (on each axis) a station may be placed |
+| `stations.freeDockRadius` | `2048` | 0–8,192 | how close a free dock must be to where a rocket last stood in the station dimension to be listed; `0` turns free docks off |
 
 ## Privacy
 
-A station stores its owner's id and its members' ids, only to decide who may manage and use it. Erasing your
+A station stores its owner's id and its members' ids, only to decide who may manage and use it. A placed station
+stores the same things plus its chosen centre, which is tied to you only while you own the station. A Docking Ring stores no player at all,
+so a free dock never records who built it. Erasing your
 data removes you from every member list and clears your ownership; the station itself stays. See the mod's
 privacy notice for details.

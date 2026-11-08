@@ -17,7 +17,9 @@ import za.co.neroland.nerospace.registry.ModMenuTypes;
 import za.co.neroland.nerospace.rocket.DestinationSelection;
 import za.co.neroland.nerospace.rocket.DestinationTrace;
 import za.co.neroland.nerospace.rocket.Destinations;
+import za.co.neroland.nerospace.rocket.DockSelection;
 import za.co.neroland.nerospace.rocket.LaunchControllerBlockEntity;
+import za.co.neroland.nerospace.rocket.PadSelection;
 import za.co.neroland.nerospace.rocket.RocketEntity;
 
 /**
@@ -42,6 +44,14 @@ public class LaunchControllerMenu extends AbstractContainerMenu {
     public static final int BUTTON_PREV_DEST = 9;
     /** Select the docked rocket's destination {@code n} via button id {@code SELECT_DEST_BASE + n} (launch mode). */
     public static final int SELECT_DEST_BASE = 100;
+    /** Cycle the docked rocket's docking target like the Rocket screen's cycler (launch mode). */
+    public static final int BUTTON_CYCLE_STATION = 10;
+    /** Cycle the docked rocket's landing pad like the Rocket screen's cycler (launch mode). */
+    public static final int BUTTON_CYCLE_PAD = 11;
+    /** Select dock {@code slot} via {@link DockSelection#buttonFor} ({@code 200 + slot + 2}; New Station 200, origin 201). */
+    public static final int SELECT_STATION_BASE = DockSelection.SELECT_BASE;
+    /** Select landing pad {@code i} via {@link PadSelection#buttonFor} ({@code 300 + i + 1}; nearest 300). */
+    public static final int SELECT_PAD_BASE = PadSelection.SELECT_BASE;
 
     private static final int SLOTS = 3;
     private static final int DATA_COUNT = LaunchControllerBlockEntity.DATA_COUNT;
@@ -55,6 +65,9 @@ public class LaunchControllerMenu extends AbstractContainerMenu {
     /** This viewer's last destination answer from the server ({@link DestinationSelection#encodeOutcome}). */
     private final DataSlot lastOutcome = DataSlot.standalone();
     private int outcomeSequence;
+    /** This viewer's last dock/pad answer ({@link DestinationSelection#encodeOutcome}), kept apart from destinations. */
+    private final DataSlot lastPickOutcome = DataSlot.standalone();
+    private int pickSequence;
 
     public LaunchControllerMenu(int id, Inventory playerInventory) {
         this(id, playerInventory, new SimpleContainer(SLOTS), new SimpleContainerData(DATA_COUNT), null);
@@ -86,6 +99,7 @@ public class LaunchControllerMenu extends AbstractContainerMenu {
         this.gateMask = controller != null ? viewerGateSlot(playerInventory.player) : DataSlot.standalone();
         this.addDataSlot(this.gateMask);
         this.addDataSlot(this.lastOutcome);
+        this.addDataSlot(this.lastPickOutcome);
     }
 
     /** The server side of the per-viewer gate mask, recomputed at most once a second. */
@@ -115,6 +129,17 @@ public class LaunchControllerMenu extends AbstractContainerMenu {
     private void report(DestinationSelection.Outcome outcome) {
         this.outcomeSequence++;
         this.lastOutcome.set(DestinationSelection.encodeOutcome(this.outcomeSequence, outcome));
+    }
+
+    /** Records the server's answer to a dock or pad pick for this viewer's screen. */
+    private void reportPick(DestinationSelection.Outcome outcome) {
+        this.pickSequence++;
+        this.lastPickOutcome.set(DestinationSelection.encodeOutcome(this.pickSequence, outcome));
+    }
+
+    /** The server's last answer to this viewer's dock or pad pick; 0 = none yet. */
+    public int lastPickOutcomeCode() {
+        return this.lastPickOutcome.get();
     }
 
     /** Bit per destination index whose Core gate is still closed for this viewer (0 for a creative player). */
@@ -168,6 +193,28 @@ public class LaunchControllerMenu extends AbstractContainerMenu {
         }
         if (id >= 1 && id <= 4) {
             current.setTargetTier(id);
+            return true;
+        }
+        if (id == BUTTON_CYCLE_STATION) {
+            reportPick(current.cycleRocketStation(player));
+            return true;
+        }
+        if (id == BUTTON_CYCLE_PAD) {
+            reportPick(current.cycleRocketPad(player));
+            return true;
+        }
+        int slot = DockSelection.slotForButton(id);
+        if (slot != DockSelection.NOT_A_SLOT) {
+            DestinationSelection.Outcome outcome = current.selectRocketStation(slot, player);
+            reportPick(outcome);
+            DestinationTrace.log("controller menu {} dock pick {} {}", this.containerId, slot, outcome);
+            return true; // always broadcast so the screen reconciles its optimistic highlight
+        }
+        int pad = PadSelection.indexForButton(id);
+        if (pad != PadSelection.NOT_A_PAD) {
+            DestinationSelection.Outcome outcome = current.selectRocketPad(pad, player);
+            reportPick(outcome);
+            DestinationTrace.log("controller menu {} pad pick {} {}", this.containerId, pad, outcome);
             return true;
         }
         return false;
@@ -252,6 +299,31 @@ public class LaunchControllerMenu extends AbstractContainerMenu {
     /** The docked rocket's selected {@link Destinations} index. */
     public int rocketDestIndex() {
         return this.data.get(18);
+    }
+
+    /** The docked rocket's docking slot ({@link DockSelection#ORIGIN} = the shared origin platform). */
+    public int rocketStationSlot() {
+        return this.data.get(LaunchControllerBlockEntity.DATA_STATION);
+    }
+
+    /** The docked rocket's landing-pad index ({@link PadSelection#AUTO} = nearest). */
+    public int rocketPadIndex() {
+        return this.data.get(LaunchControllerBlockEntity.DATA_PAD);
+    }
+
+    /** Players aboard the docked rocket (2.1). */
+    public int rocketCrew() {
+        return this.data.get(LaunchControllerBlockEntity.DATA_CREW);
+    }
+
+    /** Seats the docked rocket's oxygen covers for its flight ("O₂ for N", 2.1). */
+    public int rocketOxygenFor() {
+        return this.data.get(LaunchControllerBlockEntity.DATA_OXYGEN_FOR);
+    }
+
+    /** Seats per rocket on this server (2.1); at least 1. */
+    public int maxCrew() {
+        return Math.max(1, this.data.get(LaunchControllerBlockEntity.DATA_MAX_CREW));
     }
 
     /** Bit per {@link Destinations} index the docked rocket can reach from here (server-computed). */

@@ -24,14 +24,18 @@ import za.co.neroland.nerospace.NerospaceCommon;
 import za.co.neroland.nerospace.api.Hazard;
 import za.co.neroland.nerospace.api.PlanetTraits;
 import za.co.neroland.nerospace.client.ui.DestinationList;
+import za.co.neroland.nerospace.client.ui.LandingPicker;
 import za.co.neroland.nerospace.client.ui.PlanetAccents;
 import za.co.neroland.nerospace.client.ui.PlanetCard;
 import za.co.neroland.nerospace.client.ui.PlanetCardData;
 import za.co.neroland.nerospace.client.ui.PlanetCardFocus;
 import za.co.neroland.nerospace.client.ui.PendingSelection;
+import za.co.neroland.nerospace.rocket.Crew;
 import za.co.neroland.nerospace.rocket.DestinationSelection;
 import za.co.neroland.nerospace.rocket.DestinationTrace;
 import za.co.neroland.nerospace.rocket.Destinations;
+import za.co.neroland.nerospace.rocket.DockSelection;
+import za.co.neroland.nerospace.rocket.PadSelection;
 import za.co.neroland.nerospace.rocket.RocketEntity;
 import za.co.neroland.nerospace.rocket.RocketMenu;
 import za.co.neroland.nerospace.world.OxygenManager;
@@ -46,7 +50,8 @@ import za.co.neroland.nerospace.world.planet.WeatherEvent;
  * cycler and Launch button bottom-left. Hull 212 × 244 and every slot coordinate are unchanged.
  *
  * <p>Procedural (no PNG): the layout, fields and states here are final. The
- * player is NOT aboard while the console is open; pressing Launch is what boards them.</p>
+ * player is NOT aboard when the console opens: Take seat boards them (as crew, or as the pilot of an empty hull)
+ * and keeps the console open; pressing Launch on an empty rocket boards the presser as pilot and lifts off.</p>
  */
 public class RocketScreen extends TexturedContainerScreen<RocketMenu> {
 
@@ -79,10 +84,28 @@ public class RocketScreen extends TexturedContainerScreen<RocketMenu> {
     private static final int DOCK_ROW_Y = 128;
     private static final int LAUNCH_ROW_Y = 144;
     private static final int ROW_W = 96;
+    /** The Launch row is shared (2.1): Launch on the left, Take seat beside it. */
+    private static final int LAUNCH_W = 40;
+    private static final int SEAT_W = ROW_W - LAUNCH_W - 2;
 
     private SpaceButton launchButton;
+    /** 2.1: the viewer takes a seat (crew, or pilot of an empty hull) without launching. */
+    private SpaceButton seatButton;
+    /** The seat state and crew count the seat button's label and tooltip were last made for. */
+    @Nullable
+    private Crew.SeatAnswer seatShown;
+    private int seatCrewShown = -1;
     private SpaceButton stationButton;
     private SpaceButton padButton;
+    /** The 2.0 cyclers, kept beside the rows (same ids, same behaviour). */
+    private SpaceButton stationCycleButton;
+    private SpaceButton padCycleButton;
+    /** The "Dock at" / "Land at" list; {@link #pickerDock} says which one is open. */
+    private final LandingPicker picker = new LandingPicker();
+    private boolean pickerDock;
+    /** Optimistic dock / pad picks ({@link DockSelection#encode} / {@link PadSelection#encode} values). */
+    private final PendingSelection dockPending = new PendingSelection();
+    private final PendingSelection padPending = new PendingSelection();
     private SpaceButton upButton;
     private SpaceButton downButton;
     /** One focusable, narrated stand-in per visible card row. */
@@ -135,21 +158,36 @@ public class RocketScreen extends TexturedContainerScreen<RocketMenu> {
             this.addRenderableWidget(this.rowFocus[row]);
         }
 
-        // Dock cycler (Orbital Station) and pad cycler (every other destination) share one row, 96 wide.
-        this.stationButton = new SpaceButton(this.leftPos + 8, this.topPos + DOCK_ROW_Y, ROW_W, 12,
-                Component.empty(), ACCENT, b -> sendButton(RocketMenu.BUTTON_CYCLE_STATION));
+        // "Dock at" (Orbital Station) and "Land at" (every other destination) share one row: the labelled row opens
+        // the list, the small » beside it is the 2.0 cycler (same button ids, same behaviour).
+        this.stationButton = new SpaceButton(this.leftPos + 8, this.topPos + DOCK_ROW_Y, ROW_W - 14, 12,
+                Component.empty(), ACCENT, b -> openPicker(true));
         this.addRenderableWidget(this.stationButton);
-        this.padButton = new SpaceButton(this.leftPos + 8, this.topPos + DOCK_ROW_Y, ROW_W, 12,
-                Component.empty(), O2, b -> sendButton(RocketMenu.BUTTON_CYCLE_PAD));
+        this.padButton = new SpaceButton(this.leftPos + 8, this.topPos + DOCK_ROW_Y, ROW_W - 14, 12,
+                Component.empty(), O2, b -> openPicker(false));
         this.addRenderableWidget(this.padButton);
-        if (this.minecraft != null && this.minecraft.player != null && !RocketEntity.hasCharter(this.minecraft.player)) {
-            // Client hint only: "New Station" is skipped without a charter; the server re-checks.
-            this.stationButton.setTooltip(Tooltip.create(Component.translatable("item.nerospace.station_charter.needed")));
-        }
+        this.stationCycleButton = new SpaceButton(this.leftPos + 8 + ROW_W - 12, this.topPos + DOCK_ROW_Y, 12, 12,
+                Component.literal("»"), ACCENT, b -> sendButton(RocketMenu.BUTTON_CYCLE_STATION));
+        this.addRenderableWidget(this.stationCycleButton);
+        this.padCycleButton = new SpaceButton(this.leftPos + 8 + ROW_W - 12, this.topPos + DOCK_ROW_Y, 12, 12,
+                Component.literal("»"), O2, b -> sendButton(RocketMenu.BUTTON_CYCLE_PAD));
+        this.addRenderableWidget(this.padCycleButton);
+        this.padCycleButton.setTooltip(Tooltip.create(Component.translatable("gui.nerospace.picker.cycle")));
+        // Client hint only: "New Station" is skipped without a charter; the server re-checks.
+        this.stationCycleButton.setTooltip(Tooltip.create(hasCharter()
+                ? Component.translatable("gui.nerospace.picker.cycle")
+                : Component.translatable("item.nerospace.station_charter.needed")));
+        this.picker.close();
 
-        this.launchButton = new SpaceButton(this.leftPos + 8, this.topPos + LAUNCH_ROW_Y, ROW_W, 16,
+        this.launchButton = new SpaceButton(this.leftPos + 8, this.topPos + LAUNCH_ROW_Y, LAUNCH_W, 16,
                 Component.translatable("gui.nerospace.rocket.launch"), ACCENT, b -> sendButton(RocketMenu.BUTTON_LAUNCH));
         this.addRenderableWidget(this.launchButton);
+        this.seatButton = new SpaceButton(this.leftPos + 8 + LAUNCH_W + 2, this.topPos + LAUNCH_ROW_Y, SEAT_W, 16,
+                Component.translatable("gui.nerospace.rocket.take_seat"), O2,
+                b -> sendButton(RocketMenu.BUTTON_TAKE_SEAT));
+        this.addRenderableWidget(this.seatButton);
+        this.seatShown = null;
+        this.seatCrewShown = -1;
         this.ensuredIndex = -1;
     }
 
@@ -202,6 +240,10 @@ public class RocketScreen extends TexturedContainerScreen<RocketMenu> {
     protected void extractForeground(GuiGraphicsExtractor g) {
         long now = System.currentTimeMillis();
         label(g, Component.translatable("gui.nerospace.rocket.title", this.menu.getTier().level()), 10, 4, TITLE);
+        // 2.1 crew: players aboard of the seats, and how many seats the onboard oxygen covers for this flight.
+        Component crew = SpaceButton.fit(this.font, Component.translatable("gui.nerospace.rocket.crew_line",
+                this.menu.getCrew(), this.menu.getMaxCrew(), this.menu.getOxygenFor()), 96);
+        label(g, crew, W - 8 - this.font.width(crew), 4, this.menu.isOxygenShort() ? 0xFFF0A83C : 0xFFBFEFFF);
 
         // Instrument well: three compact gauges, status and trip cost.
         int fpct = this.menu.getFuelPercent();
@@ -221,6 +263,9 @@ public class RocketScreen extends TexturedContainerScreen<RocketMenu> {
         if (!padValid) {
             statusKey = "gui.nerospace.rocket.pad_blocked";
             statusColor = ACCENT;
+        } else if (!ready && this.menu.isOxygenShort()) {
+            statusKey = "gui.nerospace.rocket.needs_oxygen"; // 2.1: the shared reserve does not cover every seat
+            statusColor = 0xFFF0A83C;
         } else if (!ready) {
             statusKey = "gui.nerospace.rocket.needs_fuel";
             statusColor = 0xFFF0A83C;
@@ -284,28 +329,61 @@ public class RocketScreen extends TexturedContainerScreen<RocketMenu> {
                     false, now);
         }
 
-        // Dock / pad cycler.
+        // "Dock at" / "Land at" rows (reconciled with the server like the destination list).
+        reconcilePicks(now);
         boolean stationDest = this.menu.isStationDestination();
         boolean padDest = this.menu.isPadDestination();
-        if (this.stationButton != null) {
-            this.stationButton.visible = stationDest;
+        boolean listOpen = this.picker.isOpen();
+        if (this.stationButton != null && this.stationCycleButton != null) {
+            this.stationButton.visible = stationDest && !listOpen;
             this.stationButton.active = stationDest;
+            this.stationCycleButton.visible = stationDest && !listOpen;
+            this.stationCycleButton.active = stationDest;
             if (stationDest) {
-                this.stationButton.setMessage(Component.translatable("gui.nerospace.rocket.dock",
-                        ClientStations.name(this.menu.getStationSlot())));
+                this.stationButton.setMessage(Component.translatable("gui.nerospace.rocket.dock_at",
+                        ClientStations.label(shownDock())));
             }
         }
-        if (this.padButton != null) {
-            this.padButton.visible = padDest;
+        if (this.padButton != null && this.padCycleButton != null) {
+            this.padButton.visible = padDest && !listOpen;
             this.padButton.active = padDest;
+            this.padCycleButton.visible = padDest && !listOpen;
+            this.padCycleButton.active = padDest;
             if (padDest) {
-                this.padButton.setMessage(Component.translatable("gui.nerospace.rocket.pad", padLabel(selectedKey)));
+                this.padButton.setMessage(Component.translatable("gui.nerospace.rocket.land_at",
+                        LandingLists.padLabel(selectedKey, shownPad())));
             }
+        }
+        if (listOpen && !(this.pickerDock ? stationDest : padDest)) {
+            this.picker.close(); // the destination changed under the list
+            listOpen = false;
         }
 
         if (this.launchButton != null) {
+            this.launchButton.visible = !listOpen;
             this.launchButton.active = ready;
             this.launchButton.setSelected(ready && ((now / 500L) & 1L) == 0L);
+        }
+        if (this.seatButton != null) {
+            this.seatButton.visible = !listOpen;
+            updateSeatButton();
+        }
+        if (listOpen) {
+            // The list covers the cards and controls: nothing under it may take a click or the keyboard focus.
+            for (PlanetCardFocus focus : this.rowFocus) {
+                if (focus != null) {
+                    focus.visible = false;
+                    focus.active = false;
+                }
+            }
+            if (this.upButton != null && this.downButton != null) {
+                this.upButton.visible = false;
+                this.downButton.visible = false;
+            }
+            this.picker.setEntries(this.pickerDock ? LandingLists.docks(hasCharter())
+                    : LandingLists.pads(Destinations.byIndex(shownSelection())));
+            this.picker.draw(g, this.font, this.mouseX, this.mouseY, this.pickerDock ? shownDock() : shownPad(), ACCENT);
+            hovered = null;
         }
         if (this.status != null && now < this.statusUntil) {
             drawNotice(g, this.status);
@@ -313,6 +391,67 @@ public class RocketScreen extends TexturedContainerScreen<RocketMenu> {
         if (hovered != null) {
             g.setComponentTooltipForNextFrame(this.font, PlanetCard.tooltip(hovered, true), this.mouseX, this.mouseY);
         }
+    }
+
+    // --- Dock / pad lists ----------------------------------------------------
+
+    private boolean hasCharter() {
+        return this.minecraft != null && this.minecraft.player != null && RocketEntity.hasCharter(this.minecraft.player);
+    }
+
+    /** The docking slot to show: the optimistic pick while pending, else the synced slot. */
+    private int shownDock() {
+        return this.dockPending.shown(DockSelection.encode(this.menu.getStationSlot())) - 2;
+    }
+
+    /** The pad index to show: the optimistic pick while pending, else the synced index. */
+    private int shownPad() {
+        return this.padPending.shown(PadSelection.encode(this.menu.getPadIndex())) - 1;
+    }
+
+    /** Settles the optimistic dock / pad picks; a refusal shows the amber banner with the server's reason. */
+    private void reconcilePicks(long now) {
+        int code = this.menu.getLastPickOutcomeCode();
+        if (this.dockPending.reconcile(DockSelection.encode(this.menu.getStationSlot()), code, now)
+                == PendingSelection.Result.REFUSED) {
+            showStatus(Component.translatable(DestinationSelection.refusalKey(this.dockPending.refusal())), now);
+        }
+        if (this.padPending.reconcile(PadSelection.encode(this.menu.getPadIndex()), code, now)
+                == PendingSelection.Result.REFUSED) {
+            showStatus(Component.translatable(DestinationSelection.refusalKey(this.padPending.refusal())), now);
+        }
+    }
+
+    private void openPicker(boolean dock) {
+        this.pickerDock = dock;
+        playClick();
+        int rows = 9;
+        this.picker.open(Component.translatable(dock ? "gui.nerospace.picker.dock_title" : "gui.nerospace.picker.land_title"),
+                dock ? LandingLists.docks(hasCharter()) : LandingLists.pads(Destinations.byIndex(shownSelection())),
+                dock ? shownDock() : shownPad(), this.leftPos + LIST_X, this.topPos + LIST_Y, 170, rows);
+    }
+
+    /** Picks a row: highlighted at once, sent to the server, and reconciled with the synced value. */
+    private void pick(LandingPicker.Entry entry) {
+        long now = System.currentTimeMillis();
+        this.picker.close();
+        playClick();
+        int code = this.menu.getLastPickOutcomeCode();
+        if (this.pickerDock) {
+            if (entry.value() == DockSelection.NEW_STATION && !hasCharter()) {
+                showStatus(Component.translatable(DestinationSelection.refusalKey(
+                        DestinationSelection.Outcome.NO_CHARTER)), now);
+                return;
+            }
+            this.dockPending.begin(DockSelection.encode(entry.value()), DockSelection.encode(this.menu.getStationSlot()),
+                    code, now);
+            sendButton(DockSelection.buttonFor(entry.value()));
+        } else {
+            this.padPending.begin(PadSelection.encode(entry.value()), PadSelection.encode(this.menu.getPadIndex()),
+                    code, now);
+            sendButton(PadSelection.buttonFor(entry.value()));
+        }
+        this.status = null;
     }
 
     private void showStatus(Component reason, long now) {
@@ -414,8 +553,7 @@ public class RocketScreen extends TexturedContainerScreen<RocketMenu> {
 
     private Optional<Component> chosenPad(ResourceKey<Level> key) {
         if (key.equals(za.co.neroland.nerospace.registry.ModDimensions.STATION_LEVEL)) {
-            return Optional.of(Component.translatable("gui.nerospace.card.dock",
-                    ClientStations.name(this.menu.getStationSlot())));
+            return Optional.of(Component.translatable("gui.nerospace.card.dock", ClientStations.label(shownDock())));
         }
         String dimId = key.identifier().toString();
         if (ClientPads.count(dimId) == 0) {
@@ -425,7 +563,7 @@ public class RocketScreen extends TexturedContainerScreen<RocketMenu> {
     }
 
     private String padLabel(@Nullable ResourceKey<Level> key) {
-        int idx = this.menu.getPadIndex();
+        int idx = shownPad();
         if (idx < 0 || key == null) {
             return Component.translatable("gui.nerospace.card.pad_auto").getString();
         }
@@ -445,6 +583,17 @@ public class RocketScreen extends TexturedContainerScreen<RocketMenu> {
     *///?}
         // Never compare against a literal button number: 26.3 moved input to SDL, where the left button is 1
         // (GLFW, up to 26.2, used 0). InputConstants carries the right value for each version.
+        if (this.picker.isOpen()) {
+            // The open list owns the mouse: a row picks, anywhere else closes it.
+            LandingPicker.Entry row = event.button() == InputConstants.MOUSE_BUTTON_LEFT
+                    ? this.picker.at(event.x(), event.y()) : null;
+            if (row != null) {
+                pick(row);
+            } else if (!this.picker.contains(event.x(), event.y())) {
+                this.picker.close();
+            }
+            return true;
+        }
         if (event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
             for (int row = 0; row < VISIBLE; row++) {
                 int index = DestinationList.indexAt(this.entries, this.scroll, row, VISIBLE);
@@ -507,6 +656,24 @@ public class RocketScreen extends TexturedContainerScreen<RocketMenu> {
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         KeyEvent event = new KeyEvent(keyCode, scanCode, modifiers);
     *///?}
+        if (this.picker.isOpen()) {
+            // The open list owns the keyboard: Up/Down move, Enter picks, Escape closes the list (not the screen).
+            if (event.isUp() || event.isDown()) {
+                this.picker.moveFocus(event.isUp() ? -1 : 1);
+                return true;
+            }
+            if (event.isConfirmation()) {
+                LandingPicker.Entry row = this.picker.focused();
+                if (row != null) {
+                    pick(row);
+                }
+                return true;
+            }
+            if (event.isEscape()) {
+                this.picker.close();
+                return true;
+            }
+        }
         if (event.isUp() || event.isDown()) {
             int current = shownSelection();
             int next = nextSelectable(current, event.isUp() ? -1 : 1);
@@ -544,6 +711,47 @@ public class RocketScreen extends TexturedContainerScreen<RocketMenu> {
         return -1;
     }
 
+    /**
+     * The Take seat button follows the server's per-viewer answer: pressable when a seat is free, "Seated" once
+     * aboard, "Full n/n" when every seat is taken, and greyed out with the reason while the hull is sealed or out of
+     * reach. The label and tooltip are rebuilt only when the state or crew count changes.
+     */
+    private void updateSeatButton() {
+        Crew.SeatAnswer answer = this.menu.getSeatAnswer();
+        int crew = this.menu.getCrew();
+        if (answer == this.seatShown && crew == this.seatCrewShown) {
+            return;
+        }
+        this.seatShown = answer;
+        this.seatCrewShown = crew;
+        int seats = this.menu.getMaxCrew();
+        Component label = Component.translatable("gui.nerospace.rocket.take_seat");
+        Component tip;
+        boolean active = false;
+        switch (answer) {
+            case ALREADY_ABOARD -> {
+                label = Component.translatable("gui.nerospace.rocket.seated");
+                tip = Component.translatable("gui.nerospace.rocket.seated.tooltip", crew, seats);
+            }
+            case FULL -> {
+                label = Component.translatable("gui.nerospace.rocket.seats_full", crew, seats);
+                tip = Component.translatable("gui.nerospace.rocket.seats_full.tooltip");
+            }
+            case IN_FLIGHT -> tip = Component.translatable("gui.nerospace.rocket.seat_in_flight");
+            case OUT_OF_REACH -> tip = Component.translatable("gui.nerospace.rocket.seat_reach");
+            case UNCREWED -> tip = Component.translatable("gui.nerospace.rocket.seat_uncrewed");
+            default -> { // OK; the server re-checks every press (and the viewer and sneak) anyway
+                active = true;
+                tip = crew == 0 ? Component.translatable("gui.nerospace.rocket.take_seat.pilot")
+                        : Component.translatable("gui.nerospace.rocket.take_seat.crew", crew, seats);
+            }
+        }
+        this.seatButton.active = active;
+        this.seatButton.setSelected(answer == Crew.SeatAnswer.ALREADY_ABOARD);
+        this.seatButton.setMessage(label);
+        this.seatButton.setTooltip(Tooltip.create(tip));
+    }
+
     private void playClick() {
         if (this.minecraft != null) {
             AbstractWidget.playButtonClickSound(this.minecraft.getSoundManager());
@@ -552,6 +760,12 @@ public class RocketScreen extends TexturedContainerScreen<RocketMenu> {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (this.picker.isOpen()) {
+            if (scrollY != 0.0D && this.picker.contains(mouseX, mouseY)) {
+                this.picker.scrollBy(scrollY > 0.0D ? -1 : 1);
+            }
+            return true;
+        }
         int x = this.leftPos + LIST_X;
         int y = this.topPos + LIST_Y;
         if (mouseX >= x && mouseX < x + PlanetCard.COMPACT_W && mouseY >= y

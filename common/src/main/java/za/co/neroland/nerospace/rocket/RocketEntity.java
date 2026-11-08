@@ -149,8 +149,38 @@ public class RocketEntity extends Entity implements MenuProvider {
      * the optional {@code Visitor} boolean (default false, so 1.6.0 rockets are never sent home); never an identity.
      */
     private boolean visitor;
-    /** Transient: the Star Guide arrival drives already ran for this descent's rider. */
-    private boolean arrivalDrivesDone;
+    /**
+     * Whether {@code StationSlot} was set by hand (picked or cycled). Saved as the optional {@code StationChosen}
+     * boolean (default false, so a 2.0.0 rocket still on the origin takes the owner-first default once). An explicit
+     * origin pick sets it, so the default never overrides that choice.
+     */
+    private boolean stationChosen;
+    /**
+     * 2.1: the free dock ({@link FreeDocks}) picked as the docking target, by its {@link PadRegistry} node id, or −1.
+     * While set, {@code StationSlot} stays {@link DockSelection#ORIGIN} with {@code StationChosen}, so a 2.0.0 build
+     * that drops the optional {@code FreeDock} key docks at the origin platform. Never an identity.
+     */
+    private int freeDockId = -1;
+    /**
+     * 2.1: where this rocket last stood in the station dimension — the anchor free docks are measured from. Optional
+     * {@code LastStationX/Y/Z}; absent (a 2.0.0 rocket, or one that never visited) means the origin platform.
+     */
+    @Nullable
+    private BlockPos lastStationPos;
+    /** Transient: the free dock this flight's station arrival docks at (set by {@link #stationForArrival}). */
+    @Nullable
+    private FreeDocks.Dock arrivalFreeDock;
+    /** Transient: why this flight's station arrival fell through (set by {@link #stationForArrival}). */
+    private DockSelection.FallThrough arrivalFallThrough = DockSelection.FallThrough.NONE;
+    /** Transient: the players the Star Guide arrival drives already ran for on this descent (2.1: per crew member). */
+    private final java.util.Set<java.util.UUID> arrivalDrivesDone = new java.util.HashSet<>();
+    /**
+     * Transient (2.1): who pressed Launch and who was seated, recorded when the ascent starts. Never saved: a rocket
+     * reloaded mid-ascent has none and behaves as in 2.0 (whoever is seated flies, no handover).
+     */
+    @Nullable
+    private java.util.UUID launchPilot;
+    private java.util.List<java.util.UUID> launchCrew = java.util.List.of();
     /** Transient per-viewer cache for the Rocket screen's gate mask / Observatory reveal (refreshed every 20 t). */
     public static final int VIEWER_DATA_REFRESH_TICKS = 20;
 
@@ -170,9 +200,11 @@ public class RocketEntity extends Entity implements MenuProvider {
     /** Transient: the flight the descent was resolved for (re-resolve if the pad breaks). */
     @Nullable
     private LandingResolverLevelAdapter.Flight descentFlight;
-    /** Transient: the rider to keep seated (never saved — no player identity on the entity). */
-    @Nullable
-    private java.util.UUID descentRider;
+    /**
+     * Transient: the crew to keep seated, pilot first (never saved — no player identity on the entity). 2.0 had one
+     * rider here; a rocket reloaded mid-descent has an empty list and releases whoever the passenger list holds.
+     */
+    private java.util.List<java.util.UUID> descentCrew = java.util.List.of();
     @Nullable
     private Component arrivalMessage;
     private boolean arrivalPadMissing;
@@ -217,7 +249,7 @@ public class RocketEntity extends Entity implements MenuProvider {
                 case 2 -> getTier().ordinal();
                 case 3 -> isLaunchReady() ? 1 : 0;
                 case 4 -> getDestinationIndex();
-                case 5 -> getStationSlot();
+                case 5 -> getDockValue();
                 case 6 -> destinationMask();
                 case 7 -> getOxygen();
                 case 8 -> getTier().oxygenCapacity();
@@ -226,6 +258,9 @@ public class RocketEntity extends Entity implements MenuProvider {
                 case 11 -> getTier().powerCapacity();
                 case 12 -> getPadIndex();
                 case 13 -> Math.min(32000, currentFuelCost());
+                case RocketMenu.DATA_CREW -> Crew.count(RocketEntity.this);
+                case RocketMenu.DATA_OXYGEN_FOR -> oxygenForSeats();
+                case RocketMenu.DATA_MAX_CREW -> Crew.maxCrew();
                 default -> 0; // [14] destinationGateMask is per viewer: see createMenu
             };
         }
@@ -287,11 +322,23 @@ public class RocketEntity extends Entity implements MenuProvider {
     // Note: the root overrides NeoForge's shouldRiderSit() (a loader extension, not vanilla) to make
     // the rider STAND at the console; that hook has no cross-loader equivalent, so it is omitted here.
 
-    /** Seat the rider so their eyes sit exactly on the hull's window band (scaled by tier). */
+    /**
+     * Seat each rider so their eyes sit exactly on the hull's window band (scaled by tier). 2.1: passenger {@code i}
+     * takes {@link RocketTier#seatOffsets()} seat {@code i} (the pilot seat 0), turned with the hull, so a crew of
+     * four sits side by side inside the hull instead of stacked on the axis.
+     */
     @Override
     protected Vec3 getPassengerAttachmentPoint(Entity entity, EntityDimensions dimensions, float scale) {
-        double eye = RIDER_EYE_PX[getTier().ordinal()] * visualScale() / 16.0D;
-        return new Vec3(0.0D, Math.max(0.4D, eye - RIDER_EYE_ABOVE_SEAT), 0.0D);
+        double s = visualScale();
+        double eye = RIDER_EYE_PX[getTier().ordinal()] * s / 16.0D;
+        double y = Math.max(0.4D, eye - RIDER_EYE_ABOVE_SEAT);
+        java.util.List<RocketTier.Seat> seats = getTier().seatOffsets();
+        int index = getPassengers().indexOf(entity);
+        if (index < 0 || index >= seats.size()) {
+            return new Vec3(0.0D, y, 0.0D);
+        }
+        RocketTier.Seat seat = seats.get(index);
+        return new Vec3(seat.xPx() * s / 16.0D, y, seat.zPx() * s / 16.0D).yRot(-getYRot() * Mth.DEG_TO_RAD);
     }
 
     /**
@@ -507,11 +554,17 @@ public class RocketEntity extends Entity implements MenuProvider {
         if (level().isClientSide()) {
             return DestinationSelection.Outcome.NO_ROCKET;
         }
+        if (!mayCommand(player)) {
+            return DestinationSelection.Outcome.NOT_PILOT; // 2.1: only the pilot sets course
+        }
         DestinationSelection.Outcome outcome = DestinationSelection.evaluate(index, destinationMask(),
                 player != null ? gateMask(player) : 0, getDestinationIndex(), isLaunching());
         if (outcome == DestinationSelection.Outcome.OK) {
             this.entityData.set(DATA_DEST, index);
             this.entityData.set(DATA_PAD, -1); // pads differ per dimension — reset the sub-selection
+            if (ModDimensions.STATION_LEVEL.equals(Destinations.byIndex(index))) {
+                applyDefaultDock(player); // switching to the station: the viewer's own dock, unless one was picked
+            }
         }
         return outcome;
     }
@@ -537,37 +590,131 @@ public class RocketEntity extends Entity implements MenuProvider {
      * skipped for a viewer who cannot use it.
      */
     public void cycleStation(@Nullable Player viewer) {
-        if (!(level() instanceof ServerLevel server) || isLaunching()) {
+        if (!(level() instanceof ServerLevel server) || isLaunching() || !mayCommand(viewer)) {
             return;
         }
-        java.util.List<StationRegistry.StationEntry> all = new java.util.ArrayList<>();
-        for (StationRegistry.StationEntry e : StationRegistry.get(server.getServer()).all()) {
-            if (viewer == null || canDockAt(e, viewer)) {
-                all.add(e);
+        // Cycle: Origin (−1) → each founded station the viewer may choose → New Station (−2, with a charter) → Origin.
+        java.util.List<Integer> choices = DockSelection.choices(StationRegistry.get(server.getServer()).all(),
+                e -> viewer == null || canDockAt(e, viewer), viewer == null || hasCharter(viewer));
+        this.entityData.set(DATA_STATION, DockSelection.next(choices, getStationSlot()));
+        this.stationChosen = true;
+        this.freeDockId = -1; // the cycler walks stations only; it leaves a free dock
+    }
+
+    /**
+     * Picks docking target {@code slot} for {@code viewer} (server-side; the dock list on both consoles). Refuses
+     * while launching, an unknown or out-of-range slot, a MEMBERS station the viewer cannot use, and New Station
+     * without a charter; a refusal leaves the selection unchanged so the screen reconciles to it. Any accepted pick
+     * (even of the current target) counts as an explicit choice the default never overrides.
+     */
+    public DestinationSelection.Outcome selectStation(int slot, @Nullable Player viewer) {
+        if (!(level() instanceof ServerLevel server)) {
+            return DestinationSelection.Outcome.NO_ROCKET;
+        }
+        if (!mayCommand(viewer)) {
+            return DestinationSelection.Outcome.NOT_PILOT; // 2.1: only the pilot picks the dock
+        }
+        if (DockSelection.isFree(slot)) {
+            java.util.List<FreeDocks.Dock> docks = freeDocks(server.getServer());
+            int index = DockSelection.freeIndex(slot);
+            DestinationSelection.Outcome outcome = DockSelection.evaluateFree(index, docks.size(), getDockValue(),
+                    isLaunching());
+            if (outcome.accepted()) {
+                this.entityData.set(DATA_STATION, DockSelection.ORIGIN);
+                this.stationChosen = true;
+                this.freeDockId = docks.get(index).padId();
             }
+            return outcome;
         }
-        boolean allowNew = viewer == null || hasCharter(viewer);
-        int current = getStationSlot();
-        int next;
-        // Cycle: Origin (−1) → each founded station → New Station (−2) → Origin.
-        if (current == -2) {
-            next = -1;
-        } else if (current == -1) {
-            next = all.isEmpty() ? -2 : all.get(0).slot();
-        } else {
-            int idx = -1;
-            for (int i = 0; i < all.size(); i++) {
-                if (all.get(i).slot() == current) {
-                    idx = i;
-                    break;
-                }
-            }
-            next = (idx < 0 || idx + 1 >= all.size()) ? -2 : all.get(idx + 1).slot();
+        StationRegistry.StationEntry entry = slot >= 0 ? StationRegistry.get(server.getServer()).get(slot) : null;
+        DestinationSelection.Outcome outcome = DockSelection.evaluate(slot, getDockValue(), isLaunching(), entry,
+                entry != null && (viewer == null || canDockAt(entry, viewer)), viewer == null || hasCharter(viewer));
+        if (outcome.accepted()) {
+            this.entityData.set(DATA_STATION, slot);
+            this.stationChosen = true;
+            this.freeDockId = -1;
         }
-        if (next == -2 && !allowNew) {
-            next = -1;
+        return outcome;
+    }
+
+    /**
+     * The docking selection as the menus sync it: the station slot, or {@link DockSelection#freeValue} of the picked
+     * free dock's index in this rocket's current list. A free dock that is no longer visible reads as the origin (the
+     * arrival then falls through to it with a reason). Server-side; the client reads the synced menu value.
+     */
+    public int getDockValue() {
+        if (this.freeDockId < 0 || !(level() instanceof ServerLevel server)) {
+            return getStationSlot();
         }
-        this.entityData.set(DATA_STATION, next);
+        int index = FreeDocks.indexOf(freeDocks(server.getServer()), this.freeDockId);
+        return index >= 0 ? DockSelection.freeValue(index) : DockSelection.ORIGIN;
+    }
+
+    /** The picked free dock's pad-node id, or −1. */
+    public int getFreeDockId() {
+        return this.freeDockId;
+    }
+
+    /** Where free-dock visibility is measured from: here when in the station dimension, else the last station stop. */
+    public BlockPos freeDockAnchor() {
+        if (ModDimensions.STATION_LEVEL.equals(level().dimension())) {
+            return blockPosition();
+        }
+        return FreeDocks.anchor(this.lastStationPos);
+    }
+
+    /**
+     * The free docks this rocket may pick: hand-placed Docking Rings outside every claim box, within
+     * {@code stations.freeDockRadius} of {@link #freeDockAnchor()}, nearest first, at most 16. Reads the two
+     * registries only — no chunk is loaded.
+     */
+    public java.util.List<FreeDocks.Dock> freeDocks(MinecraftServer server) {
+        int radius = za.co.neroland.nerospace.config.NerospaceConfig.stationsFreeDockRadius();
+        if (radius <= 0) {
+            return java.util.List.of();
+        }
+        java.util.List<PadRegistry.PadNode> nodes = PadRegistry.get(server).nodesIn(ModDimensions.STATION_LEVEL);
+        return FreeDocks.visible(nodes, StationRegistry.get(server).all(), freeDockAnchor(), radius);
+    }
+
+    /**
+     * The owner-first default dock for {@code viewer}: while the selection is still the untouched origin, dock at the
+     * first station they own, else one they are a member of. Server-side; a no-op for a {@code null} viewer, while
+     * launching, or once a target was picked by hand. Never called from {@link #setTier} or the launch path.
+     */
+    public void applyDefaultDock(@Nullable Player viewer) {
+        if (viewer == null || isLaunching() || !mayCommand(viewer) || !(level() instanceof ServerLevel server)
+                || !DockSelection.shouldApplyDefault(getStationSlot(), this.stationChosen)) {
+            return;
+        }
+        int slot = DockSelection.defaultSlot(StationRegistry.get(server.getServer()).all(),
+                viewer.getUUID().toString());
+        if (slot != DockSelection.ORIGIN) {
+            this.entityData.set(DATA_STATION, slot);
+        }
+    }
+
+    /** Whether {@code StationSlot} was set by hand (picked or cycled) rather than by the default. */
+    public boolean isStationChosen() {
+        return this.stationChosen;
+    }
+
+    /**
+     * Everything a console needs before it opens for {@code player}: the owner-first default dock, then the station
+     * names (with the viewer's own relation to each) and the pad labels (with distances from this rocket for pads in
+     * its own dimension). Called by the rocket, the Launch Gantry and the Launch Controller open paths.
+     */
+    public void prepareConsoleFor(ServerPlayer player) {
+        applyDefaultDock(player);
+        MinecraftServer server = player.level().getServer();
+        za.co.neroland.nerospace.network.ModNetwork.sendToPlayer(player,
+                za.co.neroland.nerospace.network.StationSyncPayload.of(StationRegistry.get(server), player));
+        za.co.neroland.nerospace.network.ModNetwork.sendToPlayer(player,
+                za.co.neroland.nerospace.network.PadSyncPayload.of(PadRegistry.get(server), level().dimension(),
+                        blockPosition()));
+        // Free docks this rocket can see (names, or "Dock @ x,z" for an unnamed ring, and a rounded distance).
+        za.co.neroland.nerospace.network.ModNetwork.sendToPlayer(player,
+                za.co.neroland.nerospace.network.FreeDockSyncPayload.of(freeDocks(server)));
     }
 
     /** Whether {@code viewer} may pick {@code entry} as a destination (MEMBERS docking policy). */
@@ -615,20 +762,47 @@ public class RocketEntity extends Entity implements MenuProvider {
 
     /** Cycles the landing pad within the selected destination dimension: nearest → each pad → nearest. */
     public void cyclePad() {
-        if (!(level() instanceof ServerLevel server) || isLaunching()) {
+        cyclePad(null);
+    }
+
+    /** {@link #cyclePad()} for {@code viewer}: only the pilot (or anyone while nobody is aboard) may (2.1). */
+    public void cyclePad(@Nullable Player viewer) {
+        if (!(level() instanceof ServerLevel server) || isLaunching() || !mayCommand(viewer)) {
             return;
         }
         net.minecraft.resources.ResourceKey<Level> target = selectedDestination();
         if (target == null) {
             return;
         }
-        java.util.List<PadRegistry.PadNode> pads = PadRegistry.get(server.getServer()).inDimension(target);
-        if (pads.isEmpty()) {
-            this.entityData.set(DATA_PAD, -1);
-            return;
+        int count = PadRegistry.get(server.getServer()).inDimension(target).size();
+        this.entityData.set(DATA_PAD, PadSelection.next(getPadIndex(), count));
+    }
+
+    /**
+     * Picks landing pad {@code index} (into the destination's {@link PadRegistry#inDimension}, or
+     * {@link PadSelection#AUTO}) — server-side; the pad list on both consoles. A refusal leaves the selection
+     * unchanged so the screen reconciles to it.
+     */
+    public DestinationSelection.Outcome selectPad(int index) {
+        return selectPad(index, null);
+    }
+
+    /** {@link #selectPad(int)} for {@code viewer}: refused with {@code NOT_PILOT} for a seated non-pilot (2.1). */
+    public DestinationSelection.Outcome selectPad(int index, @Nullable Player viewer) {
+        if (!(level() instanceof ServerLevel server)) {
+            return DestinationSelection.Outcome.NO_ROCKET;
         }
-        int next = getPadIndex() + 1;
-        this.entityData.set(DATA_PAD, next >= pads.size() ? -1 : next);
+        if (!mayCommand(viewer)) {
+            return DestinationSelection.Outcome.NOT_PILOT;
+        }
+        net.minecraft.resources.ResourceKey<Level> target = selectedDestination();
+        int count = target == null ? 0 : PadRegistry.get(server.getServer()).inDimension(target).size();
+        DestinationSelection.Outcome outcome = PadSelection.evaluate(index, count, getPadIndex(), isLaunching(),
+                target != null && !LandingResolverLevelAdapter.isStation(target));
+        if (outcome == DestinationSelection.Outcome.OK) {
+            this.entityData.set(DATA_PAD, index);
+        }
+        return outcome;
     }
 
     /** The block position this rocket will land at for its current destination + sub-selection. */
@@ -639,6 +813,12 @@ public class RocketEntity extends Entity implements MenuProvider {
             return null;
         }
         if (target.equals(ModDimensions.STATION_LEVEL)) {
+            if (this.freeDockId >= 0) {
+                PadRegistry.PadNode free = PadRegistry.get(server).byId(this.freeDockId);
+                if (free != null) {
+                    return free.centerOrPos();
+                }
+            }
             int slot = getStationSlot();
             StationRegistry.StationEntry entry = slot >= 0 ? StationRegistry.get(server).get(slot) : null;
             return entry != null ? entry.center() : new BlockPos(0, PLATFORM_Y, 0);
@@ -723,6 +903,27 @@ public class RocketEntity extends Entity implements MenuProvider {
         return removed;
     }
 
+    // --- Oxygen per seat (2.1, crewed rockets) ------------------------------------------------------------
+
+    /** Oxygen one seat draws this flight: a flight that touches an airless world, by the rocket's ride drain. */
+    public int oxygenPerSeat() {
+        net.minecraft.resources.ResourceKey<Level> target = selectedDestination();
+        boolean airless = za.co.neroland.nerospace.world.OxygenManager.isAirless(level().dimension())
+                || (target != null && za.co.neroland.nerospace.world.OxygenManager.isAirless(target));
+        return Crew.perSeatMb(airless, za.co.neroland.nerospace.world.OxygenManager.CHECK_INTERVAL_TICKS,
+                za.co.neroland.nerospace.world.OxygenManager.RIDE_DRAIN_PER_CHECK);
+    }
+
+    /** Oxygen this launch needs for the players seated now ({@link Crew#oxygenNeeded}; 0 for a solo flight). */
+    public int oxygenNeeded() {
+        return Crew.oxygenNeeded(Crew.count(this), oxygenPerSeat());
+    }
+
+    /** How many seats the onboard oxygen covers for this flight ("O₂ for N"), at most the seat count. */
+    public int oxygenForSeats() {
+        return Crew.oxygenFor(getOxygen(), oxygenPerSeat(), Crew.maxCrew());
+    }
+
     /** Current onboard power, in FE. */
     public int getPower() {
         return this.entityData.get(DATA_POWER);
@@ -777,12 +978,86 @@ public class RocketEntity extends Entity implements MenuProvider {
         return !isLaunching() && !isDescending()
                 && selectedDestination() != null
                 && getFuel() >= requiredFuelForLaunch()
-                && isOnValidPad();
+                && isOnValidPad()
+                && getOxygen() >= oxygenNeeded(); // 2.1: crew × the flight's oxygen per seat (0 for a solo flight)
     }
 
-    /** Whether a launch could be started right now (launch-ready AND a player is aboard). */
+    /** Whether a launch could be started right now (launch-ready AND a pilot is aboard). */
     public boolean canLaunch() {
-        return isLaunchReady() && this.getFirstPassenger() instanceof Player;
+        return isLaunchReady() && Crew.pilot(this) != null;
+    }
+
+    /**
+     * Whether {@code player} may command this rocket — launch, destination, dock, pad: the pilot (first aboard), or
+     * anyone while nobody is aboard. {@code null} is an API caller. Server-checked on every console path (2.1).
+     */
+    public boolean mayCommand(@Nullable Player player) {
+        return Crew.mayCommand(this, player);
+    }
+
+    /**
+     * The console's answer to {@code player} taking a seat right now ({@link Crew#takeSeat}): reach is measured from
+     * the player's eyes to the hull. {@code viewer} says whether the press came from the player's own open console.
+     */
+    public Crew.SeatAnswer seatAnswer(Player player, boolean viewer) {
+        return Crew.takeSeat(viewer, getBoundingBox().distanceToSqr(player.getEyePosition()), hatchOpens(),
+                isLaunching() || isDescending(), player.getVehicle() == this, getPassengers().size(), Crew.maxCrew(),
+                player.isShiftKeyDown());
+    }
+
+    /**
+     * The rocket console's Take seat button (2.1): the pressing viewer boards, as the pilot when nobody is aboard,
+     * else as crew. Only {@link RocketMenu} calls this, for its own viewer, so nobody is ever seated by another
+     * player. Every refusal is told to the presser on the action bar. Server-side.
+     * @return the answer; {@link Crew.SeatAnswer#OK} only when the player is now aboard
+     */
+    public Crew.SeatAnswer takeSeat(ServerPlayer player, boolean viewer) {
+        if (level().isClientSide()) {
+            return Crew.SeatAnswer.NOT_VIEWER;
+        }
+        Crew.SeatAnswer answer = seatAnswer(player, viewer);
+        String refusal = switch (answer) {
+            case OUT_OF_REACH -> "gui.nerospace.rocket.seat_reach";
+            case IN_FLIGHT -> "gui.nerospace.rocket.seat_in_flight";
+            case UNCREWED -> "gui.nerospace.rocket.seat_uncrewed";
+            case SNEAKING -> "entity.nerospace.rocket.seat_sneaking";
+            default -> null; // FULL is told below; NOT_VIEWER and ALREADY_ABOARD need no words
+        };
+        if (refusal != null) {
+            player.sendOverlayMessage(Component.translatable(refusal));
+        }
+        if (answer == Crew.SeatAnswer.FULL) {
+            player.sendOverlayMessage(Component.translatable("entity.nerospace.rocket.crew_full", Crew.maxCrew()));
+        }
+        if (answer != Crew.SeatAnswer.OK) {
+            return answer;
+        }
+        return board(player) ? Crew.SeatAnswer.OK : Crew.SeatAnswer.FULL;
+    }
+
+    /**
+     * Seats {@code player} (2.1), reached only from {@link #takeSeat}, the player's own console press. Refused while
+     * launching or descending, when every seat is taken, or for an uncrewed hull. The first aboard is the pilot; a
+     * later boarder never takes the pilot's seat. Server-side.
+     * @return whether the player is now aboard
+     */
+    private boolean board(ServerPlayer player) {
+        if (level().isClientSide() || isLaunching() || isDescending() || player.getVehicle() == this) {
+            return false;
+        }
+        if (!canAddPassenger(player)) {
+            if (hatchOpens()) {
+                player.sendOverlayMessage(Component.translatable("entity.nerospace.rocket.crew_full", Crew.maxCrew()));
+            }
+            return false;
+        }
+        if (!player.startRiding(this)) {
+            return false;
+        }
+        player.sendOverlayMessage(Crew.isPilot(this, player)
+                ? Component.translatable("entity.nerospace.rocket.boarded_pilot")
+                : Component.translatable("entity.nerospace.rocket.boarded_crew", Crew.count(this), Crew.maxCrew()));
+        return true;
     }
 
     /**
@@ -794,12 +1069,20 @@ public class RocketEntity extends Entity implements MenuProvider {
         if (level().isClientSide() || isLaunching()) {
             return false;
         }
-        net.minecraft.world.entity.Entity seated = this.getFirstPassenger();
-        if (!LaunchSeat.mayLaunch(seated == null, seated == player)) {
-            player.sendSystemMessage(Component.translatable("entity.nerospace.rocket.seat_taken"));
+        // 2.1: the pilot is the first aboard; a seated crew member or a bystander cannot launch it.
+        boolean empty = getPassengers().isEmpty();
+        if (!LaunchSeat.mayLaunch(empty, Crew.isPilot(this, player))) {
+            if (player.getVehicle() == this) {
+                player.sendSystemMessage(Component.translatable("entity.nerospace.rocket.pilot_only"));
+            } else {
+                player.sendSystemMessage(Component.translatable("entity.nerospace.rocket.seat_taken"));
+                if (Crew.hasSeat(getPassengers().size(), Crew.maxCrew())) {
+                    player.sendSystemMessage(Component.translatable("entity.nerospace.rocket.board_hint"));
+                }
+            }
             return false;
         }
-        if (seated == null) {
+        if (empty) {
             player.startRiding(this);
         }
         startLaunch();
@@ -881,8 +1164,14 @@ public class RocketEntity extends Entity implements MenuProvider {
     /** Begins the ascent. Server-side; called from the rocket menu's Launch button. */
     public void startLaunch() {
         if (level().isClientSide() || !canLaunch()) {
+            if (!level().isClientSide() && !isLaunching() && isOnValidPad() && getOxygen() < oxygenNeeded()
+                    && Crew.pilot(this) instanceof ServerPlayer shortPilot) {
+                // 2.1: the shared reserve must cover every seat for the flight ("O₂ for N" on the consoles).
+                shortPilot.sendSystemMessage(Component.translatable("entity.nerospace.rocket.oxygen_short",
+                        Crew.count(this), oxygenNeeded() - getOxygen()));
+            }
             if (!level().isClientSide() && !isLaunching() && !isOnValidPad()
-                    && this.getFirstPassenger() instanceof ServerPlayer rider) {
+                    && Crew.pilot(this) instanceof ServerPlayer rider) {
                 // Report the tier the pad under the rocket actually reads as (the same scan isOnValidPad
                 // uses), so a player whose pad "looks right" can see exactly what the game detects.
                 int detected = 0;
@@ -897,7 +1186,7 @@ public class RocketEntity extends Entity implements MenuProvider {
             return;
         }
         // A MEMBERS-only station is re-checked at launch (the cycler is only a client-facing filter).
-        if (this.getFirstPassenger() instanceof ServerPlayer docking && level() instanceof ServerLevel dockLevel
+        if (Crew.pilot(this) instanceof ServerPlayer docking && level() instanceof ServerLevel dockLevel
                 && LandingResolverLevelAdapter.isStation(selectedDestination()) && getStationSlot() >= 0) {
             StationRegistry.StationEntry target = StationRegistry.get(dockLevel.getServer()).get(getStationSlot());
             if (target != null && !canDockAt(target, docking)) {
@@ -906,7 +1195,7 @@ public class RocketEntity extends Entity implements MenuProvider {
             }
         }
         // Core progression gate read at LAUNCH (never at load): Nyxara needs deep_space open for the pilot.
-        if (this.getFirstPassenger() instanceof ServerPlayer gated) {
+        if (Crew.pilot(this) instanceof ServerPlayer gated) {
             var gatedPlanet = za.co.neroland.nerospace.world.planet.Planets.get(selectedDestination());
             if (gatedPlanet != null && gatedPlanet.coreGate().isPresent()
                     && !DestinationSelection.gateOpenFor(gated.isCreative(),
@@ -916,17 +1205,34 @@ public class RocketEntity extends Entity implements MenuProvider {
                 return;
             }
         }
-        // One launch per rider per 100 ticks (stops macro-spam; in-memory only), checked BEFORE the optional
-        // NeroEconomy launch/docking fee so a launch refused for the cooldown is never charged. The fee is charged
-        // only now that every crewed check has passed; no request key (a crewed launch has no flight id).
-        if (this.getFirstPassenger() instanceof ServerPlayer pilot && level() instanceof ServerLevel serverLevel) {
+        // One launch per rider per 100 ticks (stops macro-spam; in-memory only), checked for EVERY seated player
+        // (2.1) BEFORE the optional NeroEconomy launch/docking fee so a launch refused for the cooldown is never
+        // charged. The fee is charged once per flight, to the pilot, only now that every crewed check has passed; no
+        // request key (a crewed launch has no flight id).
+        java.util.List<ServerPlayer> crew = Crew.seatedServer(this);
+        if (!crew.isEmpty() && level() instanceof ServerLevel serverLevel) {
+            ServerPlayer pilot = crew.get(0);
             boolean toStation = ModDimensions.STATION_LEVEL.equals(selectedDestination());
-            LaunchCooldowns.Gate gate = LaunchCooldowns.gate(pilot.getUUID(), level().getGameTime(),
-                    DescentMath.LAUNCH_COOLDOWN,
+            java.util.List<java.util.UUID> seatIds = new java.util.ArrayList<>(crew.size());
+            for (ServerPlayer seated : crew) {
+                seatIds.add(seated.getUUID());
+            }
+            long now = level().getGameTime();
+            LaunchCooldowns.CrewGate gate = LaunchCooldowns.gateCrew(seatIds, now, DescentMath.LAUNCH_COOLDOWN,
                     () -> za.co.neroland.nerospace.compat.neroeconomy.NerospaceEconomy.chargeFlight(
                             serverLevel.getServer(), pilot.getUUID(), toStation, null, null));
-            if (gate.verdict() == LaunchCooldowns.Verdict.COOLDOWN) {
-                pilot.sendSystemMessage(Component.translatable("entity.nerospace.rocket.launch_cooldown"));
+            if (gate.verdict() == LaunchCooldowns.Verdict.COOLDOWN
+                    || gate.verdict() == LaunchCooldowns.Verdict.CREW_COOLDOWN) {
+                // Privacy: the pilot is told "a crew member", never who; each cooling crew member hears their own wait.
+                pilot.sendSystemMessage(Component.translatable(gate.verdict() == LaunchCooldowns.Verdict.COOLDOWN
+                        ? "entity.nerospace.rocket.launch_cooldown" : "entity.nerospace.rocket.crew_cooldown"));
+                for (int seat : gate.coolingSeats()) {
+                    if (seat > 0 && seat < crew.size()) {
+                        long ticks = LaunchCooldowns.remaining(seatIds.get(seat), now);
+                        crew.get(seat).sendSystemMessage(Component.translatable(
+                                "entity.nerospace.rocket.your_cooldown", Math.max(1L, (ticks + 19L) / 20L)));
+                    }
+                }
                 return;
             }
             String refused = gate.refusal();
@@ -935,6 +1241,10 @@ public class RocketEntity extends Entity implements MenuProvider {
                 pilot.sendSystemMessage(Component.translatable(refused));
                 return;
             }
+            this.launchPilot = pilot.getUUID();
+            this.launchCrew = java.util.List.copyOf(seatIds);
+            // Anonymous Core channel: a crewed launch, by head count only (never an identity).
+            za.co.neroland.nerospace.progression.WorldsProgress.crewLaunch(crew.size());
         }
         // Remember the pad we're lifting off from so the return rocket can fly straight back to it.
         this.launchOriginDim = level().dimension();
@@ -1100,11 +1410,15 @@ public class RocketEntity extends Entity implements MenuProvider {
         int outboundFuel = currentFuelCost();
         int carriedFuel = Math.max(0, getFuel() - outboundFuel);
         this.fuelTank.drain(outboundFuel, false);
+        // 2.1: everyone seated travels; the pilot (first seated) is who the arrival is evaluated for. If the launch
+        // pilot disconnected during the ascent, the next seated player is pilot for the arrival only.
+        java.util.List<ServerPlayer> crew = Crew.seatedServer(this);
         NerospaceTelemetry.breadcrumb("rocket",
-                "launch tier=" + getTier() + " dim=" + Destinations.name(targetKey));
+                "launch tier=" + getTier() + " dim=" + Destinations.name(targetKey) + " crew=" + crew.size());
+        rememberLeftBehind(crew);
 
-        Entity passenger = this.getFirstPassenger();
-        if (passenger instanceof ServerPlayer player && level() instanceof ServerLevel current) {
+        ServerPlayer player = Crew.pilotOf(crew);
+        if (player != null && level() instanceof ServerLevel current) {
             MinecraftServer server = current.getServer();
             ServerLevel destination = server.getLevel(targetKey);
             if (destination != null) {
@@ -1123,10 +1437,15 @@ public class RocketEntity extends Entity implements MenuProvider {
                 StationRegistry.StationEntry entry = null;
                 BlockPos stationCentre = null;
                 int slot = -1;
+                this.arrivalFallThrough = DockSelection.FallThrough.NONE;
+                this.arrivalFreeDock = null;
+                FreeDocks.Dock freeDock = null;
                 if (station) {
-                    entry = stationForArrival(server, player);
-                    slot = entry != null ? entry.slot() : -1;
-                    stationCentre = entry != null ? entry.center() : new BlockPos(0, PLATFORM_Y, 0);
+                    entry = stationForArrival(server, player, Crew.handedOver(this.launchPilot, player.getUUID()));
+                    freeDock = entry == null ? this.arrivalFreeDock : null;
+                    slot = entry != null ? entry.slot() : freeDock != null ? DockSelection.FREE_DOCK_SLOT : -1;
+                    stationCentre = entry != null ? entry.center()
+                            : freeDock != null ? freeDock.centre() : new BlockPos(0, PLATFORM_Y, 0);
                 }
                 LandingResolverLevelAdapter.Flight flight = new LandingResolverLevelAdapter.Flight(targetKey,
                         station ? -1 : getPadIndex(), this.returnDim, this.returnPos, origin.name(), origin.registered(),
@@ -1142,18 +1461,28 @@ public class RocketEntity extends Entity implements MenuProvider {
                     arriving.addFuel(carriedFuel);
                 }
                 arriving.setReturnTarget(originDim, originPad); // remember where the rider came from
+                // Free-dock anchor: where it lands at the station, else where it left the station, else carried on.
+                arriving.lastStationPos = ModDimensions.STATION_LEVEL.equals(targetKey) ? BlockPos.containing(spawn)
+                        : ModDimensions.STATION_LEVEL.equals(current.dimension()) ? blockPosition()
+                        : this.lastStationPos;
                 arriving.visitor = StationVisitorSender.isVisitor(station, entry != null, true,
                         entry != null && StationRegistry.canUse(entry, player));
-                arriving.beginDescent(decision, flight, player, arrivalMessage(decision, targetKey, entry), getOxygen());
+                arriving.beginDescent(decision, flight, crew,
+                        arrivalMessage(decision, targetKey, entry, freeDock, this.arrivalFallThrough), getOxygen());
                 destination.addFreshEntity(arriving);
 
-                player.stopRiding();
-                player.teleportTo(destination, spawn.x, spawn.y + DescentMath.DESCENT_HEIGHT + 1.0D, spawn.z,
-                        Set.of(), decision.yaw(), player.getXRot(), true);
-                player.startRiding(arriving);
-                player.sendOverlayMessage(Component.translatable("entity.nerospace.rocket.descending"));
-                // Life support: the rider is in vacuum during the descent, so the reserve is granted now.
-                za.co.neroland.nerospace.world.OxygenManager.grantArrivalReserve(player, getOxygen());
+                // Life support: the crew is in vacuum during the descent, so the reserve is granted now, shared out
+                // per seat (one rider keeps the whole reserve, as in 2.0). Pilot first, so the seat order holds.
+                int[] reserve = Crew.splitReserve(getOxygen(), crew.size());
+                for (int i = 0; i < crew.size(); i++) {
+                    ServerPlayer rider = crew.get(i);
+                    rider.stopRiding();
+                    rider.teleportTo(destination, spawn.x, spawn.y + DescentMath.DESCENT_HEIGHT + 1.0D, spawn.z,
+                            Set.of(), decision.yaw(), rider.getXRot(), true);
+                    rider.startRiding(arriving);
+                    rider.sendOverlayMessage(Component.translatable("entity.nerospace.rocket.descending"));
+                    za.co.neroland.nerospace.world.OxygenManager.grantArrivalReserve(rider, reserve[i]);
+                }
             }
         }
 
@@ -1172,36 +1501,51 @@ public class RocketEntity extends Entity implements MenuProvider {
 
     /**
      * The station this arrival docks at. "New Station" (−2) founds one on arrival and takes a charter; a 1.6.0
-     * in-flight rocket is honoured once for free; no charter or a full registry → the origin
-     * platform with a message. Runs before the dimension transfer so an aborted descent still ends on it.
+     * in-flight rocket is honoured once for free. When the pick cannot be honoured — the station is gone, its MEMBERS
+     * policy no longer admits the pilot, no charter, or a full registry — the rocket docks at the origin platform and
+     * {@link #arrivalFallThrough} records why, so the arrival line names it. Runs before the dimension transfer so an
+     * aborted descent still ends on it.
      */
     @Nullable
-    private StationRegistry.StationEntry stationForArrival(MinecraftServer server, ServerPlayer player) {
+    private StationRegistry.StationEntry stationForArrival(MinecraftServer server, ServerPlayer player,
+            boolean handedOver) {
         int slot = getStationSlot();
         StationRegistry registry = StationRegistry.get(server);
-        if (slot >= 0) {
-            return registry.get(slot);
+        if (slot == DockSelection.ORIGIN && this.freeDockId >= 0
+                && ModDimensions.STATION_LEVEL.equals(selectedDestination())) {
+            // A free dock is honoured only while it is still a visible free dock (registered, outside every claim,
+            // in range); gone mid-flight → the origin platform, with the "pad gone" reason in the arrival line.
+            java.util.List<FreeDocks.Dock> docks = freeDocks(server);
+            int index = FreeDocks.indexOf(docks, this.freeDockId);
+            if (index < 0) {
+                this.arrivalFallThrough = DockSelection.FallThrough.DOCK_GONE;
+                return null;
+            }
+            this.arrivalFreeDock = docks.get(index);
+            return null;
         }
-        if (slot != -2) {
+        if (slot >= 0) {
+            StationRegistry.StationEntry chosen = registry.get(slot);
+            DockSelection.FallThrough why = DockSelection.arrivalFallThrough(chosen,
+                    chosen != null && canDockAt(chosen, player));
+            this.arrivalFallThrough = why;
+            return why == DockSelection.FallThrough.NONE ? chosen : null;
+        }
+        if (slot != DockSelection.NEW_STATION) {
             return null;
         }
         boolean legacy = !this.charterRuleAware;
-        StationFounding.Outcome outcome = StationFounding.resolve(legacy, hasCharter(player), registry.isFull());
-        switch (outcome) {
-            case REDIRECT -> {
-                player.sendSystemMessage(Component.translatable("entity.nerospace.rocket.no_charter"));
-                return null;
-            }
-            case REDIRECT_FULL -> {
-                player.sendSystemMessage(Component.translatable("item.nerospace.station_charter.full"));
-                return null;
-            }
-            default -> {
-            }
+        // 2.1: a pilot who took over mid-flight never has their charter spent on a station they did not choose.
+        StationFounding.Outcome outcome = StationFounding.resolve(legacy, !handedOver && hasCharter(player),
+                registry.isFull());
+        DockSelection.FallThrough refused = DockSelection.foundingFallThrough(outcome);
+        if (refused != DockSelection.FallThrough.NONE) {
+            this.arrivalFallThrough = refused;
+            return null;
         }
         StationRegistry.StationEntry entry = registry.found(null, player.getUUID().toString());
         if (entry == null) {
-            player.sendSystemMessage(Component.translatable("item.nerospace.station_charter.full"));
+            this.arrivalFallThrough = DockSelection.FallThrough.REGISTRY_FULL;
             return null;
         }
         if (outcome == StationFounding.Outcome.FOUND_CONSUME) {
@@ -1212,16 +1556,26 @@ public class RocketEntity extends Entity implements MenuProvider {
         NerospaceTelemetry.breadcrumb("station", "founded slot=" + entry.slot());
         za.co.neroland.nerospace.link.NerospaceLinkEvents.stationStateChanged(server, entry.slot(), "FOUNDED");
         za.co.neroland.nerospace.progression.StarGuideGrants.driveFirstColony(player);
+        // The founder's dock list shows the new station at once (names + their own relation only).
+        za.co.neroland.nerospace.network.StationListSync.send(player);
         return entry;
     }
 
-    /** The arrival line for a decision (pad name, station name, or the plain arrival text). */
+    /**
+     * The arrival line for a decision (pad name, station name, or the plain arrival text). A station arrival always
+     * names where it docked (the origin platform included), prefixed with the reason when the pick fell through.
+     */
     private static Component arrivalMessage(LandingDecision decision, net.minecraft.resources.ResourceKey<Level> dest,
-            @Nullable StationRegistry.StationEntry entry) {
+            @Nullable StationRegistry.StationEntry entry, @Nullable FreeDocks.Dock freeDock,
+            DockSelection.FallThrough fallThrough) {
         if (decision instanceof LandingDecision.StationDock || LandingResolverLevelAdapter.isStation(dest)) {
-            return entry != null
-                    ? Component.translatable("entity.nerospace.rocket.station_arrived", entry.name())
-                    : Component.translatable("entity.nerospace.rocket.docked");
+            Component where = entry != null ? Component.literal(entry.name())
+                    : freeDock != null ? freeDockLabel(freeDock) : Component.translatable("gui.nerospace.dock.origin");
+            Component docked = Component.translatable("entity.nerospace.rocket.station_arrived", where);
+            String reason = fallThrough.langKey();
+            return reason == null ? docked
+                    : Component.translatable("entity.nerospace.rocket.arrival_because",
+                            Component.translatable(reason), docked);
         }
         if (decision instanceof LandingDecision.PadLanding pad && pad.pad().id() >= 0) {
             return Component.translatable("entity.nerospace.rocket.pad_arrived", pad.pad().name());
@@ -1231,20 +1585,33 @@ public class RocketEntity extends Entity implements MenuProvider {
                 : Component.translatable("entity.nerospace.rocket.arrived");
     }
 
+    /** A free dock's name, or "Dock @ x,z" for a ring nobody named. */
+    private static Component freeDockLabel(FreeDocks.Dock dock) {
+        return dock.named() ? Component.literal(dock.name())
+                : Component.translatable("gui.nerospace.dock.free_at", dock.centre().getX(), dock.centre().getZ());
+    }
+
     // --- Descent state machine ---------------------------------------------------------
 
-    /** Arms this freshly spawned arrival rocket: it will descend 48 blocks onto {@code decision}'s pose. */
+    /**
+     * Arms this freshly spawned arrival rocket: it will descend 48 blocks onto {@code decision}'s pose, keeping
+     * {@code crew} (pilot first; empty for an uncrewed flight) seated.
+     */
     private void beginDescent(LandingDecision decision, LandingResolverLevelAdapter.Flight flight,
-            @Nullable ServerPlayer rider, Component message, int oxygen) {
+            java.util.List<ServerPlayer> crew, Component message, int oxygen) {
         setTarget(decision);
         this.descentFlight = flight;
-        this.descentRider = rider != null ? rider.getUUID() : null;
+        java.util.List<java.util.UUID> ids = new java.util.ArrayList<>(crew.size());
+        for (ServerPlayer rider : crew) {
+            ids.add(rider.getUUID());
+        }
+        this.descentCrew = java.util.List.copyOf(ids);
         this.arrivalMessage = message;
         this.arrivalPadMissing = decision.flags().padMissing();
         this.arrivalPadOccupied = decision.flags().padOccupied();
         this.arrivalOxygen = oxygen;
         this.arrivalOrigin = flight.destination();
-        this.arrivalDrivesDone = false;
+        this.arrivalDrivesDone.clear();
         this.noPhysics = true;
         this.setYRot(decision.yaw());
         this.yRotO = decision.yaw();
@@ -1275,7 +1642,7 @@ public class RocketEntity extends Entity implements MenuProvider {
                     setPhase(DescentMath.Phase.IDLE);
                     return;
                 }
-                reseatRider(level);
+                reseatCrew(level);
                 BlockPos block = this.descentBlock;
                 if (DescentMath.checkPadThisTick(t) && block != null) {
                     // Re-checked on every pad check: a parked rocket in a cold chunk only appears once the chunk's
@@ -1330,29 +1697,33 @@ public class RocketEntity extends Entity implements MenuProvider {
         return Math.abs(d) <= step ? to : from + Math.signum(d) * step;
     }
 
-    /** Keeps the rider seated for the whole descent (sneak-dismount is undone next tick). */
-    private void reseatRider(ServerLevel level) {
-        java.util.UUID id = this.descentRider;
-        if (id == null) {
-            return;
-        }
-        ServerPlayer rider = level.getServer().getPlayerList().getPlayer(id);
-        if (rider != null && rider.isAlive() && rider.level() == level && rider.getVehicle() != this) {
-            rider.startRiding(this);
-        }
-        if (rider != null && rider.level() == level && !this.arrivalDrivesDone) {
-            // The rider has reached the destination: the Star Guide drives run while they are certainly present, so
-            // a disconnect mid-descent cannot lose the progression (the arrival message may be lost; that is fine).
+    /**
+     * Keeps the whole crew seated for the descent (a sneak-dismount is undone next tick; a crew member who rejoins
+     * mid-descent is seated again). 2.0 kept one rider; 2.1 keeps every seat, pilot first.
+     */
+    private void reseatCrew(ServerLevel level) {
+        for (java.util.UUID id : this.descentCrew) {
+            ServerPlayer rider = level.getServer().getPlayerList().getPlayer(id);
+            if (rider == null || rider.level() != level) {
+                continue;
+            }
+            if (rider.isAlive() && rider.getVehicle() != this) {
+                rider.startRiding(this);
+            }
+            // This rider has reached the destination: the Star Guide drives run while they are certainly present,
+            // so a disconnect mid-descent cannot lose the progression (the arrival message may be lost; that is fine).
             arrivalDrives(level, rider);
         }
     }
 
-    /** Neroland Core progression (one-directional): reaching orbit; far planets open deep space. Once per descent. */
+    /**
+     * Neroland Core progression (one-directional): reaching orbit; far planets open deep space. Once per player per
+     * descent (2.1: every crew member, not only the pilot).
+     */
     private void arrivalDrives(ServerLevel level, ServerPlayer player) {
-        if (this.arrivalDrivesDone) {
+        if (!this.arrivalDrivesDone.add(player.getUUID())) {
             return;
         }
-        this.arrivalDrivesDone = true;
         za.co.neroland.nerospace.progression.StarGuideGrants.driveReachedOrbit(player);
         var arrivedPlanet = za.co.neroland.nerospace.world.planet.Planets.get(level.dimension());
         if (arrivedPlanet != null && arrivedPlanet.unlockTier() >= RocketTier.TIER_3.level()) {
@@ -1414,21 +1785,34 @@ public class RocketEntity extends Entity implements MenuProvider {
         this.parkedSince = level.getGameTime();
         touchdownEffects(level);
 
-        ServerPlayer rider = null;
-        java.util.UUID id = this.descentRider;
-        if (id != null) {
-            rider = level.getServer().getPlayerList().getPlayer(id);
+        // 2.1: release every crew member. The descent's crew list first (pilot first); a rocket reloaded mid-descent
+        // has none, so whoever is seated is released, as in 2.0. A crew member offline at touchdown rejoins beside the
+        // rocket instead of at their seat in the sky (CrewLanding, memory only).
+        java.util.List<ServerPlayer> released = new java.util.ArrayList<>(Crew.HARD_CAP);
+        for (java.util.UUID id : this.descentCrew) {
+            ServerPlayer rider = level.getServer().getPlayerList().getPlayer(id);
+            if (rider == null) {
+                CrewLanding.bindTo(level.getServer());
+                CrewLanding.remember(id, level.dimension(), BlockPos.containing(getX(), getY() + 1.0D, getZ()));
+            } else if (rider.level() == level && !released.contains(rider)) {
+                released.add(rider);
+            }
         }
-        if (rider == null && getFirstPassenger() instanceof ServerPlayer seated) {
-            rider = seated;
+        for (ServerPlayer seated : Crew.seatedServer(this)) {
+            if (!released.contains(seated)) {
+                released.add(seated);
+            }
         }
-        this.descentRider = null;
+        this.descentCrew = java.util.List.of();
         this.descentFlight = null;
-        if (rider != null && rider.level() == level) {
+        for (ServerPlayer rider : released) {
             rider.stopRiding();
             rider.teleportTo(level, getX(), getY() + 1.0D, getZ(), Set.of(), this.descentYaw, rider.getXRot(), true);
             arrivalSideEffects(level, rider);
         }
+        this.arrivalMessage = null;
+        this.arrivalPadMissing = false;
+        this.arrivalPadOccupied = false;
     }
 
     private void touchdownEffects(ServerLevel level) {
@@ -1467,9 +1851,7 @@ public class RocketEntity extends Entity implements MenuProvider {
         za.co.neroland.nerospace.link.NerospaceLinkEvents.rocketLanded(player, dim, getTier(),
                 getFuel(), this.arrivalOxygen, blockPosition());
         arrivalDrives(level, player); // no-op when the descent already ran them
-        this.arrivalMessage = null;
-        this.arrivalPadMissing = false;
-        this.arrivalPadOccupied = false;
+        // The message fields are cleared by touchdown once every crew member has had them (2.1).
     }
 
     /**
@@ -1507,7 +1889,7 @@ public class RocketEntity extends Entity implements MenuProvider {
                 getTier());
         arriving.fuelTank.setRaw(this.fuelTank.getRawFluid(), this.fuelTank.getRawAmount());
         arriving.syncFuel();
-        arriving.beginDescent(decision, flight, null, Component.empty(), 0);
+        arriving.beginDescent(decision, flight, java.util.List.of(), Component.empty(), 0);
         destination.addFreshEntity(arriving);
         dropFuelInput();
         this.discard();
@@ -1551,14 +1933,10 @@ public class RocketEntity extends Entity implements MenuProvider {
         }
 
         if (!level().isClientSide() && player instanceof ServerPlayer serverPlayer) {
-            // Open the flight console WITHOUT boarding — the player only enters the rocket when they press
-            // Launch (RocketMenu.boardAndLaunch). Push the founded-station names for the dock cycler first.
-            za.co.neroland.nerospace.network.ModNetwork.sendToPlayer(serverPlayer,
-                    za.co.neroland.nerospace.network.StationSyncPayload.of(
-                            StationRegistry.get(serverPlayer.level().getServer()), serverPlayer));
-            za.co.neroland.nerospace.network.ModNetwork.sendToPlayer(serverPlayer,
-                    za.co.neroland.nerospace.network.PadSyncPayload.of(
-                            PadRegistry.get(serverPlayer.level().getServer())));
+            // Open the flight console WITHOUT boarding, sneaking or not (as 2.0) — the player enters the rocket when
+            // they press Take seat (crew) or Launch (an empty rocket boards the presser as pilot). Default dock +
+            // station/pad labels for the lists first.
+            prepareConsoleFor(serverPlayer);
             return MenuOpener.openOrConsume(serverPlayer, this);
         }
         return InteractionResult.SUCCESS;
@@ -1566,9 +1944,40 @@ public class RocketEntity extends Entity implements MenuProvider {
 
     // --- Passenger handling -------------------------------------------------
 
+    /**
+     * 2.1: up to {@code rockets.maxCrew} players (hard cap four; 2.0 seated one). Only players ride; a crew member of
+     * this descent is always re-admitted, even past a lowered cap. Cargo rockets override this to stay uncrewed.
+     */
     @Override
     protected boolean canAddPassenger(Entity passenger) {
-        return this.getPassengers().isEmpty();
+        if (!(passenger instanceof Player)) {
+            return false;
+        }
+        return this.descentCrew.contains(passenger.getUUID())
+                || Crew.hasSeat(getPassengers().size(), Crew.maxCrew());
+    }
+
+    /**
+     * Records crew who were aboard at lift-off but disconnected during the ascent, so they rejoin on the launch pad
+     * rather than at their seat in mid-air. Memory only ({@link CrewLanding}); nothing is saved or logged.
+     */
+    private void rememberLeftBehind(java.util.List<ServerPlayer> aboard) {
+        if (this.launchCrew.isEmpty() || !(level() instanceof ServerLevel current)) {
+            return;
+        }
+        BlockPos pad = this.launchOriginPad != null ? this.launchOriginPad : blockPosition();
+        net.minecraft.resources.ResourceKey<Level> dim = this.launchOriginDim != null ? this.launchOriginDim
+                : current.dimension();
+        for (java.util.UUID id : this.launchCrew) {
+            boolean stillAboard = false;
+            for (ServerPlayer p : aboard) {
+                stillAboard |= p.getUUID().equals(id);
+            }
+            if (!stillAboard && current.getServer().getPlayerList().getPlayer(id) == null) {
+                CrewLanding.bindTo(current.getServer());
+                CrewLanding.remember(id, dim, pad.above());
+            }
+        }
     }
 
     @Override
@@ -1636,7 +2045,13 @@ public class RocketEntity extends Entity implements MenuProvider {
                 : Destinations.legacyIndex(getTier(), storedDestination);
         this.entityData.set(DATA_DEST,
                 Destinations.sanitizeIndex(getTier(), level().dimension(), destination));
-        this.entityData.set(DATA_STATION, input.getIntOr("StationSlot", -1));
+        this.entityData.set(DATA_STATION, DockSelection.onLoad(input.getIntOr("StationSlot", DockSelection.ORIGIN)));
+        this.stationChosen = input.getBooleanOr("StationChosen", false); // 2.1 — absent in 2.0.0 saves
+        this.freeDockId = input.getIntOr("FreeDock", -1); // 2.1 — absent in 2.0.0 saves (no free dock)
+        this.lastStationPos = input.getBooleanOr("HasLastStation", false) // 2.1 — absent: anchor at the origin
+                ? new BlockPos(input.getIntOr("LastStationX", 0), input.getIntOr("LastStationY", 0),
+                        input.getIntOr("LastStationZ", 0))
+                : null;
         this.entityData.set(DATA_PAD, input.getIntOr("Pad", -1));
         this.returnDim = input.getStringOr("ReturnDim", "");
         if (input.getBooleanOr("HasReturn", false)) {
@@ -1698,6 +2113,15 @@ public class RocketEntity extends Entity implements MenuProvider {
         output.putInt("Destination", getDestinationIndex());
         output.putBoolean("GlobalDestination", true);
         output.putInt("StationSlot", getStationSlot());
+        output.putBoolean("StationChosen", this.stationChosen);
+        output.putInt("FreeDock", this.freeDockId);
+        BlockPos lastStation = this.lastStationPos;
+        output.putBoolean("HasLastStation", lastStation != null);
+        if (lastStation != null) {
+            output.putInt("LastStationX", lastStation.getX());
+            output.putInt("LastStationY", lastStation.getY());
+            output.putInt("LastStationZ", lastStation.getZ());
+        }
         output.putInt("Pad", getPadIndex());
         BlockPos returnTo = this.returnPos;
         output.putString("ReturnDim", this.returnDim);

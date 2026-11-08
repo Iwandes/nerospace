@@ -56,6 +56,13 @@ public final class ModDataComponents {
                     .networkSynchronized(Unit.STREAM_CODEC)
                     .build());
 
+    /** 2.1: the charge (FE) a packed-up Mars rover keeps on its {@code rover} item, restored when it is placed again. */
+    public static final RegistryEntry<DataComponentType<Integer>> ROVER_ENERGY =
+            COMPONENTS.register("rover_energy", key -> DataComponentType.<Integer>builder()
+                    .persistent(Codec.intRange(0, Integer.MAX_VALUE))
+                    .networkSynchronized(ByteBufCodecs.VAR_INT)
+                    .build());
+
     private ModDataComponents() {
     }
 

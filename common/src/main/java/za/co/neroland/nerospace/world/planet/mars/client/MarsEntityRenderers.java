@@ -43,5 +43,8 @@ public final class MarsEntityRenderers {
         sink.register(MarsContent.DUST_STRIDER.get(), context -> new GreenxertzCreatureRenderer(context,
                 new MeadowLoperModel(MeadowLoperModel.createBodyLayer().bakeRoot()),
                 tex("dust_strider"), 0.85F, 1.2F, 0.85F, 0.5F));
+        // 2.1: the Mars rover (a vehicle, but Mars-native art; works in every dimension).
+        sink.register(za.co.neroland.nerospace.registry.ModEntities.ROVER.get(),
+                za.co.neroland.nerospace.client.RoverRenderer::new);
     }
 }

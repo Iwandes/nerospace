@@ -87,6 +87,11 @@ engage. See **[Oxygen Suit](Oxygen-Suit)** for the full page.
 
   nerosteel) that deploys only onto a **Cargo Pad** and carries its hold to another pad or station.
 
+- **[Mars Rover](Rover)** — a two-seat electric buggy with a nine-slot cargo bay and a 40,000 FE battery.
+  Crafted from **Rover Parts** (Raw Hematite, iron and redstone), Hull Plating, a Chest and Perchlorate
+  Oxidiser, or more cheaply around a **Rover Chassis** salvaged from a Mars Rover Wreck. Right-click to get in,
+  sneak and right-click for the cargo bay, sneak and punch to pack it up.
+
 - **Cargo Crate** — not craftable: the manifest of a cargo flight that could not be delivered in time,
 
   dropped at the destination so nothing is lost. Right-click to unpack.

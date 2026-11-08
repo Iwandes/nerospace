@@ -64,7 +64,7 @@ public final class OxygenManager {
     /** A full Oxygen Suit's larger air tank. */
     public static final int OXYGEN_SUIT_MAX = 900;
 
-    private static final int CHECK_INTERVAL_TICKS = 10;
+    public static final int CHECK_INTERVAL_TICKS = 10;
     private static final int DAMAGE_INTERVAL_TICKS = 40;
     /** Bare-lungs drain per check (exposed) — ~a few seconds of air. */
     private static final int BARE_DRAIN_PER_CHECK = 30;
@@ -77,7 +77,7 @@ public final class OxygenManager {
     private static final int HAZARD_DRAIN_MULTIPLIER = 4;
 
     /** Oxygen (mB) a ridden rocket's life-support tank spends per check keeping the rider breathing. */
-    private static final int RIDE_DRAIN_PER_CHECK = 2;
+    public static final int RIDE_DRAIN_PER_CHECK = 2;
 
     /** Airlock refill: scan radius around a suited player for a Gas Tank / Oxygen Generator holding O2. */
     private static final int AIRLOCK_RADIUS = 4;

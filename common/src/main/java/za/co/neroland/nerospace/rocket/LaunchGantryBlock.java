@@ -73,12 +73,7 @@ public class LaunchGantryBlock extends BaseEntityBlock {
             return InteractionResult.SUCCESS;
         }
         if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
-            za.co.neroland.nerospace.network.ModNetwork.sendToPlayer(serverPlayer,
-                    za.co.neroland.nerospace.network.StationSyncPayload.of(
-                            StationRegistry.get(serverPlayer.level().getServer()), serverPlayer));
-            za.co.neroland.nerospace.network.ModNetwork.sendToPlayer(serverPlayer,
-                    za.co.neroland.nerospace.network.PadSyncPayload.of(
-                            PadRegistry.get(serverPlayer.level().getServer())));
+            rocket.prepareConsoleFor(serverPlayer);
             return MenuOpener.openOrConsume(serverPlayer, rocket);
         }
         return InteractionResult.SUCCESS;

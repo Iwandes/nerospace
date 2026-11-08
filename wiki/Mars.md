@@ -83,7 +83,8 @@ Mars has no villagers. Someone was here before you, though:
 
 - **Rover Wrecks** are half-buried six-wheeled rovers with a snapped antenna, a solar wing and red regolith
   drifted over the tail. Each has a salvage chest (Raw Hematite, Titanium Ingots, Hull Plating, Truss, Rust
-  Pigment, sometimes a Solar Wing or Alien Tech Scrap).
+  Pigment, sometimes a Solar Wing or Alien Tech Scrap). About half of them still hold a **Rover Chassis**, the
+  shortcut to building your own [Mars Rover](Rover).
 - A **Salvage Drone** hovers over each wreck on its thruster pods. Right-click it to trade **Raw Hematite** for rover
   parts: Hull Plating, Truss, Titanium Ingots, Solar Wings, Frame Casing and Alien Tech Scrap. It has a single price
   list for everyone, and its stock is limited: each offer can be used only a few times (Titanium Ingots twice, Alien

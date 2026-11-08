@@ -62,6 +62,7 @@ public final class NerospaceForge {
             if (event.player() instanceof ServerPlayer serverPlayer) {
                 OxygenManager.tick(serverPlayer);
                 StarGuideGrants.tick(serverPlayer);
+                za.co.neroland.nerospace.network.StationListSync.tick(serverPlayer);
             }
         });
         TickEvent.ServerTickEvent.Post.BUS.addListener(event -> {

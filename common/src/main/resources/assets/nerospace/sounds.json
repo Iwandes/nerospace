@@ -246,5 +246,26 @@
       { "name": "minecraft:block.piston.extend", "type": "event", "volume": 0.12, "pitch": 0.4 },
       { "name": "minecraft:block.iron_door.open", "type": "event", "volume": 0.08, "pitch": 0.5 }
     ]
+  },
+
+  "entity.rover.motor": {
+    "subtitle": "subtitles.nerospace.rover.motor",
+    "sounds": [{ "name": "block.beacon.ambient", "type": "event", "volume": 0.4 }]
+  },
+  "entity.rover.idle": {
+    "subtitle": "subtitles.nerospace.rover.idle",
+    "sounds": [{ "name": "block.comparator.click", "type": "event", "volume": 0.3, "pitch": 0.7 }]
+  },
+  "entity.rover.horn": {
+    "subtitle": "subtitles.nerospace.rover.horn",
+    "sounds": [{ "name": "block.note_block.bit", "type": "event", "volume": 0.8, "pitch": 1.2 }]
+  },
+  "entity.rover.place": {
+    "subtitle": "subtitles.nerospace.rover.place",
+    "sounds": [{ "name": "block.metal.place", "type": "event" }]
+  },
+  "entity.rover.pickup": {
+    "subtitle": "subtitles.nerospace.rover.pickup",
+    "sounds": [{ "name": "block.metal.break", "type": "event" }]
   }
 }

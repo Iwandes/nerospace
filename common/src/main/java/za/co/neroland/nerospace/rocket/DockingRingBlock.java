@@ -158,7 +158,8 @@ public class DockingRingBlock extends Block {
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
         if (level instanceof ServerLevel server && state.getValue(PART) == DockingRingPart.CENTER) {
-            placeRing(server, pos, state.getValue(FACING), null);
+            // An anvil-renamed ring names its node (a free dock's list label); otherwise the auto "Dock N".
+            placeRing(server, pos, state.getValue(FACING), customName(stack));
             if (placer instanceof Player player) {
                 PadRegistry.PadNode node = PadRegistry.get(server.getServer()).at(level.dimension(), pos);
                 if (node != null) {
@@ -168,6 +169,20 @@ public class DockingRingBlock extends Block {
                 }
             }
         }
+    }
+
+    /** The ring item's anvil name (trimmed, at most 32 chars), or {@code null}. No placer is recorded. */
+    @Nullable
+    static String customName(ItemStack stack) {
+        net.minecraft.network.chat.Component name = stack.get(net.minecraft.core.component.DataComponents.CUSTOM_NAME);
+        if (name == null) {
+            return null;
+        }
+        String text = name.getString().trim();
+        if (text.isEmpty()) {
+            return null;
+        }
+        return text.length() > 32 ? text.substring(0, 32) : text;
     }
 
     @Override

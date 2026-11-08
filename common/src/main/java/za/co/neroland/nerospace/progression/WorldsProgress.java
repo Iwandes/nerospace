@@ -39,6 +39,8 @@ import za.co.neroland.nerospace.world.planet.Planets;
  *       planet id; value 1.</li>
  *   <li>{@link #STATION_MODULE_BUILT}: a station module was built. Scope = {@code module/<kind>}; value = the
  *       station's module count after the build.</li>
+ *   <li>{@link #ROCKET_CREW_LAUNCH} (2.1): a rocket lifted off with a crew. Scope = {@code crew}; value = the number
+ *       of players aboard (2..4).</li>
  * </ul>
  *
  * <h2>Privacy (POPIA/GDPR)</h2>
@@ -50,6 +52,8 @@ public final class WorldsProgress {
     public static final Identifier PLANET_FIRST_VISIT = ns("planet_first_visit");
     public static final Identifier WEATHER_SURVIVED = ns("weather_survived");
     public static final Identifier STATION_MODULE_BUILT = ns("station_module_built");
+    /** 2.1: a rocket lifted off with two or more players aboard. Scope {@code crew}; value = the head count. */
+    public static final Identifier ROCKET_CREW_LAUNCH = ns("rocket_crew_launch");
 
     /** Mod hook: a quest reward that briefs the player on the next Worlds step (a hint; awards nothing). */
     public static final Identifier WORLDS_BRIEFING = ns("hook/worlds_briefing");
@@ -82,6 +86,16 @@ public final class WorldsProgress {
             long count = server == null ? 1L : Math.max(1L, PlanetVisitState.get(server).sequence());
             fire(PLANET_FIRST_VISIT, visit.planet().asString(), count, 1L);
         });
+    }
+
+    /**
+     * A crewed launch (2.1): fires {@link #ROCKET_CREW_LAUNCH} with the crew count only (threshold 2), never who
+     * flew. A solo launch fires nothing.
+     */
+    public static void crewLaunch(int crew) {
+        if (crew >= 2) {
+            fire(ROCKET_CREW_LAUNCH, "crew", crew, 2L);
+        }
     }
 
     /** Station modules (4B's builder calls this after a fresh module is appended). */

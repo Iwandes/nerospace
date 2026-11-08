@@ -7,6 +7,109 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-11-08
+
+Fly with friends, put your station where you want it, and drive around Mars. This update answers player
+feedback on 2.0: rockets now go to the station you choose, you can found a station where you stand, up to four
+players share one rocket, and there is a Mars Rover. Back up your world before updating, as always.
+
+### Fixed
+
+- **Forge 1.21.4 crash on launch (`NoClassDefFoundError: AddGuiOverlayLayersEvent`).** The Forge jars accepted
+  any Forge build of the same major, but the oxygen HUD uses an event Forge added partway through each line, so
+  early builds such as Forge 54.1.2 crashed while constructing the mod. Each Forge jar now requires at least the
+  Forge build it was compiled against (1.21.4: Forge 54.1.22 or later), so an older Forge shows a clear "update
+  Forge" message instead.
+- **Crash reports no longer blame Nerospace for a broken Fabric pack.** When another mod breaks Fabric start-up
+  in a way that makes many mods fail identically (for example a frozen entity-attribute registry), Nerospace's
+  opt-out crash reporting no longer sends that report, since nothing in Nerospace caused it. A Nerospace failure
+  that differs from the others is still reported.
+- **The Launch Controller always sent rockets to the shared platform at 0,64,0.** It had no way to pick a
+  station or pad, so every launch from it went to the origin platform, however many stations you had founded.
+  It now has the same **Dock at** / **Land at** choice as the rocket's own console.
+
+### Added
+
+- **Dock at / Land at lists on both consoles.** The small cycle button next to the dock is now a clearly labelled
+  row that opens a scrollable list: pick with the mouse, the wheel, or Up/Down and Enter. Each entry says whether
+  the station is *yours*, one you are a *member* of, *public*, a *free dock* or the *origin*, and pads on your
+  current world show their distance. If the server refuses a choice, an amber notice says why.
+- **Your own station is the default.** A new rocket, a switch to the Orbital Station, or opening either console
+  picks the first station you own, then the first you are a member of, then the shared platform. Once you pick a
+  dock yourself (the origin included) it sticks, and a tier upgrade never resets it.
+- **Arrival messages say where and why.** Docking always names the place. If your choice could not be used (the
+  dock is gone, the station switched to members only mid-flight, you had no Station Charter, or the registry is
+  full) the reason comes first and you dock at the shared platform.
+- **Station lists refresh on their own** when you found, rename or abandon a station and when you arrive in the
+  station dimension: no relog needed.
+- **Found a station where you stand.** Use a Station Charter in the station dimension and the station is placed
+  under your feet. The naming screen has **Build starter structure** (on by default); turn it off to get just your
+  claim and a Docking Ring and build the rest yourself.
+- **Placement rules.** A placed station must be at least 512 blocks from every other station and from the shared
+  platform on each axis, and within 30,000 blocks of 0,0; its floor stays between Y 64 and Y 256. If it can't be
+  placed you're told why ("Too close to …", "Too far from the origin", "registry full") and **your charter is
+  kept**. Charters used anywhere else work as before.
+- Blocks on a placed station (Solar Wings, hydroponics, grinder ownership) belong to that station: the station
+  lookup now measures both axes from the nearest station centre instead of only the X band used by the old grid.
+- **Free docks.** A Docking Ring placed in the station dimension outside every station's claim becomes a
+  destination in the Dock at list for rockets within 2,048 blocks. Anvil-rename the ring to name it. Free docks
+  have no owner; use a charter if you want members and a members-only policy.
+- **Crewed rockets: up to four players.** Every tier seats four. Right-click a rocket to open its console and press
+  **Take seat** to board; nobody can put you in a rocket but you. Pressing Launch on an empty rocket still makes you
+  the pilot.
+- **The pilot is in charge.** The first player aboard is the pilot: only they can launch or change the destination,
+  dock or pad. Their Station Charter, Deep Space progress and NeroEconomy launch fee (charged once per flight) are
+  the ones that count. Every crew member has their own launch cooldown, so riding along doesn't skip yours.
+- **Everyone travels.** The whole crew flies, rides the descent, steps out beside the rocket and gets their own
+  arrival message, Star Guide progress and first-visit record. Crew sit side by side inside the hull.
+- **Shared oxygen.** With two or more aboard on a flight to or from an airless world, the rocket needs onboard
+  oxygen for every seat; the consoles show **CREW n/4 · O₂ FOR n**. Leftover oxygen is shared out on arrival.
+- **Drop-outs are safe.** If the pilot disconnects mid-flight, the next player aboard lands the rocket (without
+  spending their charter). A crew member who disconnects mid-flight rejoins beside the rocket, not in the sky.
+  Members-only stations check the pilot; non-member crew arrive as visitors.
+- **Mars Rover.** A six-wheeled electric buggy with two seats (driver and passenger), a 9-slot cargo bay and a
+  40,000 FE battery. It drives on solid ground in any world, rolls faster and hops higher in low gravity, climbs one
+  block at most, and can't fly or swim. Your suit still matters while you drive.
+- **Driving it.** Right-click to get in (the first aboard drives), sneak + right-click to open the cargo bay, sneak
+  + punch to pack it up (owner only, everyone out first; cargo spills, the item keeps its charge). Park it next to
+  any Neroland Core energy block, such as a Battery or a station Solar Wing, to charge it. Each player can have up
+  to four rovers out at once.
+- **Building one.** Craft Rover Parts from Raw Hematite, Iron and Redstone, then the Mars Rover from Hull Plating, a
+  Chest, Rover Parts and a Perchlorate Oxidiser at a normal crafting table. About half of the Rover Wrecks on Mars
+  now hold a **Rover Chassis** in their salvage chest, a much cheaper shortcut.
+- Rover sounds (motor, idle, horn, place, pack up) with subtitles.
+- New quest/progress signal for crewed launches (a head count only).
+- Config (server): `rockets.maxCrew`, `stations.minSpacing`, `stations.maxRadius`, `stations.freeDockRadius`,
+  `rover.capacity`, `rover.maxPerPlayer`, `rover.drainPerTick`, `rover.chargeRate`. See the wiki's Configuration
+  page.
+- NeroLink: the rockets section shows each rocket's crew count and the rovers you own nearby.
+- New wiki page *Mars Rover*; *Rockets*, *Orbital Stations*, *Landing Pads*, *Launch Controller*, *Station
+  Charter*, *Getting Started* and *Configuration* updated.
+
+### Changed
+
+- The platform at 0,64,0 is now called **Shared platform (origin)** so nobody mistakes it for "the mod's
+  station". It still belongs to nobody.
+- If a station switches to members only while you are flying there and you aren't a member, the pilot is now sent
+  to the shared platform with a message instead of docking as a visitor.
+
+### Privacy
+
+- Free docks never send their position to other players: an unnamed ring is listed as *Free dock N* with a
+  rounded distance only. The ring records no builder.
+- Crew are not recorded: no flight log, no names in messages ("a crew member" is still cooling down) and only a
+  count in NeroLink and quests.
+- A rover remembers only who placed it, to decide who may pack it up; `/neroland data eraseme` clears that, also
+  for rovers in unloaded chunks the next time they load. A placed station's centre is tied to you only while you
+  own it. `PRIVACY.md` lists every new item, and the privacy export includes your loaded rovers.
+
+### Compatibility
+
+- **Client and server must both run 2.1.0.** The network format changed (station, pad and dock lists, rocket
+  screen data), so a 2.0 client cannot join a 2.1 server or the reverse.
+- Worlds from 2.0 load unchanged; every new saved value is optional. A rocket parked at the origin in 2.0 picks
+  up your own station once, the first time you open its console. Requires Neroland Core 1.17.0 or newer.
+
 ## [2.0.0-beta.1] - 2026-11-04
 
 The first 2.0 beta combines the planets and stations rework with the subsequent compatibility and visual changes. It is a test build: planet performance and sky rendering still need work, and Nyxara auroras are not currently visible in the NeoForge 26.3 client. Back up worlds before testing.

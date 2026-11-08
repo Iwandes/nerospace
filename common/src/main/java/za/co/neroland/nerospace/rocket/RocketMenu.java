@@ -38,11 +38,29 @@ public class RocketMenu extends AbstractContainerMenu {
     public static final int BUTTON_CYCLE_STATION = 2;
     /** Cycles the landing pad within the selected destination dimension (nearest → each pad → nearest). */
     public static final int BUTTON_CYCLE_PAD = 3;
+    /**
+     * 2.1: the viewer takes a seat, as crew behind the pilot, or as the pilot when nobody is aboard ({@link
+     * RocketEntity#takeSeat}). Appended after every id in use; only ever seats the player who pressed it.
+     */
+    public static final int BUTTON_TAKE_SEAT = 4;
     /** Select destination {@code n} via button id {@code SELECT_DEST_BASE + n}. */
     public static final int SELECT_DEST_BASE = 100;
+    /** Select dock {@code slot} via {@link DockSelection#buttonFor} ({@code 200 + slot + 2}; New Station 200, origin 201). */
+    public static final int SELECT_STATION_BASE = DockSelection.SELECT_BASE;
+    /** Select landing pad {@code i} via {@link PadSelection#buttonFor} ({@code 300 + i + 1}; nearest 300). */
+    public static final int SELECT_PAD_BASE = PadSelection.SELECT_BASE;
 
-    /** Synced values: 0..13 as before, [14] = destinationGateMask, [15] = Observatory reveal count. */
-    public static final int DATA_COUNT = 16;
+    /**
+     * Synced values: 0..13 as before, [14] = destinationGateMask, [15] = Observatory reveal count; 2.1 appends
+     * [16] players aboard, [17] seats the onboard oxygen covers this flight ("O₂ for N"), [18] seats per rocket.
+     */
+    public static final int DATA_COUNT = 19;
+    /** Data index of the number of players aboard (2.1). */
+    public static final int DATA_CREW = 16;
+    /** Data index of how many seats the onboard oxygen covers for this flight (2.1). */
+    public static final int DATA_OXYGEN_FOR = 17;
+    /** Data index of the server's seat count, {@code rockets.maxCrew} (2.1). */
+    public static final int DATA_MAX_CREW = 18;
     /** Data index of the per-viewer Core-gate mask (bit per {@link Destinations} index). */
     public static final int DATA_GATE_MASK = 14;
     /** Data index of the viewer's Observatory reveal count (how many next locked worlds show as cards). */
@@ -68,6 +86,13 @@ public class RocketMenu extends AbstractContainerMenu {
      */
     private final DataSlot lastOutcome = DataSlot.standalone();
     private int outcomeSequence;
+    /** This viewer's last dock/pad answer ({@link DestinationSelection#encodeOutcome}), kept apart from destinations. */
+    private final DataSlot lastPickOutcome = DataSlot.standalone();
+    private int pickSequence;
+    /** This viewer's Take seat state ({@link Crew.SeatAnswer#encode}), refreshed on the server every broadcast. */
+    private final DataSlot seatState = DataSlot.standalone();
+    /** The player this menu was opened for (the server checks the Take seat press came from them). */
+    private final Player viewer;
 
     /** Client constructor (referenced by the menu type); rocket state arrives via the synced data. */
     public RocketMenu(int containerId, Inventory playerInventory) {
@@ -81,6 +106,7 @@ public class RocketMenu extends AbstractContainerMenu {
         this.rocket = rocket;
         this.data = data;
         this.fuelContainer = rocket != null ? rocket.getFuelInput() : new SimpleContainer(1);
+        this.viewer = playerInventory.player;
 
         this.addSlot(new FuelSlot(this.fuelContainer, 0, FUEL_SLOT_X, FUEL_SLOT_Y));
 
@@ -101,6 +127,23 @@ public class RocketMenu extends AbstractContainerMenu {
 
         this.addDataSlots(data);
         this.addDataSlot(this.lastOutcome);
+        this.addDataSlot(this.lastPickOutcome);
+        this.addDataSlot(this.seatState);
+    }
+
+    @Override
+    public void broadcastChanges() {
+        RocketEntity current = this.rocket;
+        if (current != null) {
+            this.seatState.set(current.seatAnswer(this.viewer, true).encode());
+        }
+        super.broadcastChanges();
+    }
+
+    /** Records the server's answer to a dock or pad pick for this viewer's screen. */
+    private void reportPick(DestinationSelection.Outcome outcome) {
+        this.pickSequence++;
+        this.lastPickOutcome.set(DestinationSelection.encodeOutcome(this.pickSequence, outcome));
     }
 
     /** Records the server's answer to a pick so the next broadcast carries it to this viewer's screen. */
@@ -133,6 +176,15 @@ public class RocketMenu extends AbstractContainerMenu {
             }
             return true;
         }
+        if (id == BUTTON_TAKE_SEAT) {
+            // The presser's own seat only, and only from their own open console. The menu stays open so the
+            // button reads "Seated" and the crew count updates; the pilot can press Launch from here.
+            if (player instanceof net.minecraft.server.level.ServerPlayer seating) {
+                Crew.SeatAnswer answer = current.takeSeat(seating, isViewer(seating));
+                DestinationTrace.log("rocket menu {} take seat {}", this.containerId, answer);
+            }
+            return true;
+        }
         if (id == BUTTON_CYCLE_DEST) {
             DestinationSelection.Outcome outcome = current.stepDestination(1, player);
             report(outcome);
@@ -141,11 +193,11 @@ public class RocketMenu extends AbstractContainerMenu {
             return true;
         }
         if (id == BUTTON_CYCLE_STATION) {
-            current.cycleStation(player);
+            current.cycleStation(player); // pilot-only (2.1): a seated crew member's press is ignored
             return true;
         }
         if (id == BUTTON_CYCLE_PAD) {
-            current.cyclePad();
+            current.cyclePad(player);
             return true;
         }
         if (id >= SELECT_DEST_BASE && id < SELECT_DEST_BASE + Destinations.all().size()) {
@@ -156,8 +208,27 @@ public class RocketMenu extends AbstractContainerMenu {
                     index, current.destinationMask(), RocketEntity.gateMask(player), outcome);
             return true; // always broadcast so the screen reconciles its optimistic highlight
         }
+        int slot = DockSelection.slotForButton(id);
+        if (slot != DockSelection.NOT_A_SLOT) {
+            DestinationSelection.Outcome outcome = current.selectStation(slot, player);
+            reportPick(outcome);
+            DestinationTrace.log("rocket menu {} dock pick {} {}", this.containerId, slot, outcome);
+            return true; // always broadcast so the screen reconciles its optimistic highlight
+        }
+        int pad = PadSelection.indexForButton(id);
+        if (pad != PadSelection.NOT_A_PAD) {
+            DestinationSelection.Outcome outcome = current.selectPad(pad, player);
+            reportPick(outcome);
+            DestinationTrace.log("rocket menu {} pad pick {} {}", this.containerId, pad, outcome);
+            return true;
+        }
         DestinationTrace.log("rocket menu {} ignored button {}", this.containerId, id);
         return false;
+    }
+
+    /** Whether {@code player} is this console's own viewer, with this console open. */
+    boolean isViewer(Player player) {
+        return player == this.viewer && player.containerMenu == this;
     }
 
     @Override
@@ -319,26 +390,52 @@ public class RocketMenu extends AbstractContainerMenu {
         return this.lastOutcome.get();
     }
 
+    /** The server's last answer to this viewer's dock or pad pick; 0 = none yet. */
+    public int getLastPickOutcomeCode() {
+        return this.lastPickOutcome.get();
+    }
+
     /** How many of the next locked destinations the viewer's station Observatory reveals. */
     public int getRevealCount() {
         return this.data.get(DATA_REVEAL);
     }
 
     /** Fuel this launch will burn (millibuckets), computed from the trip distance + dimension surcharge. */
+    /** This viewer's Take seat state (2.1); {@link Crew.SeatAnswer#OK} until the server has said otherwise. */
+    public Crew.SeatAnswer getSeatAnswer() {
+        return Crew.SeatAnswer.decode(this.seatState.get());
+    }
+
+    /** Players aboard (2.1). */
+    public int getCrew() {
+        return this.data.get(DATA_CREW);
+    }
+
+    /** Seats the onboard oxygen covers for this flight ("O₂ for N", 2.1). */
+    public int getOxygenFor() {
+        return this.data.get(DATA_OXYGEN_FOR);
+    }
+
+    /** Seats per rocket on this server ({@code rockets.maxCrew}, 2.1); at least 1. */
+    public int getMaxCrew() {
+        return Math.max(1, this.data.get(DATA_MAX_CREW));
+    }
+
+    /** Whether a full-enough crew is short of oxygen: two or more aboard and the reserve covers fewer (2.1). */
+    public boolean isOxygenShort() {
+        return getCrew() >= 2 && getOxygenFor() < getCrew();
+    }
+
     public int getFuelCost() {
         return this.data.get(13);
     }
 
     /**
-     * Display label for the selected docking target. The custom charter name lives server-side (it can't
-     * ride the int-only {@link ContainerData}), so the client shows the stable founding-order label.
+     * Display label for the selected docking target (kept for 2.0 callers): the same lang-keyed label the dock row
+     * shows — the shared origin platform, New Station, a free dock, or the synced station name.
      */
     public String getStationName() {
-        int slot = getStationSlot();
-        if (slot == -2) {
-            return "New Station";
-        }
-        return slot < 0 ? "Origin Platform" : "Station " + (slot + 1);
+        return za.co.neroland.nerospace.client.ClientStations.name(getStationSlot());
     }
 
     /** Fuel-intake slot: only rocket fuel buckets/canisters may be placed. */

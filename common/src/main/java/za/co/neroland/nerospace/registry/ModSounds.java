@@ -74,6 +74,13 @@ public final class ModSounds {
     public static final RegistryEntry<SoundEvent> AMBIENT_STATION_LOOP = register("ambient.station.loop");
     public static final RegistryEntry<SoundEvent> AMBIENT_STATION_ADDITIONS = register("ambient.station.additions");
 
+    // Mars rover (2.1, D16): motor hum while driving, idle tick, horn on the jump key at a standstill, deploy/pack-up.
+    public static final RegistryEntry<SoundEvent> ROVER_MOTOR = register("entity.rover.motor");
+    public static final RegistryEntry<SoundEvent> ROVER_IDLE = register("entity.rover.idle");
+    public static final RegistryEntry<SoundEvent> ROVER_HORN = register("entity.rover.horn");
+    public static final RegistryEntry<SoundEvent> ROVER_PLACE = register("entity.rover.place");
+    public static final RegistryEntry<SoundEvent> ROVER_PICKUP = register("entity.rover.pickup");
+
     private static RegistryEntry<SoundEvent> register(String path) {
         Identifier id = Identifier.fromNamespaceAndPath(NerospaceCommon.MOD_ID, path);
         return SOUND_EVENTS.register(path, key -> SoundEvent.createVariableRangeEvent(id));

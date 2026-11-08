@@ -39,7 +39,53 @@ public final class LaunchCooldowns {
     public record Gate(Verdict verdict, @org.jetbrains.annotations.Nullable String refusal) {
     }
 
-    public enum Verdict { COOLDOWN, REFUSED, OK }
+    /** Append-only: {@code CREW_COOLDOWN} (2.1) = the pilot is clear but a seated crew member is still cooling down. */
+    public enum Verdict { COOLDOWN, REFUSED, OK, CREW_COOLDOWN }
+
+    /** Game ticks left in {@code rider}'s cooldown window at {@code now} (0 when clear). Read-only. */
+    public static synchronized long remaining(UUID rider, long now) {
+        Long until = UNTIL.get(rider);
+        return until == null ? 0L : Math.max(0L, until - now);
+    }
+
+    /**
+     * What {@link #gateCrew} decided. {@code coolingSeats} are the seat indices (0 = pilot) still cooling down, so
+     * each of them can be told their own wait without naming anyone to anybody else.
+     */
+    public record CrewGate(Verdict verdict, @org.jetbrains.annotations.Nullable String refusal,
+            java.util.List<Integer> coolingSeats) {
+    }
+
+    /**
+     * {@link #gate} for a crewed launch (2.1): every seated player ({@code seated}, pilot first) is checked against
+     * their own cooldown, so nobody dodges theirs by riding along; then the fee is charged <b>once</b> ({@code charge},
+     * the pilot's); only when it passed is a launch recorded for every seat. One seat behaves exactly like
+     * {@link #gate}. An empty seat list starts nothing and charges nothing.
+     */
+    public static CrewGate gateCrew(java.util.List<UUID> seated, long now, long cooldown,
+            java.util.function.Supplier<String> charge) {
+        if (seated.isEmpty()) {
+            return new CrewGate(Verdict.OK, null, java.util.List.of());
+        }
+        java.util.List<Integer> cooling = new java.util.ArrayList<>();
+        for (int i = 0; i < seated.size(); i++) {
+            if (coolingDown(seated.get(i), now)) {
+                cooling.add(i);
+            }
+        }
+        if (!cooling.isEmpty()) {
+            return new CrewGate(cooling.get(0) == 0 ? Verdict.COOLDOWN : Verdict.CREW_COOLDOWN, null,
+                    java.util.List.copyOf(cooling));
+        }
+        String refused = charge.get();
+        if (refused != null) {
+            return new CrewGate(Verdict.REFUSED, refused, java.util.List.of());
+        }
+        for (UUID rider : seated) {
+            tryStart(rider, now, cooldown);
+        }
+        return new CrewGate(Verdict.OK, null, java.util.List.of());
+    }
 
     /**
      * The launch order around a fee: the cooldown is checked first, so a launch inside the window is

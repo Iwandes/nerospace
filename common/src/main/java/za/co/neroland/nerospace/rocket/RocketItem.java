@@ -70,6 +70,7 @@ public class RocketItem extends Item {
             RocketEntity rocket = new RocketEntity(
                     level, centre.getX() + 0.5D, centre.getY() + RocketLaunchPadBlock.SURFACE_HEIGHT,
                     centre.getZ() + 0.5D, this.tier);
+            rocket.applyDefaultDock(player); // the deployer's own station, else one they belong to, else origin
             level.addFreshEntity(rocket);
 
             ItemStack stack = context.getItemInHand();
@@ -102,6 +103,7 @@ public class RocketItem extends Item {
 
             RocketEntity rocket = new RocketEntity(
                     level, pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, this.tier);
+            rocket.applyDefaultDock(player);
             level.addFreshEntity(rocket);
 
             ItemStack stack = context.getItemInHand();

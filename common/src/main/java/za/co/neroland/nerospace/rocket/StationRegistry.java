@@ -32,8 +32,9 @@ import za.co.neroland.nerospace.world.station.StationClass;
 /**
  * The server-global registry of player-founded stations. Stored on the overworld (always loaded) via
  * the same {@link SavedDataType} codec pattern as {@code OxygenFieldManager}. All stations live in the
- * single {@code nerospace:station} void dimension at well-separated X offsets; slot numbers are never
- * reused, so a new station can never be founded inside an abandoned hull.
+ * single {@code nerospace:station} void dimension: auto-allocated ones at well-separated X offsets
+ * ({@link #centerFor}), player-placed ones (2.1) at a chosen centre at least {@code stations.minSpacing} from every
+ * other. Slot numbers are never reused, so a new station can never be founded inside an abandoned hull.
  *
  * <p><b>Privacy (POPIA/GDPR):</b> each entry stores the founder's UUID and the UUIDs of up to 16 members the
  * owner added, solely to gate management and use. Those identifiers are kept locally in world save data only —
@@ -62,6 +63,20 @@ public final class StationRegistry extends SavedData {
 
     /** A station's claim box half-width around its centre (slots are 4096 apart). */
     public static final int CLAIM_RADIUS = 48;
+
+    /**
+     * Half-width of the square around <em>any</em> station centre that {@link #entryAt} / {@link #ownerAt} attribute
+     * to that station first (both axes). Half the default {@code stations.minSpacing}, so two placed stations' squares
+     * never overlap at the default; when an operator lowers the spacing the nearest centre wins.
+     */
+    public static final int AREA_RADIUS = 256;
+
+    /**
+     * How far a 4 096-grid auto-allocated centre must stay from every existing centre (horizontal Chebyshev). A grid
+     * slot that would land closer to a player-placed station is skipped (slot ids are never reused anyway), so
+     * auto-allocation never founds on top of a placed station. Without placed stations nothing is ever skipped.
+     */
+    public static final int GRID_CLEARANCE = 512;
 
     public static final SavedDataType<StationRegistry> TYPE = SavedDataCompat.type(ID, StationRegistry::new, codec());
 
@@ -270,13 +285,49 @@ public final class StationRegistry extends SavedData {
         if (this.stations.size() >= MAX_STATIONS) {
             return null;
         }
+        while (gridBlocked(centerFor(this.nextSlot)) && this.nextSlot < Integer.MAX_VALUE - 1) {
+            this.nextSlot++; // a player-placed station sits on this grid slot: skip it (ids are never reused)
+        }
         int slot = this.nextSlot++;
+        return register(slot, name, owner, centerFor(slot));
+    }
+
+    /**
+     * Founds a station at a player-chosen {@code centre} (already checked by
+     * {@link StationFounding#checkPlacement}): takes the next slot id like {@link #found} but keeps the given centre.
+     * {@code null} when {@link #MAX_STATIONS} is reached.
+     */
+    @Nullable
+    public StationEntry foundAt(@Nullable String name, @Nullable String owner, BlockPos centre) {
+        if (this.stations.size() >= MAX_STATIONS) {
+            return null;
+        }
+        int slot = this.nextSlot++;
+        return register(slot, name, owner, centre.immutable());
+    }
+
+    private StationEntry register(int slot, @Nullable String name, @Nullable String owner, BlockPos centre) {
         String stationName = name == null || name.isBlank() ? "Station " + (slot + 1) : name;
-        StationEntry entry = new StationEntry(slot, stationName, centerFor(slot), owner == null ? "" : owner)
+        StationEntry entry = new StationEntry(slot, stationName, centre, owner == null ? "" : owner)
                 .withFoundedAt(java.time.LocalDate.now(java.time.ZoneOffset.UTC).toEpochDay());
         this.stations.put(slot, entry);
         setDirty();
         return entry;
+    }
+
+    /** Whether a grid centre would land within {@link #GRID_CLEARANCE} of an existing station. */
+    private boolean gridBlocked(BlockPos gridCentre) {
+        for (StationEntry e : this.stations.values()) {
+            if (StationFounding.chebyshev(e.center(), gridCentre) < GRID_CLEARANCE) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Whether {@code entry} sits on its 4 096-grid centre (every 1.x / 2.0 station and every auto-allocated one). */
+    public static boolean isGridAllocated(StationEntry entry) {
+        return entry.center().equals(centerFor(entry.slot()));
     }
 
     /** Renames {@code slot}; @return the updated entry, or {@code null} if it wasn't registered. */
@@ -410,17 +461,69 @@ public final class StationRegistry extends SavedData {
     }
 
     /**
-     * The station whose slot band holds {@code pos} in the station dimension (each slot owns a
-     * {@link #SLOT_SPACING}-wide X band), or {@code null} off-station or for the origin platform.
+     * The station {@code pos} belongs to in the station dimension, or {@code null} off-station or for the origin
+     * platform. See {@link #lookup}.
      */
     @Nullable
     public StationEntry entryAt(ResourceKey<Level> dim, BlockPos pos) {
         if (!ModDimensions.STATION_LEVEL.equals(dim)) {
             return null;
         }
-        for (StationEntry entry : this.stations.values()) {
-            if (Math.abs(entry.center().getX() - pos.getX()) <= SLOT_SPACING / 2) {
+        return lookup(this.stations.values(), pos);
+    }
+
+    /**
+     * Which station {@code pos} belongs to, on both axes. First the station whose centre is nearest within
+     * {@link #AREA_RADIUS} (horizontal Chebyshev) — this is what finds a player-placed station at any X and Z. Failing
+     * that, the 2.0.0 rule for grid-allocated stations only: the {@link #SLOT_SPACING}-wide X band around the slot
+     * centre, first in founding order. A registry holding only grid stations answers exactly as 2.0.0 did (inside a
+     * band's ±256 square the band's own station is the only candidate), so old saves are unchanged.
+     */
+    @Nullable
+    public static StationEntry lookup(java.util.Collection<StationEntry> entries, BlockPos pos) {
+        StationEntry near = nearestArea(entries, pos);
+        if (near != null) {
+            return near;
+        }
+        for (StationEntry entry : entries) {
+            if (isGridAllocated(entry) && Math.abs(entry.center().getX() - pos.getX()) <= SLOT_SPACING / 2) {
                 return entry;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private static StationEntry nearestArea(java.util.Collection<StationEntry> entries, BlockPos pos) {
+        StationEntry best = null;
+        int bestD = Integer.MAX_VALUE;
+        for (StationEntry entry : entries) {
+            int d = StationFounding.chebyshev(entry.center(), pos);
+            if (d <= AREA_RADIUS && d < bestD) {
+                bestD = d;
+                best = entry;
+            }
+        }
+        return best;
+    }
+
+    /**
+     * The owner UUID string for {@code pos} (see {@link #ownerAt}), or {@code null}. Pure for the tests: the nearest
+     * station square decides (an unowned station there means no owner); otherwise the first <em>owned</em>
+     * grid-allocated station whose X band holds {@code pos}, exactly the 2.0.0 rule.
+     */
+    @Nullable
+    public static String ownerLookup(java.util.Collection<StationEntry> entries, BlockPos pos) {
+        StationEntry near = nearestArea(entries, pos);
+        if (near != null) {
+            return near.owner().isEmpty() ? null : near.owner();
+        }
+        for (StationEntry entry : entries) {
+            if (entry.owner().isEmpty() || !isGridAllocated(entry)) {
+                continue;
+            }
+            if (Math.abs(entry.center().getX() - pos.getX()) <= SLOT_SPACING / 2) {
+                return entry.owner();
             }
         }
         return null;
@@ -468,28 +571,24 @@ public final class StationRegistry extends SavedData {
     /**
      * The founder UUID of the station whose footprint contains {@code pos} in {@code dim}, or {@code null}
      * when {@code pos} is outside the station dimension, in an unowned/legacy station, or no station claims
-     * it. Used as a graceful operator fallback for an unattended in-station meteor grinder. Each station
-     * occupies a {@link #SLOT_SPACING}-wide X band centred on its slot, so the owning slot is found by
-     * proximity on X. Never logs the UUID (POPIA/GDPR).
+     * it. Used as a graceful operator fallback for an unattended in-station meteor grinder. Found on both axes
+     * ({@link #ownerLookup}): a placed station's square first, then a grid station's X band. Never logs the UUID
+     * (POPIA/GDPR).
      */
     @Nullable
     public java.util.UUID ownerAt(ResourceKey<Level> dim, BlockPos pos) {
         if (!ModDimensions.STATION_LEVEL.equals(dim)) {
             return null;
         }
-        for (StationEntry entry : this.stations.values()) {
-            if (entry.owner() == null || entry.owner().isEmpty()) {
-                continue;
-            }
-            if (Math.abs(entry.center().getX() - pos.getX()) <= SLOT_SPACING / 2) {
-                try {
-                    return java.util.UUID.fromString(entry.owner());
-                } catch (IllegalArgumentException ignored) {
-                    return null;
-                }
-            }
+        String owner = ownerLookup(this.stations.values(), pos);
+        if (owner == null) {
+            return null;
         }
-        return null;
+        try {
+            return java.util.UUID.fromString(owner);
+        } catch (IllegalArgumentException ignored) {
+            return null;
+        }
     }
 
     /** All stations in founding order (the UI's cycle order). */

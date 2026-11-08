@@ -56,8 +56,12 @@ public final class NerospaceLinkModule {
     /** The link module id — the same string as the mod id, as the ecosystem convention requires. */
     public static final String MODULE_ID = NerospaceCommon.MOD_ID;
 
-    /** The snapshot schema revision. Bump on any change to a section's shape. */
-    public static final int SCHEMA_VERSION = 2;
+    /**
+     * The snapshot schema revision. Bump on any change to a section's shape. v3 (2.1): rockets rows gain
+     * {@code crew_count} (additive). v4 (2.1): the rockets section gains a {@code rovers} array — only the requester's
+     * own rovers, in the same proximity scan (additive).
+     */
+    public static final int SCHEMA_VERSION = 4;
 
     /** Rockets the player can see from where they stand, with tier/fuel/state + pad readiness. */
     public static final String SECTION_ROCKETS = "rockets";

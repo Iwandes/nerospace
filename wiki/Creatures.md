@@ -148,5 +148,6 @@ entry from an `event` alias to a `sound` file. No code changes are needed.
 **Spawn eggs:** all eight creatures — the five natives (Xertz Stalker, Quartz Crawler, Greenling,
 Cinder Stalker, Frost Strider) and the three livestock (Meadow Loper, Ember Strutter, Woolly Drift) —
 have creative spawn eggs in the Nerospace tab, each icon coloured to match its creature. For a quick
-A/B look (live vs frozen), use the creative gallery command **`/nerospace gallery`**, which spawns
-each creature twice — once with AI and once with NoAI — alongside a display of every block.
+look at every creature, use the creative gallery command **`/nerospace gallery`**, which spawns each
+one frozen in place (no AI) under its name, sets the Mars natives beside the rover, and shows every
+block and item alongside.

@@ -560,8 +560,8 @@ public final class GalleryCaptureHarness {
         // LAUNCH CONTROLLER (centre-NW, ctrl at −27/oy+1/−18 facing south; hologram projects south).
         shots.add(shot("launch_controller", -23, oy + 3, -10, -27, oy + 2, -18));
 
-        // CREATURES (SOUTH-EAST, z+34, nine frozen along x 18..50). Down the line, low, near-eye height.
-        shots.add(shot("creatures", 14, oy + 2, 36, 49, oy + 1.6, 34));
+        // CREATURES (SOUTH-EAST, z+34, twelve frozen along x 18..62). Down the line, low, near-eye height.
+        shots.add(shot("creatures", 14, oy + 2, 36, 62, oy + 1.6, 34));
         shots.add(shot("creatures_closeup", 16.5, oy + 2.2, 31, 24, oy + 1.5, 34));
 
         // METEOR SITE (SOUTH-WEST, −28/+30; meteor hovers at oy+11). Close low angle: crater + core + meteor.
@@ -575,6 +575,18 @@ public final class GalleryCaptureHarness {
         // SOLAR ARRAYS (SOUTH-WEST, base −50/+36). 3/4 across the tilted decks + a closer field angle.
         shots.add(shot("solar", -33, oy + 4, 45, -44, oy + 2, 38));
         shots.add(shot("solar_field", -46, oy + 4, 46, -44, oy + 2, 40));
+
+        // MARS EXPEDITION (EAST-SOUTH-EAST, centre +84/+38): rover, Salvage Drone, Dust Strider, held Dust Devil.
+        shots.add(shot("mars_expedition", 72, oy + 5, 28, 84, oy + 1.5, 38));
+        shots.add(shot("mars_rover", 72.5, oy + 2.6, 35, 78.5, oy + 1, 38.5));   // rover close-up, from the west
+
+        // CREW + DOCKING (NORTH-NORTH-EAST, T2 pad corner +16/−64): crewed rocket + an empty Docking Ring.
+        shots.add(shot("crew_rocket", 21, oy + 4, -54, 21, oy + 2.5, -64));
+        shots.add(shot("crew_seats", 17.5, oy + 5, -59.5, 17.5, oy + 4, -64)); // looking into the seated hull
+
+        // ITEM WALL (WEST-SOUTH-WEST, wall x −54 facing east, z +8 onward). Broadside + a close look at the start.
+        shots.add(shot("item_wall", -38, oy + 4.5, 21, -53, oy + 3.5, 21));
+        shots.add(shot("item_wall_closeup", -47, oy + 3.5, 11, -53, oy + 3.5, 11));
 
         return shots;
     }

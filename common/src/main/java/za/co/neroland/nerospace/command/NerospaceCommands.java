@@ -24,7 +24,9 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.entity.decoration.GlowItemFrame;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -552,24 +554,30 @@ public final class NerospaceCommands {
         // cargo across the gallery and lands it on B. Pipes on B's far side show delivered cargo leaving.
         buildFreight(level, floor, player, rx, rz0 - 12, fy);
 
-        // Creatures: each spawned twice — live (AI) and frozen (NoAI) — on a small floor strip.
+        // Creatures: one frozen (NoAI) row, each with its name on a floating label. The Mars natives (Salvage
+        // Drone, Dust Strider) stand with the rover in the Mars Expedition cluster instead.
         int mx = origin.getX() + 18; // creatures → SOUTH-EAST
         int mz = origin.getZ() + 33;
-        for (int dx = -1; dx <= 8 * 4; dx++) {
-            for (int dz = -1; dz <= 3; dz++) {
-                level.setBlockAndUpdate(new BlockPos(mx + dx, fy, mz + dz), floor);
-            }
-        }
         List<EntityType<? extends Mob>> creatures = List.of(
                 ModEntities.XERTZ_STALKER.get(), ModEntities.QUARTZ_CRAWLER.get(),
                 ModEntities.GREENLING.get(), ModEntities.CINDER_STALKER.get(),
                 ModEntities.FROST_STRIDER.get(), ModEntities.ALIEN_VILLAGER.get(),
                 // Terraform livestock (DEEPER_TERRAFORM_DESIGN.md §5).
                 ModEntities.MEADOW_LOPER.get(), ModEntities.EMBER_STRUTTER.get(),
-                ModEntities.WOOLLY_DRIFT.get());
+                ModEntities.WOOLLY_DRIFT.get(),
+                // Megacity guardian (summon-only) and the 2.0 world natives.
+                ModEntities.RUIN_WARDEN.get(),
+                za.co.neroland.nerospace.world.planet.luna.LunaContent.MOON_HOPPER.get(),
+                za.co.neroland.nerospace.world.planet.nyxara.NyxaraContent.DUSK_MOTH.get());
+        for (int dx = -1; dx <= creatures.size() * 4; dx++) {
+            for (int dz = -1; dz <= 3; dz++) {
+                level.setBlockAndUpdate(new BlockPos(mx + dx, fy, mz + dz), floor);
+            }
+        }
         // One frozen (NoAI) row only — AI mobs wander, which breaks reproducible screenshots.
         for (int i = 0; i < creatures.size(); i++) {
             spawnShowcase(level, creatures.get(i), new BlockPos(mx + i * 4, fy + 1, mz + 1), true);
+            spawnLabelStand(level, new BlockPos(mx + i * 4, fy + 3, mz + 1), creatures.get(i).getDescription());
         }
 
         // METEOR SITE (meteor-events-design.md): a small crater of meteor_rock around a loot-bearing
@@ -631,7 +639,20 @@ public final class NerospaceCommands {
         spawnLabelStand(level, new BlockPos(lcx + 3, fy + 4, lcz),
                 Component.translatable("command.nerospace.gallery.label.launch_controller"));
 
+        // MARS EXPEDITION (EAST-SOUTH-EAST, past the end of the creature row): the rover on Martian ground with
+        // the Mars natives and a held dust devil.
+        buildMarsExpedition(level, origin.getX() + 84, origin.getZ() + 38, fy);
+
+        // CREW + DOCKING (NORTH-NORTH-EAST, beyond the rocket row): a Tier 2 rocket with all four seats taken,
+        // beside a full 3x3 Docking Ring.
+        buildCrewAndDock(level, floor, origin.getX() + 16, origin.getZ() - 64, fy);
+
+        // ITEM WALL (WEST-SOUTH-WEST, between the pipe rows and the solar arrays): every non-block item in
+        // glow item frames, grouped by category.
+        int wallItems = buildItemWall(level, floor, origin.getX() - 54, origin.getZ() + 8, fy);
+
         source.sendSuccess(() -> Component.translatable("command.nerospace.gallery.built", blocks.size()), false);
+        source.sendSuccess(() -> Component.translatable("command.nerospace.gallery.built_extras", wallItems), false);
         return Command.SINGLE_SUCCESS;
     }
 
@@ -657,8 +678,9 @@ public final class NerospaceCommands {
         int oy = origin.getY();
         int oz = origin.getZ();
 
-        // Footprint of the ROTUNDA buildGallery() (clusters sit ~48 out on N/S/E/W/SE/NW bearings)
-        // plus margin, so the clear covers every cluster — else reruns stack creatures/rockets/stands.
+        // Footprint of the ROTUNDA buildGallery() (clusters sit ~48 out on N/S/E/W/SE/NW bearings, plus the
+        // Mars Expedition ESE, crew + docking NNE and the item wall WSW) plus margin, so the clear covers every
+        // cluster — else reruns stack creatures/rockets/stands/item frames.
         // The floor sits at oy, so clearing oy..topY to air restores the original flat ground at oy-1.
         int minX = ox - 56;
         int maxX = ox + 126;
@@ -694,6 +716,216 @@ public final class NerospaceCommands {
         source.sendSuccess(() -> Component.translatable("command.nerospace.gallery.cleared",
                 clearedBlocks, removedEntities), false);
         return Command.SINGLE_SUCCESS;
+    }
+
+    /** Item-frame rows on the item wall (frames fill each group's column top-down). */
+    private static final int WALL_ROWS = 6;
+    /** Empty columns between two item groups, so the floating group labels don't run together. */
+    private static final int WALL_GAP = 2;
+
+    /**
+     * The Mars Expedition: a red-regolith pad (sandstone rim) centred on {@code (cx, cz)} with a fully charged rover
+     * carrying some Mars cargo, a frozen Salvage Drone and Dust Strider, and a held Dust Devil on its pit. The rover
+     * has no owner (the gallery records no player), so anyone may ride it or pack it up.
+     */
+    private static void buildMarsExpedition(ServerLevel level, int cx, int cz, int fy) {
+        BlockState rim = za.co.neroland.nerospace.world.planet.mars.MarsContent.MARTIAN_SANDSTONE.get().defaultBlockState();
+        BlockState regolith = za.co.neroland.nerospace.world.planet.mars.MarsContent.RED_REGOLITH.get().defaultBlockState();
+        for (int dx = -12; dx <= 12; dx++) {
+            for (int dz = -6; dz <= 6; dz++) {
+                boolean edge = Math.abs(dx) == 12 || Math.abs(dz) == 6;
+                level.setBlockAndUpdate(new BlockPos(cx + dx, fy, cz + dz), edge ? rim : regolith);
+            }
+        }
+
+        // The rover, parked facing west (towards the gallery centre), full charge, cargo aboard.
+        za.co.neroland.nerospace.entity.RoverEntity rover =
+                ModEntities.ROVER.get().create(level, EntitySpawnReason.COMMAND);
+        if (rover != null) {
+            rover.snapTo(cx - 6 + 0.5D, fy + 1, cz + 0.5D, 90.0F, 0.0F);
+            rover.setEnergy(za.co.neroland.nerospace.entity.RoverEntity.capacity());
+            rover.cargo().setItem(0, new ItemStack(za.co.neroland.nerospace.world.planet.mars.MarsContent.RAW_HEMATITE.get(), 32));
+            rover.cargo().setItem(1, new ItemStack(za.co.neroland.nerospace.world.planet.mars.MarsContent.RUST_PIGMENT.get(), 16));
+            rover.cargo().setItem(2, new ItemStack(za.co.neroland.nerospace.world.planet.mars.MarsContent.PERCHLORATE_OXIDISER.get(), 8));
+            level.addFreshEntity(rover);
+        }
+        spawnLabelStand(level, new BlockPos(cx - 6, fy + 3, cz),
+                Component.translatable("command.nerospace.gallery.label.rover"));
+
+        // Mars natives, frozen like the creature row.
+        EntityType<? extends Mob> drone = za.co.neroland.nerospace.world.planet.mars.MarsContent.SALVAGE_DRONE.get();
+        EntityType<? extends Mob> strider = za.co.neroland.nerospace.world.planet.mars.MarsContent.DUST_STRIDER.get();
+        spawnShowcase(level, drone, new BlockPos(cx, fy + 1, cz - 2), true);
+        spawnLabelStand(level, new BlockPos(cx, fy + 3, cz - 2), drone.getDescription());
+        spawnShowcase(level, strider, new BlockPos(cx + 3, fy + 1, cz + 2), true);
+        spawnLabelStand(level, new BlockPos(cx + 3, fy + 3, cz + 2), strider.getDescription());
+
+        // A dust devil held over its pit: it swirls but never wanders, tosses items or dies out.
+        level.setBlockAndUpdate(new BlockPos(cx + 8, fy, cz),
+                za.co.neroland.nerospace.world.planet.mars.MarsContent.DUST_DEVIL_PIT.get().defaultBlockState());
+        za.co.neroland.nerospace.world.planet.mars.entity.DustDevil.spawnFrozen(level, cx + 8.5D, fy + 1, cz + 0.5D);
+        spawnLabelStand(level, new BlockPos(cx + 8, fy + 4, cz),
+                za.co.neroland.nerospace.world.planet.mars.MarsContent.DUST_DEVIL.get().getDescription());
+
+        spawnLabelStand(level, new BlockPos(cx, fy + 5, cz - 5),
+                Component.translatable("command.nerospace.gallery.label.mars_expedition"));
+    }
+
+    /**
+     * A crewed Tier 2 rocket on its 3x3 pad — the four seats taken by suited armour stands (pilot first), so the
+     * side-by-side seating reads through the hull — and a full 3x3 Docking Ring beside it (an empty dock). The
+     * stands are forced aboard: a rocket only admits players, and Crew counts players, so the console reads an
+     * empty crew and nobody can launch it. {@code (x, z)} is the pad's north-west corner.
+     */
+    private static void buildCrewAndDock(ServerLevel level, BlockState floor, int x, int z, int fy) {
+        for (int dx = -3; dx <= 13; dx++) {
+            for (int dz = -4; dz <= 4; dz++) {
+                level.setBlockAndUpdate(new BlockPos(x + dx, fy, z + dz), floor);
+            }
+        }
+        BlockState pad = ModBlocks.ROCKET_LAUNCH_PAD.get().defaultBlockState();
+        fillPad(level, new BlockPos(x, fy + 1, z - 1), 3, pad);
+        RocketEntity rocket = new RocketEntity(level,
+                x + 1.5D, fy + 1 + RocketLaunchPadBlock.SURFACE_HEIGHT, z + 0.5D, RocketTier.TIER_2);
+        rocket.addFuel(RocketTier.TIER_2.fuelCapacity());
+        rocket.addOxygen(RocketTier.TIER_2.oxygenCapacity());
+        level.addFreshEntity(rocket);
+        Item[][] suits = {
+                {ModItems.OXYGEN_SUIT_HELMET.get(), ModItems.OXYGEN_SUIT_CHESTPLATE.get(),
+                        ModItems.OXYGEN_SUIT_LEGGINGS.get(), ModItems.OXYGEN_SUIT_BOOTS.get()},
+                {ModItems.OXYGEN_SUIT_T2_HELMET.get(), ModItems.OXYGEN_SUIT_T2_CHESTPLATE.get(),
+                        ModItems.OXYGEN_SUIT_T2_LEGGINGS.get(), ModItems.OXYGEN_SUIT_T2_BOOTS.get()},
+                {ModItems.OXYGEN_SUIT_HEAT_HELMET.get(), ModItems.OXYGEN_SUIT_HEAT_CHESTPLATE.get(),
+                        ModItems.OXYGEN_SUIT_HEAT_LEGGINGS.get(), ModItems.OXYGEN_SUIT_HEAT_BOOTS.get()},
+                {ModItems.OXYGEN_SUIT_COLD_HELMET.get(), ModItems.OXYGEN_SUIT_COLD_CHESTPLATE.get(),
+                        ModItems.OXYGEN_SUIT_COLD_LEGGINGS.get(), ModItems.OXYGEN_SUIT_COLD_BOOTS.get()},
+        };
+        for (Item[] suit : suits) {
+            ArmorStand crew = new ArmorStand(level, rocket.getX(), rocket.getY(), rocket.getZ());
+            crew.setItemSlot(EquipmentSlot.HEAD, new ItemStack(suit[0]));
+            crew.setItemSlot(EquipmentSlot.CHEST, new ItemStack(suit[1]));
+            crew.setItemSlot(EquipmentSlot.LEGS, new ItemStack(suit[2]));
+            crew.setItemSlot(EquipmentSlot.FEET, new ItemStack(suit[3]));
+            makeInvulnerable(crew);
+            level.addFreshEntity(crew);
+            crew.startRiding(rocket, true, false);
+        }
+        spawnLabelStand(level, new BlockPos(x + 1, fy + 6, z),
+                Component.translatable("command.nerospace.gallery.label.crew_rocket"));
+
+        // A full Docking Ring, empty: placed by hand in the station dimension it is a free dock any rocket may pick.
+        BlockPos ringCentre = new BlockPos(x + 9, fy + 1, z);
+        za.co.neroland.nerospace.rocket.DockingRingBlock.placeRing(level, ringCentre, Direction.SOUTH, null);
+        spawnLabelStand(level, ringCentre.above(2),
+                Component.translatable("command.nerospace.gallery.label.docking_ring"));
+    }
+
+    /**
+     * The item wall: a Station Wall facing east at {@code x = wx}, starting at {@code z = wz0} and running south,
+     * with glow item frames holding every Nerospace item that is not a block (blocks are on the block grid; the
+     * suit pieces are worn on the suit stands). Groups run left to right — materials, food, tools and gear,
+     * vehicles, creative travel devices, spawn eggs — each under a floating label. Food is anything edible; anything
+     * not named in a group lands in materials, so a new item still appears. Returns how many items it shows.
+     */
+    private static int buildItemWall(ServerLevel level, BlockState floor, int wx, int wz0, int fy) {
+        java.util.Set<Item> wornOnStands = java.util.Set.of(
+                ModItems.OXYGEN_SUIT_HELMET.get(), ModItems.OXYGEN_SUIT_CHESTPLATE.get(),
+                ModItems.OXYGEN_SUIT_LEGGINGS.get(), ModItems.OXYGEN_SUIT_BOOTS.get(),
+                ModItems.OXYGEN_SUIT_T2_HELMET.get(), ModItems.OXYGEN_SUIT_T2_CHESTPLATE.get(),
+                ModItems.OXYGEN_SUIT_T2_LEGGINGS.get(), ModItems.OXYGEN_SUIT_T2_BOOTS.get(),
+                ModItems.OXYGEN_SUIT_HEAT_HELMET.get(), ModItems.OXYGEN_SUIT_HEAT_CHESTPLATE.get(),
+                ModItems.OXYGEN_SUIT_HEAT_LEGGINGS.get(), ModItems.OXYGEN_SUIT_HEAT_BOOTS.get(),
+                ModItems.OXYGEN_SUIT_COLD_HELMET.get(), ModItems.OXYGEN_SUIT_COLD_CHESTPLATE.get(),
+                ModItems.OXYGEN_SUIT_COLD_LEGGINGS.get(), ModItems.OXYGEN_SUIT_COLD_BOOTS.get());
+        java.util.Set<Item> tools = java.util.Set.of(ModItems.NEROSIUM_PICKAXE.get(), ModItems.ROCKET_FUEL_BUCKET.get(),
+                ModItems.XERTZ_RESONATOR.get(), ModItems.CONFIGURATOR.get(), ModItems.PIPE_FILTER.get(),
+                ModItems.ADVANCED_PIPE_FILTER.get(), ModItems.SPEED_UPGRADE.get(), ModItems.CAPACITY_UPGRADE.get(),
+                ModItems.SPEED_MODULE.get(), ModItems.EFFICIENCY_MODULE.get(), ModItems.FORTUNE_MODULE.get(),
+                ModItems.SILK_TOUCH_MODULE.get(), ModItems.EVAPORATOR_MODULE.get(), ModItems.STAR_GUIDE_BOOK.get(),
+                ModItems.STATION_CHARTER.get(), ModItems.METEOR_TRACKER.get(), ModItems.RAD_LINING.get(),
+                za.co.neroland.nerospace.world.planet.greenxertz.GreenxertzContent.SPORE_BOMB.get());
+        java.util.Set<Item> vehicles = java.util.Set.of(ModItems.ROCKET_TIER_1.get(), ModItems.ROCKET_TIER_2.get(),
+                ModItems.ROCKET_TIER_3.get(), ModItems.ROCKET_TIER_4.get(), ModItems.CARGO_ROCKET.get(),
+                ModItems.CARGO_CRATE.get(), za.co.neroland.nerospace.world.planet.mars.MarsContent.ROVER.get());
+        java.util.Set<Item> creative = java.util.Set.of(ModItems.STATION_COMPASS.get(), ModItems.GREENXERTZ_COMPASS.get(),
+                ModItems.CINDARA_COMPASS.get(), ModItems.GLACIRA_COMPASS.get(), ModItems.LUNA_COMPASS.get(),
+                ModItems.MARS_COMPASS.get(), ModItems.NYXARA_COMPASS.get(), ModItems.METEOR_CALLER.get());
+
+        List<Item> materialsGroup = new ArrayList<>();
+        List<Item> foodGroup = new ArrayList<>();
+        List<Item> toolsGroup = new ArrayList<>();
+        List<Item> vehiclesGroup = new ArrayList<>();
+        List<Item> creativeGroup = new ArrayList<>();
+        List<Item> eggsGroup = new ArrayList<>();
+        for (Item item : BuiltInRegistries.ITEM) {
+            Identifier id = BuiltInRegistries.ITEM.getKey(item);
+            if (!NerospaceCommon.MOD_ID.equals(id.getNamespace()) || item instanceof BlockItem
+                    || wornOnStands.contains(item)) {
+                continue;
+            }
+            if (id.getPath().endsWith("_spawn_egg")) {
+                eggsGroup.add(item);
+            } else if (item.components().has(net.minecraft.core.component.DataComponents.FOOD)) {
+                foodGroup.add(item);
+            } else if (tools.contains(item)) {
+                toolsGroup.add(item);
+            } else if (vehicles.contains(item)) {
+                vehiclesGroup.add(item);
+            } else if (creative.contains(item)) {
+                creativeGroup.add(item);
+            } else {
+                materialsGroup.add(item);
+            }
+        }
+        List<List<Item>> groups = List.of(materialsGroup, foodGroup, toolsGroup, vehiclesGroup, creativeGroup, eggsGroup);
+        String[] labels = {"items_materials", "items_food", "items_tools", "items_vehicles", "items_creative",
+                "items_spawn_eggs"};
+
+        int width = 0;
+        for (List<Item> group : groups) {
+            if (!group.isEmpty()) {
+                width += (group.size() + WALL_ROWS - 1) / WALL_ROWS + WALL_GAP;
+            }
+        }
+        width = Math.max(1, width - WALL_GAP);
+        for (int dx = -1; dx <= 5; dx++) {
+            for (int dz = -2; dz <= width + 1; dz++) {
+                level.setBlockAndUpdate(new BlockPos(wx + dx, fy, wz0 + dz), floor);
+            }
+        }
+        BlockState wall = ModBlocks.STATION_WALL.get().defaultBlockState();
+        for (int dz = -1; dz <= width; dz++) {
+            for (int dy = 1; dy <= WALL_ROWS + 1; dy++) {
+                level.setBlockAndUpdate(new BlockPos(wx, fy + dy, wz0 + dz), wall);
+            }
+        }
+
+        int shown = 0;
+        int z = wz0;
+        int labelIndex = 0;
+        for (int g = 0; g < groups.size(); g++) {
+            List<Item> group = groups.get(g);
+            if (group.isEmpty()) {
+                continue;
+            }
+            int cols = (group.size() + WALL_ROWS - 1) / WALL_ROWS;
+            for (int i = 0; i < group.size(); i++) {
+                BlockPos at = new BlockPos(wx + 1, fy + WALL_ROWS - i % WALL_ROWS, z + i / WALL_ROWS);
+                GlowItemFrame frame = new GlowItemFrame(level, at, Direction.EAST);
+                frame.setItem(new ItemStack(group.get(i)));
+                makeInvulnerable(frame);
+                level.addFreshEntity(frame);
+                shown++;
+            }
+            // Alternate the label heights so neighbouring group names never overlap.
+            spawnLabelStand(level, new BlockPos(wx + 2, fy + WALL_ROWS + (labelIndex % 2), z + (cols - 1) / 2),
+                    Component.translatable("command.nerospace.gallery.label." + labels[g]));
+            labelIndex++;
+            z += cols + WALL_GAP;
+        }
+        spawnLabelStand(level, new BlockPos(wx + 3, fy + WALL_ROWS + 3, wz0 + width / 2),
+                Component.translatable("command.nerospace.gallery.label.item_wall"));
+        return shown;
     }
 
     /**
@@ -963,6 +1195,15 @@ public final class NerospaceCommands {
         stand.setInvulnerable(true);
         //?}
         level.addFreshEntity(stand);
+    }
+
+    /** Gallery fixtures shrug off hits (the flag was renamed in 26.3). */
+    private static void makeInvulnerable(Entity entity) {
+        //? if >=26.3 {
+        /*entity.setPermanentlyInvulnerable(true);
+        *///?} else {
+        entity.setInvulnerable(true);
+        //?}
     }
 
     /** Set one face of the pipe at {@code pos} to {@code mode} for ALL four resource layers. */

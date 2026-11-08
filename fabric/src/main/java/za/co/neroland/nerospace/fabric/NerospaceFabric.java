@@ -112,6 +112,7 @@ public final class NerospaceFabric implements ModInitializer {
             server.getPlayerList().getPlayers().forEach(player -> {
                 OxygenManager.tick(player);
                 StarGuideGrants.tick(player);
+                za.co.neroland.nerospace.network.StationListSync.tick(player);
             });
             MeteorEvents.tick(server);
             OxygenFieldEvents.tick(server);

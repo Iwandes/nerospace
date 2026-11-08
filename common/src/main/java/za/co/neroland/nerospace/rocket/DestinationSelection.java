@@ -30,7 +30,15 @@ public final class DestinationSelection {
         /** The rocket is already lifting off. */
         LAUNCHING("gui.nerospace.dest.reason.launching"),
         /** No rocket to change (Launch Controller with an empty pad, or a client-side call). */
-        NO_ROCKET("gui.nerospace.dest.reason.no_rocket");
+        NO_ROCKET("gui.nerospace.dest.reason.no_rocket"),
+        /** A dock pick: that station accepts only its members' rockets (MEMBERS docking policy). */
+        MEMBERS_ONLY("gui.nerospace.dock.reason.members"),
+        /** A dock pick: "New Station" needs a Station Charter in the inventory. */
+        NO_CHARTER("gui.nerospace.dock.reason.charter"),
+        /** A dock or pad pick that no longer exists (abandoned registry slot, removed pad). */
+        UNKNOWN_TARGET("gui.nerospace.dock.reason.gone"),
+        /** 2.1: someone else is the pilot (first aboard); only the pilot sets course, dock and pad. */
+        NOT_PILOT("gui.nerospace.dest.reason.pilot");
 
         @Nullable
         private final String langKey;

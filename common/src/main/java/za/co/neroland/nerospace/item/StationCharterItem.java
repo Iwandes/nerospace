@@ -1,5 +1,6 @@
 package za.co.neroland.nerospace.item;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -12,6 +13,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
+import za.co.neroland.nerospace.config.NerospaceConfig;
 import za.co.neroland.nerospace.menu.MenuOpener;
 import za.co.neroland.nerospace.menu.StationCharterMenu;
 import za.co.neroland.nerospace.progression.StarGuideGrants;
@@ -19,6 +21,7 @@ import za.co.neroland.nerospace.registry.ModDimensions;
 import za.co.neroland.nerospace.registry.ModItems;
 import za.co.neroland.nerospace.rocket.PadRegistry;
 import za.co.neroland.nerospace.rocket.StationCoreBlockEntity;
+import za.co.neroland.nerospace.rocket.StationFounding;
 import za.co.neroland.nerospace.rocket.StationRegistry;
 import za.co.neroland.nerospace.rocket.StationStructure;
 import za.co.neroland.nerospace.telemetry.NerospaceTelemetry;
@@ -63,9 +66,21 @@ public class StationCharterItem extends Item {
 
     /**
      * Server-side founding from the naming screen: allocate the station slot, build it, consume one
-     * charter from the player's hands. No teleport.
+     * charter from the player's hands. No teleport. (The 2.0 entry point: next free grid slot, full structure.)
      */
     public static void foundFromUi(ServerPlayer player, String name) {
+        foundFromUi(player, name, false, true);
+    }
+
+    /**
+     * Server-side founding from the naming screen. With {@code claimHere} and the player in the station dimension
+     * the station is founded where they stand ({@link StationFounding#snap}), subject to
+     * {@link StationFounding#checkPlacement}; a refusal names its reason and <b>keeps the charter</b>. Anywhere else
+     * the next free 4 096-grid slot is used, exactly as in 2.0. {@code buildStarter = false} (placed stations only)
+     * founds the registry entry and its claim with just a Docking Ring; otherwise the starter structure is built.
+     * The position always comes from the server-side player, never from the packet.
+     */
+    public static void foundFromUi(ServerPlayer player, String name, boolean claimHere, boolean buildStarter) {
         MinecraftServer server = player.level().getServer();
         if (server == null) {
             return;
@@ -82,26 +97,72 @@ public class StationCharterItem extends Item {
             }
         }
         StationRegistry registry = StationRegistry.get(server);
-        if (registry.isFull()) {
-            player.sendSystemMessage(Component.translatable("item.nerospace.station_charter.full"));
-            return;
-        }
         String trimmed = name == null ? "" : name.trim();
-        StationRegistry.StationEntry entry =
-                registry.found(trimmed.isBlank() ? null : trimmed, player.getUUID().toString());
+        String stationName = trimmed.isBlank() ? null : trimmed;
+        boolean placed = claimHere && ModDimensions.STATION_LEVEL.equals(player.level().dimension());
+        StationRegistry.StationEntry entry;
+        if (placed) {
+            BlockPos centre = StationFounding.snap(player.blockPosition());
+            StationFounding.PlaceResult verdict = StationFounding.checkPlacement(centre, registry.all(),
+                    NerospaceConfig.stationsMinSpacing(), NerospaceConfig.stationsMaxRadius(), registry.isFull());
+            if (!StationFounding.consumesCharter(verdict.outcome())) {
+                player.sendSystemMessage(refusal(verdict, player));
+                NerospaceTelemetry.breadcrumb("station", "placement refused=" + verdict.outcome().name());
+                return; // refused: the charter stays in hand
+            }
+            entry = registry.foundAt(stationName, player.getUUID().toString(), verdict.centre());
+        } else {
+            if (registry.isFull()) {
+                player.sendSystemMessage(Component.translatable("item.nerospace.station_charter.full"));
+                return;
+            }
+            entry = registry.found(stationName, player.getUUID().toString());
+        }
         if (entry == null) {
             player.sendSystemMessage(Component.translatable("item.nerospace.station_charter.full"));
             return;
         }
         held.shrink(1);
-        StationStructure.build(station, entry.center());
-        NerospaceTelemetry.breadcrumb("station", "founded slot=" + entry.slot());
+        if (placed && !buildStarter) {
+            StationStructure.buildFrame(station, entry);
+        } else {
+            StationStructure.build(station, entry.center());
+        }
+        NerospaceTelemetry.breadcrumb("station", "founded slot=" + entry.slot() + " placed=" + (placed ? 1 : 0));
         // NeroLink: a thin broadcast (slot + dimension + state only — no name, owner or position).
         za.co.neroland.nerospace.link.NerospaceLinkEvents.stationStateChanged(server, entry.slot(), "FOUNDED");
         StarGuideGrants.grant(player, "guide/station_charter");
         // Founding an off-world base opens Neroland Core's shared FIRST_COLONY gate (one-directional).
         StarGuideGrants.driveFirstColony(player);
         player.sendSystemMessage(Component.translatable("item.nerospace.station_charter.founded", entry.name()));
+        // The founder's dock list shows the new station at once, without a relog (names + their relation only).
+        za.co.neroland.nerospace.network.StationListSync.send(player);
+    }
+
+    /**
+     * The chat line for a refused placement. A station that is too close is named only when the player could see it
+     * in their dock list anyway (not a MEMBERS-only station they cannot use); otherwise it is "another station".
+     */
+    private static Component refusal(StationFounding.PlaceResult verdict, ServerPlayer player) {
+        return switch (verdict.outcome()) {
+            case TOO_CLOSE -> {
+                StationRegistry.StationEntry blocker = verdict.blocker();
+                Component who;
+                if (blocker == null) {
+                    who = Component.translatable("gui.nerospace.dock.origin");
+                } else if (za.co.neroland.nerospace.rocket.StationDockingRule.mayChoose(blocker.docking(),
+                        StationRegistry.canUse(blocker, player))) {
+                    who = Component.literal(blocker.name());
+                } else {
+                    who = Component.translatable("item.nerospace.station_charter.another_station");
+                }
+                yield Component.translatable("item.nerospace.station_charter.too_close", who,
+                        NerospaceConfig.stationsMinSpacing());
+            }
+            case TOO_FAR -> Component.translatable("item.nerospace.station_charter.too_far",
+                    NerospaceConfig.stationsMaxRadius());
+            default -> Component.translatable("item.nerospace.station_charter.full");
+        };
     }
 
     /** Server-side rename (from a Station Core's rename screen): updates registry + Core + landing pad. */
@@ -143,5 +204,6 @@ public class StationCharterItem extends Item {
         // in-game naming console and the companion app's rename action cannot drift apart.
         za.co.neroland.nerospace.link.NerospaceLinkEvents.stationStateChanged(server, slot, "RENAMED");
         player.sendSystemMessage(Component.translatable("item.nerospace.station_charter.renamed", entry.name()));
+        za.co.neroland.nerospace.network.StationListSync.send(player);
     }
 }

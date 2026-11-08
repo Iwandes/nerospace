@@ -37,6 +37,9 @@ public final class PlayerJoinHandler {
         // Deliver any hook gate (Star Guide hint / oxygen top-up) that opened while this player was offline.
         za.co.neroland.nerospace.progression.QuestHooks.onJoin(player);
 
+        // A crew member who disconnected mid-flight rejoins beside the rocket, not at their seat in the sky (2.1).
+        za.co.neroland.nerospace.rocket.CrewLanding.onJoin(player);
+
         // Opt-out: config/nerospace.properties -> welcomeMessageEnabled=false joins silently. Checked
         // here (after the erasure sweep above, which must always run) and read fresh on every join, so
         // a `/neroland config reload` applies without a restart.

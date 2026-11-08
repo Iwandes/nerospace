@@ -29,13 +29,17 @@ W W W
 - **Found:** right-click the charter to open the **naming screen**, type a name, and press *Found
   Station*. One charter is consumed and the station is built remotely. A blank name auto-names
   "Station N".
+- **In the station dimension:** the station is founded **where you stand**, and you can untick **Build starter
+  structure** to get only your claim and a Docking Ring. A spot too close to another station (512 blocks) or too
+  far from 0,0 (30,000 blocks) is refused and the charter is kept. See
+  [Orbital Stations](Orbital-Stations#placing-your-own-station).
 - **What's built:** an enclosed observation room (station-wall pillars, glass window bands, lit
   ceiling) with an **airlock** running out to a **Tier-2 landing pad** — the spot a rocket touches
   down on when you fly there.
 - **From the rocket too:** the in-rocket dock selector includes a **New Station** option — pick it and
   launch to found a fresh station and fly there in one trip.
-- **Visiting:** fly a rocket, choose **Orbital Station**, then cycle the dock selector to the station
-  you want.
+- **Visiting:** fly a rocket, choose **Orbital Station**, then pick the station you want in the
+  **Dock at** list. Your own station is picked for you by default (see [Landing Pads](Landing-Pads)).
 - **Capacity:** up to **64** stations per world. Founding grants the *founded station* advancement and
   ticks the Star Guide.
 - **Ownership:** only you (the founder) can **rename** or **remove** your station; anyone may **fly**

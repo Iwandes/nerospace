@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "C": "#c:chests/wooden",
+    "F": "nerospace:rover_chassis",
+    "P": "nerospace:rover_parts",
+    "X": "nerospace:perchlorate_oxidiser"
+  },
+  "pattern": [
+    " C ",
+    "PFP",
+    " X "
+  ],
+  "result": {
+    "id": "nerospace:rover"
+  }
+}

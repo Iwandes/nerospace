@@ -73,6 +73,9 @@ public final class StationStructure {
             registerPad(level, centre, padCentre);
             return padCentre;
         }
+        if (entry != null && frameOnly(true, false, !entry.modules().isEmpty(), entry.hasModule(ModuleKind.CORE))) {
+            return padCentre; // founded without the starter structure: the owner builds it; never stamp over it
+        }
         boolean floor = level.getBlockState(centre).is(ModBlocks.STATION_FLOOR.get());
         if (entry == null && alreadyBuilt(false, hasPadNode(level, padCentre), floor)) {
             registerPad(level, centre, padCentre); // origin platform: re-register only, write nothing
@@ -113,6 +116,37 @@ public final class StationStructure {
                     ModuleTemplates.anchor(ModuleKind.DOCKING_RING, 0, centre)));
         } else {
             // No Docking Ring available: fall back to the 1.x pad so the station is still reachable.
+            placeLegacyPad(level, padCentre);
+            registerPad(level, centre, padCentre);
+        }
+        return padCentre;
+    }
+
+    /**
+     * Whether a founded station was deliberately left without its starter structure ("Build starter structure"
+     * unticked): it has modules on record (its Docking Ring) but neither a Station Core block nor a {@code CORE}
+     * module. Every 2.0 station records {@code CORE} when built and every 1.x one has its Core block, so neither ever
+     * reads as frame-only.
+     */
+    public static boolean frameOnly(boolean hasEntry, boolean hasCoreBlock, boolean hasAnyModule,
+            boolean hasCoreModule) {
+        return hasEntry && !hasCoreBlock && hasAnyModule && !hasCoreModule;
+    }
+
+    /**
+     * Founds the bare frame of a placed station: no room, no Station Core — only a Docking Ring at the usual dock
+     * position (recorded as the {@code DOCKING_RING} module so arrivals dock there and {@link #build} never stamps
+     * the starter room over the owner's own build). Falls back to the 1.x pad if no ring block exists.
+     */
+    public static BlockPos buildFrame(ServerLevel level, StationRegistry.StationEntry entry) {
+        BlockPos centre = entry.center();
+        StationModules.loadChunks(level, centre);
+        BlockPos padCentre = padCenter(centre);
+        StationRegistry registry = StationRegistry.get(level.getServer());
+        if (StationModules.placeDock(level, padCentre, entry.name() + " Dock")) {
+            registry.addModule(entry.slot(), new ModuleEntry(ModuleKind.DOCKING_RING, 0,
+                    ModuleTemplates.anchor(ModuleKind.DOCKING_RING, 0, centre)));
+        } else {
             placeLegacyPad(level, padCentre);
             registerPad(level, centre, padCentre);
         }

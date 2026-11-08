@@ -48,7 +48,9 @@ import za.co.neroland.nerospace.NerospaceCommon;
  *   <li><b>{@code legacy}</b> — owner keys (the same pseudonymised hash) of erased players, kept only to finish
  *       their erasure where a loaded-only sweep cannot reach: a 1.x core that has not loaded even once on 2.0 (so
  *       it is in no row), and an Alien Villager in an unloaded chunk whose reputation map still holds the player
- *       ({@link #isErased}). Kept only for a player who had visited a planet with villages. Bounded to
+ *       ({@link #isErased}), or a Mars rover in an unloaded chunk that still records the player as its owner. Kept only
+ *       for a player who had visited a planet with villages, or (2.1) who had reached Mars or still owned a loaded
+ *       rover when erased ({@link #keepErasureKey}). Bounded to
  *       {@value #MAX_LEGACY} entries and expires after {@value #LEGACY_TTL_DAYS} days. Never exported, never
  *       logged.</li>
  * </ul>
@@ -303,6 +305,20 @@ public final class VillageCoreLedger extends SavedData {
         prune(today);
         setDirty();
         return added;
+    }
+
+    /**
+     * Erasure (2.1, rovers): keeps {@code player}'s salted key in the bounded, TTL'd legacy set so a rover that is
+     * unloaded now and first loads after a restart still drops its owner ({@link #isErased}). The same key, cap and
+     * 30-day expiry as the village rule; nothing else is stored. Call after {@link #forgetOwner}.
+     */
+    public void keepErasureKey(UUID player, long today) {
+        if (player == null) {
+            return;
+        }
+        this.legacy.put(keyOf(player), today);
+        prune(today);
+        setDirty();
     }
 
     /** Drops expired legacy keys and enforces the legacy cap. */

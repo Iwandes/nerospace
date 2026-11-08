@@ -131,6 +131,11 @@ public class RoverWreckFeature extends Feature<NoneFeatureConfiguration> {
             if (rand.nextFloat() < 0.3F) {
                 chest.setItem(22, new ItemStack(ModItems.ALIEN_TECH_SCRAP.get(), 1));
             }
+            // 2.1 (D17): a salvageable rover chassis. Rolled from the wreck's position, not the feature's random, so
+            // every 2.0 draw (layout, loot, drone) is unchanged.
+            if (za.co.neroland.nerospace.entity.RoverRules.wreckHasChassis(o.asLong())) {
+                chest.setItem(24, new ItemStack(MarsContent.ROVER_CHASSIS.get(), 1));
+            }
         }
 
         // The drone: built on the world-gen thread with the feature's own random (see MegaCityFeature's warden note).

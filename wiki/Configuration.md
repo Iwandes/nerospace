@@ -61,6 +61,33 @@ These numbers are fixed in code. They are listed here so you can plan builds.
 | --- | --- | --- |
 | `terraformerForceLoadEnabled` | `false` | A running [Terraformer](Terraformer) keeps a small window of chunks loaded, so it keeps working while you are away. Off by default because it costs server memory and speed. |
 
+### Stations
+
+Settings for [Orbital Stations](Orbital-Stations). The server decides all of them.
+
+| Key | Default | Range | Meaning |
+| --- | --- | --- | --- |
+| `stations.maxMembers` | `16` | 0–16 | Members a station owner may add. |
+| `stations.maxModules` | `8` | 0–8 | Modules a station may have. |
+| `stations.minSpacing` | `512` | 128–4,096 | Blocks (on each axis) a station [placed where you stand](Orbital-Stations#placing-your-own-station) must keep from every other station and from the shared platform at 0,0. |
+| `stations.maxRadius` | `30000` | 1,024–1,000,000 | How far from 0,0 (on each axis) a station may be placed. |
+| `stations.freeDockRadius` | `2048` | 0–8,192 | How close a [free dock](Orbital-Stations#free-docks) must be to where a rocket last stood in the station dimension to appear in its dock list. `0` turns free docks off. |
+
+### Rockets
+
+| Key | Default | Range | Meaning |
+| --- | --- | --- | --- |
+| `rockets.maxCrew` | `4` | 1–4 | Players one rocket seats. The first aboard is the pilot. `1` gives the old one-seat rocket. Cargo rockets never carry anyone. The server decides. |
+
+### Mars rover
+
+| Key | Default | Range | Meaning |
+| --- | --- | --- | --- |
+| `rover.capacity` | `40000` | 1,000–1,000,000 | FE a [Mars Rover](Rover)'s battery holds. The server decides. |
+| `rover.maxPerPlayer` | `4` | 1–64 | Rovers one player may have out at once. Counted over the rovers in loaded chunks when placing a new one. The server decides. |
+| `rover.drainPerTick` | `5` | 0–1,000 | FE a rover uses each tick while its driver holds the throttle. `0` makes driving free. The server decides. |
+| `rover.chargeRate` | `200` | 0–100,000 | FE per tick a parked rover draws from Neroland energy blocks next to it. `0` turns charging off. The server decides. |
+
 ### NeroLink
 
 | Key | Default | Meaning |

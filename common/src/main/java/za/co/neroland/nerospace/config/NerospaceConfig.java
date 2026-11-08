@@ -152,6 +152,30 @@ public final class NerospaceConfig {
             16, 0, 16, true, "members a station owner may add (0..16)");
     private static final ConfigValue<Integer> STATIONS_MAX_MODULES = SCHEMA.intRange("stations.maxModules",
             8, 0, 8, true, "modules a station may have (0..8)");
+    private static final ConfigValue<Integer> STATIONS_MIN_SPACING = SCHEMA.intRange("stations.minSpacing",
+            512, 128, 4096, true, "least distance (blocks, on each axis) between a station placed with a charter in "
+            + "the station dimension and every other station centre or the origin platform (128..4096)");
+    private static final ConfigValue<Integer> STATIONS_MAX_RADIUS = SCHEMA.intRange("stations.maxRadius",
+            30000, 1024, 1000000, true, "how far from 0,0 (blocks, on each axis) a station may be placed with a "
+            + "charter in the station dimension (1024..1000000)");
+    private static final ConfigValue<Integer> STATIONS_FREE_DOCK_RADIUS = SCHEMA.intRange("stations.freeDockRadius",
+            2048, 0, 8192, true, "how close (blocks) a hand-placed Docking Ring outside every station claim must be to "
+            + "where a rocket last stood in the station dimension (or to the origin before its first station flight) "
+            + "to appear in its dock list as a free dock; 0 turns free docks off (0..8192)");
+    private static final ConfigValue<Integer> ROCKETS_MAX_CREW = SCHEMA.intRange("rockets.maxCrew",
+            4, 1, 4, true, "players a crewed rocket seats: the first aboard is the pilot, the rest are crew (1..4; "
+            + "cargo rockets stay uncrewed)");
+    private static final ConfigValue<Integer> ROVER_CAPACITY = SCHEMA.intRange("rover.capacity",
+            40000, 1000, 1000000, true, "FE a Mars rover's battery holds (1000..1000000)");
+    private static final ConfigValue<Integer> ROVER_MAX_PER_PLAYER = SCHEMA.intRange("rover.maxPerPlayer",
+            4, 1, 64, true, "rovers one player may have placed at once, counted over loaded rovers when "
+            + "placing (1..64)");
+    private static final ConfigValue<Integer> ROVER_DRAIN_PER_TICK = SCHEMA.intRange("rover.drainPerTick",
+            5, 0, 1000, true, "FE a rover uses per tick while its driver holds the throttle; 0 = free "
+            + "driving (0..1000)");
+    private static final ConfigValue<Integer> ROVER_CHARGE_RATE = SCHEMA.intRange("rover.chargeRate",
+            200, 0, 100000, true, "FE per tick a parked rover draws from Neroland energy blocks next to it; 0 = no "
+            + "charging (0..100000)");
     private static final ConfigValue<Integer> NYXARA_TWILIGHT_BAND_WIDTH = SCHEMA.intRange("nyxara.twilightBandWidth",
             2048, 512, 16384, true, "full width (blocks) of Nyxara's habitable twilight band (512..16384); applies "
             + "to new worlds only - an existing world keeps the width it was created with");
@@ -341,6 +365,43 @@ public final class NerospaceConfig {
 
     public static int stationsMaxMembers() {
         return STATIONS_MAX_MEMBERS.get();
+    }
+
+    public static int stationsMinSpacing() {
+        return STATIONS_MIN_SPACING.get();
+    }
+
+    public static int stationsMaxRadius() {
+        return STATIONS_MAX_RADIUS.get();
+    }
+
+    public static int stationsFreeDockRadius() {
+        return STATIONS_FREE_DOCK_RADIUS.get();
+    }
+
+    /** Seats in a crewed rocket ({@code rockets.maxCrew}, 1..4); read through {@code rocket.Crew#maxCrew}. */
+    public static int rocketsMaxCrew() {
+        return ROCKETS_MAX_CREW.get();
+    }
+
+    /** Mars rover battery size ({@code rover.capacity}, FE). */
+    public static int roverCapacity() {
+        return ROVER_CAPACITY.get();
+    }
+
+    /** Rovers one player may have placed ({@code rover.maxPerPlayer}). */
+    public static int roverMaxPerPlayer() {
+        return ROVER_MAX_PER_PLAYER.get();
+    }
+
+    /** FE per tick of throttle ({@code rover.drainPerTick}). */
+    public static int roverDrainPerTick() {
+        return ROVER_DRAIN_PER_TICK.get();
+    }
+
+    /** FE per tick a parked rover may draw ({@code rover.chargeRate}). */
+    public static int roverChargeRate() {
+        return ROVER_CHARGE_RATE.get();
     }
 
     public static int stationsMaxModules() {

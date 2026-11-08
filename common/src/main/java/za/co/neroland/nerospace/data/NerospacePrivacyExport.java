@@ -19,6 +19,7 @@ import net.minecraft.world.level.entity.EntityTypeTest;
 import org.jetbrains.annotations.Nullable;
 
 import za.co.neroland.nerospace.entity.AlienVillager;
+import za.co.neroland.nerospace.entity.RoverEntity;
 import za.co.neroland.nerospace.platform.Services;
 import za.co.neroland.nerospace.progression.PlanetVisitState;
 import za.co.neroland.nerospace.registry.ModDimensions;
@@ -39,7 +40,8 @@ import za.co.neroland.nerospace.village.VillageCoreLedger;
  * Positions and dimension ids of the requester's own things are included (they are the requester's data).</p>
  *
  * <p>Scope, stated honestly: Village Cores come from the loaded cores plus the saved core index (a 1.x core that has
- * never loaded on 2.x is not indexed yet); Alien Villager reputation comes from loaded villagers only.</p>
+ * never loaded on 2.x is not indexed yet); Alien Villager reputation and Mars rovers (2.1) come from loaded entities
+ * only.</p>
  */
 public final class NerospacePrivacyExport {
 
@@ -51,6 +53,10 @@ public final class NerospacePrivacyExport {
 
     /** One Alien Villager's score for the requester (loaded villagers only). */
     public record Reputation(String dimension, int score) {
+    }
+
+    /** One Mars rover the requester placed (2.1, loaded rovers only): where it is and its charge. */
+    public record Rover(String dimension, BlockPos pos, int chargePercent) {
     }
 
     /** Gathers the requester's data from the live server. */
@@ -68,10 +74,33 @@ public final class NerospacePrivacyExport {
                 reputation.add(new Reputation(level.dimension().identifier().toString(), v.getReputation(player)));
             }
         }
-        return build(me, PlanetVisitState.get(server).export(me), StationRegistry.get(server).all(),
+        List<Rover> rovers = new ArrayList<>();
+        for (ServerLevel level : server.getAllLevels()) {
+            List<RoverEntity> mine = new ArrayList<>();
+            level.getEntities(EntityTypeTest.forClass(RoverEntity.class), r -> r.isOwnedBy(me), mine);
+            for (RoverEntity r : mine) {
+                rovers.add(new Rover(level.dimension().identifier().toString(), r.blockPosition(), r.energyPercent()));
+            }
+        }
+        JsonObject doc = build(me, PlanetVisitState.get(server).export(me), StationRegistry.get(server).all(),
                 ModDimensions.STATION_LEVEL.identifier().toString(), cores, routes.allPads(),
                 routes.routesOwnedBy(me), routes.flightsOwnedBy(me), Services.PLATFORM.getOxygen(player),
                 Services.PLATFORM.getStarGuideSeen(player), reputation);
+        doc.add("rovers_owned_loaded", rovers(rovers));
+        return doc;
+    }
+
+    /** Pure (2.1): the requester's own rovers. Nothing about riders or other owners exists to include. */
+    public static JsonArray rovers(Collection<Rover> rovers) {
+        JsonArray rows = new JsonArray();
+        for (Rover r : rovers) {
+            JsonObject row = new JsonObject();
+            row.addProperty("dimension", r.dimension());
+            row.add("pos", pos(r.pos()));
+            row.addProperty("charge_percent", r.chargePercent());
+            rows.add(row);
+        }
+        return rows;
     }
 
     /** Pure: builds the export document. Unit-tested for "nothing about other players". */

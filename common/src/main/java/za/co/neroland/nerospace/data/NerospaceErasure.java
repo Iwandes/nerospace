@@ -22,6 +22,7 @@ import za.co.neroland.nerolandcore.data.SavedDataRecovery;
 
 import za.co.neroland.nerospace.NerospaceCommon;
 import za.co.neroland.nerospace.entity.AlienVillager;
+import za.co.neroland.nerospace.entity.RoverEntity;
 import za.co.neroland.nerospace.link.NerospaceLinkEvents;
 import za.co.neroland.nerospace.platform.Services;
 import za.co.neroland.nerospace.progression.PlanetVisitState;
@@ -63,6 +64,14 @@ import za.co.neroland.nerospace.world.planet.Planets;
  *       into a position-only pending clear, applied (and dropped) the moment that core loads again — across
  *       restarts, because the ledger is saved. Backup rewritten immediately.</li>
  *   <li><b>Launch cooldown</b> ({@link LaunchCooldowns}) — the transient 100-tick per-rider entry (memory only).</li>
+ *   <li><b>Crew rejoin spot</b> ({@code CrewLanding}, 2.1) — memory only.</li>
+ *   <li><b>Mars rover owner</b> ({@link RoverEntity}, 2.1) — the placer's UUID in the rover's entity NBT. Loaded
+ *       rovers are swept now and become unowned (anyone may pack them up); a rover in an unloaded chunk drops the
+ *       owner when it loads, through {@link #ownerErasedFilter} (the villager rule: this session's latch or the
+ *       core ledger's bounded salted key). So that the filter also works after a restart, the ledger keeps the
+ *       player's salted key (at most {@value VillageCoreLedger#MAX_LEGACY}, {@value VillageCoreLedger#LEGACY_TTL_DAYS}
+ *       days) when they owned a loaded rover or had reached Mars ({@link #keepsRoverKey}). No counter or index of
+ *       rovers exists, so there is nothing else to clear.</li>
  * </ol>
  *
  * <p>The two API-facing stores added alongside the visit history — external oxygen contributions and
@@ -128,7 +137,10 @@ public final class NerospaceErasure {
         ERASED_THIS_SESSION.add(uuid);
         // Read from the visit store BEFORE step 2 erases it: only a player who reached a planet with villages can
         // own a Village Core or hold villager reputation, so only then may the ledger keep a salted erasure key.
-        boolean visitedVillagePlanet = anyVillagePlanet(PlanetVisitState.get(server).export(uuid));
+        java.util.Set<String> visited = PlanetVisitState.get(server).export(uuid);
+        boolean visitedVillagePlanet = anyVillagePlanet(visited);
+        // 2.1: a rover is built from Martian parts, so a player who reached Mars may own a rover in an unloaded chunk.
+        boolean visitedRoverPlanet = visited.contains(ROVER_PLANET);
 
         // 1. Stations — anonymise the owner and strip the UUID from every member list, then push the
         // result into the backup file at once.
@@ -181,6 +193,22 @@ public final class NerospaceErasure {
         // 8. The transient launch cooldown (memory only).
         LaunchCooldowns.forget(uuid);
 
+        // 9. The transient crew rejoin spot of a crewed flight (memory only, 2.1).
+        za.co.neroland.nerospace.rocket.CrewLanding.forget(uuid);
+
+        // 10. Mars rover owner — held in entity NBT (2.1). Loaded rovers now; unloaded ones on load.
+        int rovers = RoverEntity.forgetOwnerEverywhere(server, uuid);
+        if (rovers > 0) {
+            // Count only (POPIA/GDPR).
+            NerospaceCommon.LOGGER.info("[Nerospace] Erasure: cleared the owner of {} loaded rover(s).", rovers);
+        }
+        if (keepsRoverKey(rovers, visitedRoverPlanet)) {
+            // An unloaded rover may still hold the UUID: keep the player's salted key (bounded, 30 days) so the rover's
+            // load-time filter works after a restart too. Not for anyone who never reached Mars or held a rover.
+            ledger.keepErasureKey(uuid, today());
+            VillageCoreLedger.backupNow(server, ledger);
+        }
+
         // The link module's in-memory event bookkeeping (never persisted).
         NerospaceLinkEvents.forgetPlayer(uuid);
     }
@@ -231,6 +259,17 @@ public final class NerospaceErasure {
         return uuid != null && ERASED_THIS_SESSION.contains(uuid);
     }
 
+    /** The planet whose materials build a rover (2.1): reaching it is the trigger for keeping a rover erasure key. */
+    static final String ROVER_PLANET = "nerospace:mars";
+
+    /**
+     * Whether erasure keeps the player's salted key for rovers (2.1): they owned a loaded rover just now, or they had
+     * reached Mars (where rover parts come from), so a rover of theirs may sit in an unloaded chunk.
+     */
+    static boolean keepsRoverKey(int loadedRoversCleared, boolean visitedRoverPlanet) {
+        return loadedRoversCleared > 0 || visitedRoverPlanet;
+    }
+
     /** Whether any of these visited planet ids is a planet with a native villager culture. */
     static boolean anyVillagePlanet(Collection<String> planetIds) {
         for (String raw : planetIds) {
@@ -259,6 +298,14 @@ public final class NerospaceErasure {
         VillageCoreLedger found = ledger;
         long day = today();
         return id -> erasedThisSession(id) || (found != null && found.isErased(id, day));
+    }
+
+    /**
+     * The load-time owner filter for a {@link RoverEntity} in {@code level}: the same rule as
+     * {@link #villagerReputationFilter} (this session's latch, or the core ledger's bounded salted key). Reads only.
+     */
+    public static Predicate<UUID> ownerErasedFilter(@Nullable Level level) {
+        return villagerReputationFilter(level);
     }
 
     /** UTC epoch day, the ledger's clock for its bounded retention. */

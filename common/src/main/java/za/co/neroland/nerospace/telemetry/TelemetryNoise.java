@@ -27,6 +27,12 @@ import io.sentry.SentryEvent;
  *       never the cause, either way. Matched
  *       only on the loaders' exact unbound-holder messages with a registration frame on the stack, so an unbound
  *       lookup at runtime still reports.</li>
+ *   <li><b>Shared Fabric entrypoint failure</b> (MC-NEROSPACE-10). Fabric gathers every failing {@code main}
+ *       entrypoint into one exception named after the first failing mod. When that mod is not a Neroland one and
+ *       every Nerospace failure in the bundle ends at the same exception and the same innermost frame as that
+ *       first failure, the pack itself is broken (for example another mod froze the default-attribute map, so
+ *       every mod registering entity attributes failed alike) and Nerospace is one victim among many. A
+ *       Nerospace failure that differs from the first one still reports.</li>
  * </ul>
  */
 final class TelemetryNoise {
@@ -50,7 +56,71 @@ final class TelemetryNoise {
         if (root == null) {
             return false;
         }
-        return isStaleBlockEntity(root) || isUnboundDuringRegistration(root) || thrownByAnotherMod(root);
+        return isStaleBlockEntity(root) || isUnboundDuringRegistration(root) || thrownByAnotherMod(root)
+                || isSharedEntrypointFailure(event.getThrowable());
+    }
+
+    /** Fabric's wording for the bundled exception; group 1 is the first failing mod's id. */
+    private static final java.util.regex.Pattern FABRIC_ENTRYPOINT = java.util.regex.Pattern.compile(
+            "^Could not execute entrypoint stage '[^']*' due to errors, provided by '([^']+)'");
+    private static final String OWN_PACKAGE = "za.co.neroland.nerospace.";
+
+    static boolean isSharedEntrypointFailure(Throwable outer) {
+        if (outer == null || outer.getMessage() == null) {
+            return false;
+        }
+        java.util.regex.Matcher m = FABRIC_ENTRYPOINT.matcher(outer.getMessage());
+        if (!m.find() || m.group(1).toLowerCase(Locale.ROOT).startsWith("nero")) {
+            return false;
+        }
+        Throwable first = outer.getCause();
+        Throwable firstRoot = rootCause(first);
+        if (first == null || firstRoot == null || touchesNerospace(first)) {
+            return false;
+        }
+        // Fabric adds later failures as suppressed on the bundle; tolerate them on the first cause too.
+        List<Throwable> others = new java.util.ArrayList<>(List.of(outer.getSuppressed()));
+        others.addAll(List.of(first.getSuppressed()));
+        boolean anyOurs = false;
+        for (Throwable other : others) {
+            if (!touchesNerospace(other)) {
+                continue;
+            }
+            anyOurs = true;
+            if (!sameFailure(rootCause(other), firstRoot)) {
+                return false; // Nerospace failed differently: a real report
+            }
+        }
+        return anyOurs;
+    }
+
+    private static boolean sameFailure(Throwable a, Throwable b) {
+        if (a == null || b == null || a.getClass() != b.getClass()) {
+            return false;
+        }
+        StackTraceElement[] fa = a.getStackTrace();
+        StackTraceElement[] fb = b.getStackTrace();
+        if (fa.length == 0 || fb.length == 0) {
+            return false;
+        }
+        return fa[0].getClassName().equals(fb[0].getClassName())
+                && fa[0].getMethodName().equals(fb[0].getMethodName());
+    }
+
+    private static boolean touchesNerospace(Throwable t) {
+        Throwable current = t;
+        for (int depth = 0; current != null && depth < 32; depth++) {
+            for (StackTraceElement frame : current.getStackTrace()) {
+                if (frame.getClassName().startsWith(OWN_PACKAGE)) {
+                    return true;
+                }
+            }
+            if (current.getCause() == current) {
+                break;
+            }
+            current = current.getCause();
+        }
+        return false;
     }
 
     private static boolean isUnboundDuringRegistration(Throwable root) {

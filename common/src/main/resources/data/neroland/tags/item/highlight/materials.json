@@ -72,11 +72,13 @@
     "nerospace:void_shard",
     "nerospace:crystal_shard",
     "nerospace:night_fibre",
-      "nerospace:hull_plating",
-      "nerospace:hull_window",
-      "nerospace:truss",
-      "nerospace:solar_wing",
-      "nerospace:gravity_plate",
-      "nerospace:hydroponics_tray"
+    "nerospace:hull_plating",
+    "nerospace:hull_window",
+    "nerospace:truss",
+    "nerospace:solar_wing",
+    "nerospace:gravity_plate",
+    "nerospace:hydroponics_tray",
+    "nerospace:rover_parts",
+    "nerospace:rover_chassis"
   ]
 }

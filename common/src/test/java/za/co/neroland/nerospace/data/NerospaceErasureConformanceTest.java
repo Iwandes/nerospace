@@ -26,7 +26,9 @@ import za.co.neroland.nerolandcore.data.ErasureConformance;
 import za.co.neroland.nerolandcore.data.PlayerDataEraser;
 import za.co.neroland.nerolandcore.data.PlayerDataErasure;
 import za.co.neroland.nerospace.api.PlanetId;
+import za.co.neroland.nerospace.entity.RoverRules;
 import za.co.neroland.nerospace.progression.PlanetVisitState;
+import za.co.neroland.nerospace.rocket.CrewLanding;
 import za.co.neroland.nerospace.rocket.LaunchCooldowns;
 import za.co.neroland.nerospace.rocket.StationRegistry;
 import za.co.neroland.nerospace.route.RouteRegistry;
@@ -74,6 +76,8 @@ class NerospaceErasureConformanceTest {
                 .parse(new Dynamic<>(NbtOps.INSTANCE, legacyStations())).getOrThrow();
         int foreign = stations.found("Erasure Seed", OTHER).slot();
         assertTrue(stations.addMember(foreign, OWNER));
+        // 2.1: a station claimed where the player stood (D6) is the same entry shape with a chosen centre.
+        int placed = stations.foundAt("Claimed Here", OWNER, new BlockPos(20_000, 120, -9_000)).slot();
 
         PlanetVisitState visits = new PlanetVisitState();
         visits.record(owner, CINDARA);
@@ -92,6 +96,11 @@ class NerospaceErasureConformanceTest {
         ledger.record(unloaded, owner);
 
         LaunchCooldowns.tryStart(owner, 0L, 100L);
+        CrewLanding.remember(owner, OVERWORLD, new BlockPos(0, 65, 0));
+        // 2.1 rovers: one the player placed, one a stranger placed (stays theirs).
+        java.util.concurrent.atomic.AtomicReference<UUID> myRover = new java.util.concurrent.atomic.AtomicReference<>(owner);
+        java.util.concurrent.atomic.AtomicReference<UUID> theirRover =
+                new java.util.concurrent.atomic.AtomicReference<>(UUID.fromString(OTHER));
 
         PlayerDataEraser eraser = (server, uuid) -> {
             stations.forgetPlayer(uuid);                                  // 1 + 1b
@@ -100,6 +109,9 @@ class NerospaceErasureConformanceTest {
             loadedCore.forget(uuid);                                      // 7 (live sweep)
             ledger.forgetOwner(uuid, Set.of(loaded)::contains, TODAY, true);    // 7 (unloaded -> pending)
             LaunchCooldowns.forget(uuid);                                 // 8
+            CrewLanding.forget(uuid);                                     // 9
+            myRover.set(RoverRules.forget(myRover.get(), uuid));          // 10 (RoverEntity.forgetOwner)
+            theirRover.set(RoverRules.forget(theirRover.get(), uuid));
         };
         PlayerDataErasure.register(eraser);
         try {
@@ -112,6 +124,8 @@ class NerospaceErasureConformanceTest {
                     .probe("nerospace:cargo_routes", routes::retainsData)
                     .probe("nerospace:village_core_owner", u -> loadedCore.isOwner(u) || ledger.retainsData(u))
                     .probe("nerospace:launch_cooldown", LaunchCooldowns::holds)
+                    .probe("nerospace:crew_landing", CrewLanding::holds)
+                    .probe("nerospace:rover_owner", u -> u.equals(myRover.get()) || u.equals(theirRover.get()))
                     .verify(null, owner);
         } finally {
             PlayerDataErasure.unregister(eraser);
@@ -122,9 +136,48 @@ class NerospaceErasureConformanceTest {
         assertEquals("Station A", stations.get(0).name());
         assertEquals(OTHER, stations.get(foreign).owner());
         assertEquals(List.of(), stations.get(foreign).members());
+        // The placed station keeps its chosen centre as world content but is no longer tied to the player.
+        assertEquals("", stations.get(placed).owner());
+        assertEquals(new BlockPos(20_000, 120, -9_000), stations.get(placed).center());
+        // The player's rover is unowned (anyone may pack it up); the stranger's rover keeps its owner.
+        assertEquals(null, myRover.get());
+        assertEquals(UUID.fromString(OTHER), theirRover.get());
         // The unloaded core became a position-only pending clear.
         assertTrue(ledger.isPending(unloaded));
         assertFalse(ledger.isPending(loaded), "the live sweep already cleared the loaded core");
+    }
+
+    /**
+     * 2.1 review fix: an unloaded rover first loaded after a restart. The session latch is gone, so the rover's
+     * load-time filter must find the player's salted key in the saved ledger. Kept for a rover owner or a Mars
+     * visitor only; anyone else leaves nothing behind.
+     */
+    @Test
+    void roverOwnerFilterSurvivesARestart() {
+        UUID owner = UUID.fromString(OWNER);
+        UUID stranger = UUID.fromString(OTHER);
+        VillageCoreLedger ledger = new VillageCoreLedger();
+        ledger.forgetOwner(owner, l -> false, TODAY, false); // never visited a village planet
+        assertFalse(ledger.isErased(owner, TODAY), "no key from the village rule alone");
+        assertTrue(NerospaceErasure.keepsRoverKey(0, true), "reached Mars");
+        assertTrue(NerospaceErasure.keepsRoverKey(2, false), "held loaded rovers");
+        assertFalse(NerospaceErasure.keepsRoverKey(0, false), "no rover reason: nothing kept");
+        assertTrue(java.util.Set.of("nerospace:mars").contains(NerospaceErasure.ROVER_PLANET));
+        ledger.keepErasureKey(owner, TODAY);
+
+        // "Restart": save and decode the ledger; the in-memory latch is not involved.
+        net.minecraft.nbt.Tag saved = VillageCoreLedger.storeCodec().encodeStart(NbtOps.INSTANCE, ledger).getOrThrow();
+        VillageCoreLedger reloaded = VillageCoreLedger.storeCodec()
+                .parse(new Dynamic<>(NbtOps.INSTANCE, saved)).getOrThrow();
+        assertFalse(saved.toString().contains(OWNER), "the ledger never holds the raw UUID");
+        assertTrue(reloaded.isErased(owner, TODAY + 1));
+        assertFalse(reloaded.isErased(stranger, TODAY + 1));
+        // The rover's load path: RoverRules.forget under the filter drops the owner, a stranger's rover keeps theirs.
+        java.util.function.Predicate<UUID> filter = id -> reloaded.isErased(id, TODAY + 1);
+        assertEquals(null, filter.test(owner) ? null : owner);
+        assertEquals(stranger, filter.test(stranger) ? null : stranger);
+        // Bounded in time: the key expires with the village rule's TTL.
+        assertFalse(reloaded.isErased(owner, TODAY + VillageCoreLedger.LEGACY_TTL_DAYS + 1));
     }
 
     @Test

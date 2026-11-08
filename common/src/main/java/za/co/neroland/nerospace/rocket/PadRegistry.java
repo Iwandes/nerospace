@@ -182,6 +182,11 @@ public final class PadRegistry extends SavedData {
         };
     }
 
+    /** Whether {@code node} still carries its auto label ("Dock 3", "Pad 7") — nobody named it. */
+    public static boolean isDefaultLabel(PadNode node) {
+        return defaultLabel(node.kind(), node.id()).equals(node.name());
+    }
+
     private int podCount() {
         int n = 0;
         for (PadNode node : this.pads.values()) {

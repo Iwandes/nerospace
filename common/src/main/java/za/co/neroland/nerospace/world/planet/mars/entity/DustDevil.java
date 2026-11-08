@@ -33,6 +33,8 @@ public class DustDevil extends Entity {
 
     private int age;
     private int windDirection = -1;
+    /** Gallery-only: a held devil swirls on the client but never wanders, tosses items or dies out. */
+    private boolean frozen;
 
     //? if <26.3 {
     private final InterpolationHandler interpolation = new InterpolationHandler(this);
@@ -49,6 +51,15 @@ public class DustDevil extends Entity {
     public static DustDevil spawnAt(ServerLevel level, BlockPos pit) {
         DustDevil devil = new DustDevil(MarsContent.DUST_DEVIL.get(), level);
         devil.setPos(pit.getX() + 0.5D, pit.getY() + 1.0D, pit.getZ() + 0.5D);
+        level.addFreshEntity(devil);
+        return devil;
+    }
+
+    /** A held devil for the creative gallery: it swirls in place and never despawns (server side). */
+    public static DustDevil spawnFrozen(ServerLevel level, double x, double y, double z) {
+        DustDevil devil = new DustDevil(MarsContent.DUST_DEVIL.get(), level);
+        devil.frozen = true;
+        devil.setPos(x, y, z);
         level.addFreshEntity(devil);
         return devil;
     }
@@ -89,6 +100,9 @@ public class DustDevil extends Entity {
             return;
         }
         ServerLevel server = (ServerLevel) level();
+        if (this.frozen) {
+            return;
+        }
         this.age++;
         boolean storm = PlanetWeather.event(server) == WeatherEvent.DUST_STORM;
         if (DustDevilRules.despawns(this.age, storm)) {
@@ -186,6 +200,7 @@ public class DustDevil extends Entity {
         ValueInput input = ValueInput.of(tag, this.registryAccess());
     *///?}
         this.age = input.getIntOr("Age", 0);
+        this.frozen = input.getBooleanOr("Frozen", false);
     }
 
     //? if >=1.21.6 {
@@ -197,5 +212,6 @@ public class DustDevil extends Entity {
         ValueOutput output = ValueOutput.of(tag, this.registryAccess());
     *///?}
         output.putInt("Age", this.age);
+        output.putBoolean("Frozen", this.frozen);
     }
 }
