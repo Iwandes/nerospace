@@ -27,6 +27,8 @@ players share one rocket, and there is a Mars Rover. Back up your world before u
 - **The Launch Controller always sent rockets to the shared platform at 0,64,0.** It had no way to pick a
   station or pad, so every launch from it went to the origin platform, however many stations you had founded.
   It now has the same **Dock at** / **Land at** choice as the rocket's own console.
+- **Escape did not close the Station Charter on Minecraft 26.3.** Minecraft 26.3 reports keys differently, so the
+  charter screen ignored Escape and you could not back out of founding a station. Escape closes it again.
 
 ### Added
 
