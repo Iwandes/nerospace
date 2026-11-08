@@ -123,7 +123,7 @@ public class StationCharterScreen extends TexturedContainerScreen<StationCharter
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         KeyEvent event = new KeyEvent(keyCode, scanCode, modifiers);
     *///?}
-        if (event.key() == 256) { // Escape
+        if (event.key() == com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE) {
             this.onClose();
             return true;
         }
