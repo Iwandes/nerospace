@@ -210,140 +210,141 @@ public final class RocketGeometry {
         CubeListBuilder c;
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(192, 0).addBox(-7F, -14F, -7F, 14F, 3F, 14F);
-            c.texOffs(48, 0).addBox(-6F, -49F, -6F, 12F, 35F, 12F);
-            c.texOffs(128, 0).addBox(-4.5F, -49F, -4.5F, 9F, 23F, 9F);
-            c.texOffs(82, 69).addBox(-3.5F, -39F, -4.25F, 7F, 3F, 2F);
-            c.texOffs(16, 52).addBox(-5F, -52F, -5F, 10F, 3F, 10F);
-            c.texOffs(115, 52).addBox(-4F, -55F, -4F, 8F, 3F, 8F);
-            c.texOffs(211, 52).addBox(-3F, -58F, -3F, 6F, 3F, 6F);
-            c.texOffs(50, 69).addBox(-2F, -61F, -2F, 4F, 3F, 4F);
-            c.texOffs(132, 69).addBox(-1F, -64F, -1F, 2F, 3F, 2F);
-            c.texOffs(140, 69).addBox(-0.5F, -68F, -0.5F, 1F, 4F, 1F);
+            c.texOffs(0, 52).addBox(-8F, -14F, -8F, 16F, 3F, 16F);
+            c.texOffs(48, 0).addBox(-7F, -49F, -7F, 14F, 35F, 14F);
+            c.texOffs(136, 0).addBox(-5.5F, -49F, -5.5F, 11F, 23F, 11F);
+            c.texOffs(206, 71).addBox(-4F, -39F, -5.25F, 8F, 3F, 2F);
+            c.texOffs(80, 52).addBox(-6F, -52F, -6F, 12F, 3F, 12F);
+            c.texOffs(145, 52).addBox(-5F, -55F, -5F, 10F, 3F, 10F);
+            c.texOffs(0, 71).addBox(-4F, -58F, -4F, 8F, 3F, 8F);
+            c.texOffs(96, 71).addBox(-3F, -61F, -3F, 6F, 3F, 6F);
+            c.texOffs(187, 71).addBox(-2F, -64F, -2F, 4F, 3F, 4F);
+            c.texOffs(16, 82).addBox(-1F, -67F, -1F, 2F, 3F, 2F);
+            c.texOffs(24, 82).addBox(-0.5F, -71F, -0.5F, 1F, 4F, 1F);
         }
         if (pass == Pass.GLASS) {
-            c.texOffs(66, 69).addBox(-3F, -46F, -5.25F, 6F, 6F, 0.5F);
-            c.texOffs(66, 69).addBox(-3F, -46F, 4.75F, 6F, 6F, 0.5F);
-            c.texOffs(96, 52).addBox(-5.25F, -46F, -3F, 0.5F, 6F, 6F);
-            c.texOffs(96, 52).addBox(4.75F, -46F, -3F, 0.5F, 6F, 6F);
+            c.texOffs(170, 71).addBox(-4F, -46F, -6.25F, 8F, 6F, 0.5F);
+            c.texOffs(170, 71).addBox(-4F, -46F, 5.75F, 8F, 6F, 0.5F);
+            c.texOffs(128, 52).addBox(-6.25F, -46F, -4F, 0.5F, 6F, 8F);
+            c.texOffs(128, 52).addBox(5.75F, -46F, -4F, 0.5F, 6F, 8F);
         }
         if (pass == Pass.GLOW) {
-            c.texOffs(166, 69).addBox(-2.5F, -38.5F, -2.25F, 5F, 2F, 0.5F);
-            c.texOffs(100, 69).addBox(-2F, -48.5F, -2F, 4F, 0.5F, 4F);
-            c.texOffs(79, 69).addBox(-4.25F, -39F, -0.5F, 0.5F, 5F, 1F);
-            c.texOffs(79, 69).addBox(3.75F, -39F, -0.5F, 0.5F, 5F, 1F);
+            c.texOffs(50, 82).addBox(-3F, -38.5F, -3.25F, 6F, 2F, 0.5F);
+            c.texOffs(226, 71).addBox(-2F, -48.5F, -2F, 4F, 0.5F, 4F);
+            c.texOffs(203, 71).addBox(-5.25F, -39F, -0.5F, 0.5F, 5F, 1F);
+            c.texOffs(203, 71).addBox(4.75F, -39F, -0.5F, 0.5F, 5F, 1F);
         }
         PartDefinition b_body = root.addOrReplaceChild("body", c, PartPose.offset(0F, 24F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(0, 69).addBox(-3F, 0F, -3F, 6F, 3F, 6F);
-            c.texOffs(147, 52).addBox(-4F, 3F, -4F, 8F, 3F, 8F);
-            c.texOffs(56, 52).addBox(-5F, 6F, -5F, 10F, 3F, 10F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
+            c.texOffs(120, 71).addBox(-3F, 0F, -3F, 6F, 3F, 6F);
+            c.texOffs(32, 71).addBox(-4F, 3F, -4F, 8F, 3F, 8F);
+            c.texOffs(185, 52).addBox(-5F, 6F, -5F, 10F, 3F, 10F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
         }
         if (pass == Pass.GLOW) {
-            c.texOffs(179, 52).addBox(-4F, 6F, -4F, 8F, 1F, 8F);
+            c.texOffs(64, 71).addBox(-4F, 6F, -4F, 8F, 1F, 8F);
         }
         PartDefinition b_engine_main = b_body.addOrReplaceChild("engine_main", c, PartPose.offset(0F, -11F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.PLUME) {
             c.texOffs(0, 0).addBox(-6F, 0F, -6F, 12F, 40F, 12F);
-            c.texOffs(96, 0).addBox(-4F, 0F, -4F, 8F, 32F, 8F);
-            c.texOffs(168, 0).addBox(-2F, 0F, -2F, 4F, 22F, 4F);
+            c.texOffs(104, 0).addBox(-4F, 0F, -4F, 8F, 32F, 8F);
+            c.texOffs(184, 0).addBox(-2F, 0F, -2F, 4F, 22F, 4F);
         }
         b_engine_main.addOrReplaceChild("plume_main", c, PartPose.offset(0F, 9F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(24, 69).addBox(-6F, 0F, 0F, 6F, 8F, 1F);
+            c.texOffs(144, 71).addBox(-6F, 0F, 0F, 6F, 8F, 1F);
         }
         if (pass == Pass.GLASS) {
-            c.texOffs(177, 69).addBox(-4F, 1F, 1F, 2F, 2F, 0.25F);
+            c.texOffs(63, 82).addBox(-4F, 1F, 1F, 2F, 2F, 0.25F);
         }
-        b_body.addOrReplaceChild("hatch", c, PartPose.offset(3F, -36F, 6F));
+        b_body.addOrReplaceChild("hatch", c, PartPose.offset(3F, -36F, 7F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(164, 0).addBox(-3F, 0F, 0F, 1F, 26F, 1F);
-            c.texOffs(164, 0).addBox(2F, 0F, 0F, 1F, 26F, 1F);
-            c.texOffs(182, 69).addBox(-2F, 23F, 0.25F, 4F, 1F, 0.5F);
-            c.texOffs(182, 69).addBox(-2F, 19F, 0.25F, 4F, 1F, 0.5F);
-            c.texOffs(182, 69).addBox(-2F, 15F, 0.25F, 4F, 1F, 0.5F);
-            c.texOffs(182, 69).addBox(-2F, 11F, 0.25F, 4F, 1F, 0.5F);
-            c.texOffs(182, 69).addBox(-2F, 7F, 0.25F, 4F, 1F, 0.5F);
-            c.texOffs(182, 69).addBox(-2F, 3F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(180, 0).addBox(-3F, 0F, 0F, 1F, 26F, 1F);
+            c.texOffs(180, 0).addBox(2F, 0F, 0F, 1F, 26F, 1F);
+            c.texOffs(68, 82).addBox(-2F, 23F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(68, 82).addBox(-2F, 19F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(68, 82).addBox(-2F, 15F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(68, 82).addBox(-2F, 11F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(68, 82).addBox(-2F, 7F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(68, 82).addBox(-2F, 3F, 0.25F, 4F, 1F, 0.5F);
         }
-        b_body.addOrReplaceChild("ladder", c, PartPose.offset(0F, -28F, 6F));
+        b_body.addOrReplaceChild("ladder", c, PartPose.offset(0F, -28F, 7F));
         c = CubeListBuilder.create();
         if (pass == Pass.GLOW) {
-            c.texOffs(144, 69).addBox(-1F, -2F, -1F, 2F, 2F, 2F);
+            c.texOffs(28, 82).addBox(-1F, -2F, -1F, 2F, 2F, 2F);
         }
-        b_body.addOrReplaceChild("strobe", c, PartPose.offset(0F, -68F, 0F));
-        PartDefinition b_fin_e = b_body.addOrReplaceChild("fin_e", CubeListBuilder.create(), PartPose.offset(6F, -22F, 0F));
+        b_body.addOrReplaceChild("strobe", c, PartPose.offset(0F, -71F, 0F));
+        PartDefinition b_fin_e = b_body.addOrReplaceChild("fin_e", CubeListBuilder.create(), PartPose.offset(7F, -22F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(0, 52).addBox(-2F, 0F, -0.5F, 7F, 16F, 1F);
-            c.texOffs(109, 52).addBox(4.5F, 6F, -0.75F, 1.5F, 10F, 1.5F);
+            c.texOffs(64, 52).addBox(-2F, 0F, -0.5F, 7F, 16F, 1F);
+            c.texOffs(225, 52).addBox(4.5F, 6F, -0.75F, 1.5F, 10F, 1.5F);
         }
         PartDefinition b_fin_e_arm = b_fin_e.addOrReplaceChild("fin_e_arm", c, PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, -0.3142F));
         c = CubeListBuilder.create();
         if (pass == Pass.GLOW) {
-            c.texOffs(152, 69).addBox(4.75F, 15F, -1F, 1.5F, 1.5F, 2F);
+            c.texOffs(36, 82).addBox(4.75F, 15F, -1F, 1.5F, 1.5F, 2F);
         }
         b_fin_e_arm.addOrReplaceChild("nav_b", c, PartPose.offset(0F, 0F, 0F));
-        PartDefinition b_fin_w = b_body.addOrReplaceChild("fin_w", CubeListBuilder.create(), PartPose.offsetAndRotation(-6F, -22F, 0F, 0F, 3.1416F, 0F));
+        PartDefinition b_fin_w = b_body.addOrReplaceChild("fin_w", CubeListBuilder.create(), PartPose.offsetAndRotation(-7F, -22F, 0F, 0F, 3.1416F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(0, 52).addBox(-2F, 0F, -0.5F, 7F, 16F, 1F);
-            c.texOffs(109, 52).addBox(4.5F, 6F, -0.75F, 1.5F, 10F, 1.5F);
+            c.texOffs(64, 52).addBox(-2F, 0F, -0.5F, 7F, 16F, 1F);
+            c.texOffs(225, 52).addBox(4.5F, 6F, -0.75F, 1.5F, 10F, 1.5F);
         }
         PartDefinition b_fin_w_arm = b_fin_w.addOrReplaceChild("fin_w_arm", c, PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, -0.3142F));
         c = CubeListBuilder.create();
         if (pass == Pass.GLOW) {
-            c.texOffs(159, 69).addBox(4.75F, 15F, -1F, 1.5F, 1.5F, 2F);
+            c.texOffs(43, 82).addBox(4.75F, 15F, -1F, 1.5F, 1.5F, 2F);
         }
         b_fin_w_arm.addOrReplaceChild("nav_a", c, PartPose.offset(0F, 0F, 0F));
-        PartDefinition b_fin_s = b_body.addOrReplaceChild("fin_s", CubeListBuilder.create(), PartPose.offsetAndRotation(0F, -22F, 6F, 0F, -1.5708F, 0F));
+        PartDefinition b_fin_s = b_body.addOrReplaceChild("fin_s", CubeListBuilder.create(), PartPose.offsetAndRotation(0F, -22F, 7F, 0F, -1.5708F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(0, 52).addBox(-2F, 0F, -0.5F, 7F, 16F, 1F);
-            c.texOffs(109, 52).addBox(4.5F, 6F, -0.75F, 1.5F, 10F, 1.5F);
+            c.texOffs(64, 52).addBox(-2F, 0F, -0.5F, 7F, 16F, 1F);
+            c.texOffs(225, 52).addBox(4.5F, 6F, -0.75F, 1.5F, 10F, 1.5F);
         }
         b_fin_s.addOrReplaceChild("fin_s_arm", c, PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, -0.3142F));
-        PartDefinition b_fin_n = b_body.addOrReplaceChild("fin_n", CubeListBuilder.create(), PartPose.offsetAndRotation(0F, -22F, -6F, 0F, 1.5708F, 0F));
+        PartDefinition b_fin_n = b_body.addOrReplaceChild("fin_n", CubeListBuilder.create(), PartPose.offsetAndRotation(0F, -22F, -7F, 0F, 1.5708F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(0, 52).addBox(-2F, 0F, -0.5F, 7F, 16F, 1F);
-            c.texOffs(109, 52).addBox(4.5F, 6F, -0.75F, 1.5F, 10F, 1.5F);
+            c.texOffs(64, 52).addBox(-2F, 0F, -0.5F, 7F, 16F, 1F);
+            c.texOffs(225, 52).addBox(4.5F, 6F, -0.75F, 1.5F, 10F, 1.5F);
         }
         b_fin_n.addOrReplaceChild("fin_n_arm", c, PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, -0.3142F));
-        PartDefinition b_leg_ne = b_body.addOrReplaceChild("leg_ne", CubeListBuilder.create(), PartPose.offsetAndRotation(7.5F, -16F, -7.5F, 0F, 0.7854F, 0F));
+        PartDefinition b_leg_ne = b_body.addOrReplaceChild("leg_ne", CubeListBuilder.create(), PartPose.offsetAndRotation(8.5F, -16F, -8.5F, 0F, 0.7854F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(184, 0).addBox(-1F, 0F, -1F, 2F, 18F, 2F);
-            c.texOffs(38, 69).addBox(-1.5F, 5F, -1.5F, 3F, 5F, 3F);
-            c.texOffs(116, 69).addBox(-1F, 18F, -2F, 4F, 1F, 4F);
+            c.texOffs(200, 0).addBox(-1F, 0F, -1F, 2F, 18F, 2F);
+            c.texOffs(158, 71).addBox(-1.5F, 5F, -1.5F, 3F, 5F, 3F);
+            c.texOffs(0, 82).addBox(-1F, 18F, -2F, 4F, 1F, 4F);
         }
         b_leg_ne.addOrReplaceChild("leg_ne_arm", c, PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, -0.5236F));
-        PartDefinition b_leg_se = b_body.addOrReplaceChild("leg_se", CubeListBuilder.create(), PartPose.offsetAndRotation(7.5F, -16F, 7.5F, 0F, -0.7854F, 0F));
+        PartDefinition b_leg_se = b_body.addOrReplaceChild("leg_se", CubeListBuilder.create(), PartPose.offsetAndRotation(8.5F, -16F, 8.5F, 0F, -0.7854F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(184, 0).addBox(-1F, 0F, -1F, 2F, 18F, 2F);
-            c.texOffs(38, 69).addBox(-1.5F, 5F, -1.5F, 3F, 5F, 3F);
-            c.texOffs(116, 69).addBox(-1F, 18F, -2F, 4F, 1F, 4F);
+            c.texOffs(200, 0).addBox(-1F, 0F, -1F, 2F, 18F, 2F);
+            c.texOffs(158, 71).addBox(-1.5F, 5F, -1.5F, 3F, 5F, 3F);
+            c.texOffs(0, 82).addBox(-1F, 18F, -2F, 4F, 1F, 4F);
         }
         b_leg_se.addOrReplaceChild("leg_se_arm", c, PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, -0.5236F));
-        PartDefinition b_leg_sw = b_body.addOrReplaceChild("leg_sw", CubeListBuilder.create(), PartPose.offsetAndRotation(-7.5F, -16F, 7.5F, 0F, -2.3562F, 0F));
+        PartDefinition b_leg_sw = b_body.addOrReplaceChild("leg_sw", CubeListBuilder.create(), PartPose.offsetAndRotation(-8.5F, -16F, 8.5F, 0F, -2.3562F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(184, 0).addBox(-1F, 0F, -1F, 2F, 18F, 2F);
-            c.texOffs(38, 69).addBox(-1.5F, 5F, -1.5F, 3F, 5F, 3F);
-            c.texOffs(116, 69).addBox(-1F, 18F, -2F, 4F, 1F, 4F);
+            c.texOffs(200, 0).addBox(-1F, 0F, -1F, 2F, 18F, 2F);
+            c.texOffs(158, 71).addBox(-1.5F, 5F, -1.5F, 3F, 5F, 3F);
+            c.texOffs(0, 82).addBox(-1F, 18F, -2F, 4F, 1F, 4F);
         }
         b_leg_sw.addOrReplaceChild("leg_sw_arm", c, PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, -0.5236F));
-        PartDefinition b_leg_nw = b_body.addOrReplaceChild("leg_nw", CubeListBuilder.create(), PartPose.offsetAndRotation(-7.5F, -16F, -7.5F, 0F, 2.3562F, 0F));
+        PartDefinition b_leg_nw = b_body.addOrReplaceChild("leg_nw", CubeListBuilder.create(), PartPose.offsetAndRotation(-8.5F, -16F, -8.5F, 0F, 2.3562F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(184, 0).addBox(-1F, 0F, -1F, 2F, 18F, 2F);
-            c.texOffs(38, 69).addBox(-1.5F, 5F, -1.5F, 3F, 5F, 3F);
-            c.texOffs(116, 69).addBox(-1F, 18F, -2F, 4F, 1F, 4F);
+            c.texOffs(200, 0).addBox(-1F, 0F, -1F, 2F, 18F, 2F);
+            c.texOffs(158, 71).addBox(-1.5F, 5F, -1.5F, 3F, 5F, 3F);
+            c.texOffs(0, 82).addBox(-1F, 18F, -2F, 4F, 1F, 4F);
         }
         b_leg_nw.addOrReplaceChild("leg_nw_arm", c, PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, -0.5236F));
     }
@@ -352,184 +353,185 @@ public final class RocketGeometry {
         CubeListBuilder c;
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(0, 56).addBox(-7F, -14F, -7F, 14F, 3F, 14F);
-            c.texOffs(48, 0).addBox(-6F, -55F, -6F, 12F, 41F, 12F);
-            c.texOffs(176, 0).addBox(-4.5F, -55F, -4.5F, 9F, 20F, 9F);
-            c.texOffs(194, 73).addBox(-3.5F, -45F, -4.25F, 7F, 3F, 2F);
-            c.texOffs(80, 56).addBox(-5F, -58F, -5F, 10F, 3F, 10F);
-            c.texOffs(173, 56).addBox(-4F, -61F, -4F, 8F, 3F, 8F);
-            c.texOffs(32, 73).addBox(-3F, -64F, -3F, 6F, 3F, 6F);
-            c.texOffs(150, 73).addBox(-2F, -67F, -2F, 4F, 3F, 4F);
-            c.texOffs(36, 82).addBox(-0.5F, -70F, -0.5F, 1F, 3F, 1F);
-            c.texOffs(12, 82).addBox(-7F, -13F, -1.5F, 1F, 1F, 3F);
-            c.texOffs(12, 82).addBox(-7F, -29F, -1.5F, 1F, 1F, 3F);
-            c.texOffs(12, 82).addBox(6F, -13F, -1.5F, 1F, 1F, 3F);
-            c.texOffs(12, 82).addBox(6F, -29F, -1.5F, 1F, 1F, 3F);
+            c.texOffs(24, 56).addBox(-8F, -14F, -8F, 16F, 3F, 16F);
+            c.texOffs(48, 0).addBox(-7F, -55F, -7F, 14F, 41F, 14F);
+            c.texOffs(164, 0).addBox(-5.5F, -55F, -5.5F, 11F, 20F, 11F);
+            c.texOffs(72, 94).addBox(-4F, -45F, -5.25F, 8F, 3F, 2F);
+            c.texOffs(96, 56).addBox(-6F, -58F, -6F, 12F, 3F, 12F);
+            c.texOffs(177, 56).addBox(-5F, -61F, -5F, 10F, 3F, 10F);
+            c.texOffs(40, 81).addBox(-4F, -64F, -4F, 8F, 3F, 8F);
+            c.texOffs(142, 81).addBox(-3F, -67F, -3F, 6F, 3F, 6F);
+            c.texOffs(41, 94).addBox(-2F, -70F, -2F, 4F, 3F, 4F);
+            c.texOffs(172, 94).addBox(-0.5F, -73F, -0.5F, 1F, 3F, 1F);
+            c.texOffs(148, 94).addBox(-8F, -13F, -1.5F, 1F, 1F, 3F);
+            c.texOffs(148, 94).addBox(-8F, -29F, -1.5F, 1F, 1F, 3F);
+            c.texOffs(148, 94).addBox(7F, -13F, -1.5F, 1F, 1F, 3F);
+            c.texOffs(148, 94).addBox(7F, -29F, -1.5F, 1F, 1F, 3F);
         }
         if (pass == Pass.GLASS) {
-            c.texOffs(166, 73).addBox(-3F, -52F, -5.25F, 6F, 6F, 0.5F);
-            c.texOffs(166, 73).addBox(-3F, -52F, 4.75F, 6F, 6F, 0.5F);
-            c.texOffs(160, 56).addBox(-5.25F, -52F, -3F, 0.5F, 6F, 6F);
-            c.texOffs(160, 56).addBox(4.75F, -52F, -3F, 0.5F, 6F, 6F);
+            c.texOffs(24, 94).addBox(-4F, -52F, -6.25F, 8F, 6F, 0.5F);
+            c.texOffs(24, 94).addBox(-4F, -52F, 5.75F, 8F, 6F, 0.5F);
+            c.texOffs(160, 56).addBox(-6.25F, -52F, -4F, 0.5F, 6F, 8F);
+            c.texOffs(160, 56).addBox(5.75F, -52F, -4F, 0.5F, 6F, 8F);
         }
         if (pass == Pass.GLOW) {
-            c.texOffs(40, 82).addBox(-2.5F, -44.5F, -2.25F, 5F, 2F, 0.5F);
-            c.texOffs(212, 73).addBox(-2F, -54.5F, -2F, 4F, 0.5F, 4F);
-            c.texOffs(191, 73).addBox(-4.25F, -45F, -0.5F, 0.5F, 5F, 1F);
-            c.texOffs(191, 73).addBox(3.75F, -45F, -0.5F, 0.5F, 5F, 1F);
+            c.texOffs(176, 94).addBox(-3F, -44.5F, -3.25F, 6F, 2F, 0.5F);
+            c.texOffs(92, 94).addBox(-2F, -54.5F, -2F, 4F, 0.5F, 4F);
+            c.texOffs(69, 94).addBox(-5.25F, -45F, -0.5F, 0.5F, 5F, 1F);
+            c.texOffs(69, 94).addBox(4.75F, -45F, -0.5F, 0.5F, 5F, 1F);
         }
         PartDefinition b_body = root.addOrReplaceChild("body", c, PartPose.offset(0F, 24F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(56, 73).addBox(-3F, 0F, -3F, 6F, 3F, 6F);
-            c.texOffs(205, 56).addBox(-4F, 3F, -4F, 8F, 3F, 8F);
-            c.texOffs(120, 56).addBox(-5F, 6F, -5F, 10F, 3F, 10F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
+            c.texOffs(166, 81).addBox(-3F, 0F, -3F, 6F, 3F, 6F);
+            c.texOffs(72, 81).addBox(-4F, 3F, -4F, 8F, 3F, 8F);
+            c.texOffs(0, 81).addBox(-5F, 6F, -5F, 10F, 3F, 10F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
         }
         if (pass == Pass.GLOW) {
-            c.texOffs(0, 73).addBox(-4F, 6F, -4F, 8F, 1F, 8F);
+            c.texOffs(110, 81).addBox(-4F, 6F, -4F, 8F, 1F, 8F);
         }
         PartDefinition b_engine_main = b_body.addOrReplaceChild("engine_main", c, PartPose.offset(0F, -11F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.PLUME) {
             c.texOffs(0, 0).addBox(-6F, 0F, -6F, 12F, 44F, 12F);
-            c.texOffs(96, 0).addBox(-4F, 0F, -4F, 8F, 35F, 8F);
-            c.texOffs(212, 0).addBox(-2F, 0F, -2F, 4F, 24F, 4F);
+            c.texOffs(104, 0).addBox(-4F, 0F, -4F, 8F, 35F, 8F);
+            c.texOffs(228, 0).addBox(-2F, 0F, -2F, 4F, 24F, 4F);
         }
         b_engine_main.addOrReplaceChild("plume_main", c, PartPose.offset(0F, 9F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(80, 73).addBox(-6F, 0F, 0F, 6F, 8F, 1F);
+            c.texOffs(190, 81).addBox(-6F, 0F, 0F, 6F, 8F, 1F);
         }
         if (pass == Pass.GLASS) {
-            c.texOffs(63, 82).addBox(-4F, 1F, 1F, 2F, 2F, 0.25F);
+            c.texOffs(201, 94).addBox(-4F, 1F, 1F, 2F, 2F, 0.25F);
         }
-        b_body.addOrReplaceChild("hatch", c, PartPose.offset(3F, -44F, 6F));
+        b_body.addOrReplaceChild("hatch", c, PartPose.offset(3F, -44F, 7F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(128, 0).addBox(-3F, 0F, 0F, 1F, 34F, 1F);
-            c.texOffs(128, 0).addBox(2F, 0F, 0F, 1F, 34F, 1F);
-            c.texOffs(76, 82).addBox(-2F, 31F, 0.25F, 4F, 1F, 0.5F);
-            c.texOffs(76, 82).addBox(-2F, 27F, 0.25F, 4F, 1F, 0.5F);
-            c.texOffs(76, 82).addBox(-2F, 23F, 0.25F, 4F, 1F, 0.5F);
-            c.texOffs(76, 82).addBox(-2F, 19F, 0.25F, 4F, 1F, 0.5F);
-            c.texOffs(76, 82).addBox(-2F, 15F, 0.25F, 4F, 1F, 0.5F);
-            c.texOffs(76, 82).addBox(-2F, 11F, 0.25F, 4F, 1F, 0.5F);
-            c.texOffs(76, 82).addBox(-2F, 7F, 0.25F, 4F, 1F, 0.5F);
-            c.texOffs(76, 82).addBox(-2F, 3F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(136, 0).addBox(-3F, 0F, 0F, 1F, 34F, 1F);
+            c.texOffs(136, 0).addBox(2F, 0F, 0F, 1F, 34F, 1F);
+            c.texOffs(214, 94).addBox(-2F, 31F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(214, 94).addBox(-2F, 27F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(214, 94).addBox(-2F, 23F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(214, 94).addBox(-2F, 19F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(214, 94).addBox(-2F, 15F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(214, 94).addBox(-2F, 11F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(214, 94).addBox(-2F, 7F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(214, 94).addBox(-2F, 3F, 0.25F, 4F, 1F, 0.5F);
         }
-        b_body.addOrReplaceChild("ladder", c, PartPose.offset(0F, -36F, 6F));
+        b_body.addOrReplaceChild("ladder", c, PartPose.offset(0F, -36F, 7F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(20, 82).addBox(-1F, -2F, -1F, 2F, 2F, 2F);
-            c.texOffs(126, 73).addBox(-3F, -3F, -3F, 6F, 1F, 6F);
-            c.texOffs(68, 82).addBox(-0.5F, -5F, -0.5F, 1F, 2F, 1F);
+            c.texOffs(156, 94).addBox(-1F, -2F, -1F, 2F, 2F, 2F);
+            c.texOffs(0, 94).addBox(-3F, -3F, -3F, 6F, 1F, 6F);
+            c.texOffs(206, 94).addBox(-0.5F, -5F, -0.5F, 1F, 2F, 1F);
         }
-        PartDefinition b_dish = b_body.addOrReplaceChild("dish", c, PartPose.offset(0F, -70F, 0F));
+        PartDefinition b_dish = b_body.addOrReplaceChild("dish", c, PartPose.offset(0F, -73F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.GLOW) {
-            c.texOffs(28, 82).addBox(-1F, -1.5F, -1F, 2F, 1.5F, 2F);
+            c.texOffs(164, 94).addBox(-1F, -1.5F, -1F, 2F, 1.5F, 2F);
         }
         b_dish.addOrReplaceChild("strobe", c, PartPose.offset(0F, -5F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(156, 0).addBox(-2.5F, -26F, -2.5F, 5F, 26F, 5F);
-            c.texOffs(179, 73).addBox(8F, -29F, -1.5F, 3F, 3F, 3F);
-            c.texOffs(72, 82).addBox(9F, -31F, -0.5F, 1F, 2F, 1F);
+            c.texOffs(208, 0).addBox(-2.5F, -26F, -2.5F, 5F, 26F, 5F);
+            c.texOffs(57, 94).addBox(9F, -29F, -1.5F, 3F, 3F, 3F);
+            c.texOffs(210, 94).addBox(10F, -31F, -0.5F, 1F, 2F, 1F);
         }
-        PartDefinition b_booster_w = b_body.addOrReplaceChild("booster_w", c, PartPose.offset(-9.5F, -8F, 0F));
+        PartDefinition b_booster_w = b_body.addOrReplaceChild("booster_w", c, PartPose.offset(-10.5F, -8F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(244, 73).addBox(-1.5F, 0F, -1.5F, 3F, 2F, 3F);
-            c.texOffs(94, 73).addBox(-2.5F, 2F, -2.5F, 5F, 3F, 5F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
+            c.texOffs(124, 94).addBox(-1.5F, 0F, -1.5F, 3F, 2F, 3F);
+            c.texOffs(204, 81).addBox(-2.5F, 2F, -2.5F, 5F, 3F, 5F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
         }
         if (pass == Pass.GLOW) {
-            c.texOffs(0, 82).addBox(-1.5F, 2F, -1.5F, 3F, 1F, 3F);
+            c.texOffs(136, 94).addBox(-1.5F, 2F, -1.5F, 3F, 1F, 3F);
         }
         PartDefinition b_engine_booster_w = b_booster_w.addOrReplaceChild("engine_booster_w", c, PartPose.offset(0F, 0F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.PLUME) {
-            c.texOffs(132, 0).addBox(-3F, 0F, -3F, 6F, 26F, 6F);
-            c.texOffs(228, 0).addBox(-2F, 0F, -2F, 4F, 21F, 4F);
-            c.texOffs(56, 56).addBox(-1F, 0F, -1F, 2F, 14F, 2F);
+            c.texOffs(140, 0).addBox(-3F, 0F, -3F, 6F, 26F, 6F);
+            c.texOffs(0, 56).addBox(-2F, 0F, -2F, 4F, 21F, 4F);
+            c.texOffs(88, 56).addBox(-1F, 0F, -1F, 2F, 14F, 2F);
         }
         b_engine_booster_w.addOrReplaceChild("plume_booster_w", c, PartPose.offset(0F, 5F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.GLOW) {
-            c.texOffs(51, 82).addBox(-0.75F, -1.5F, -0.75F, 1.5F, 1.5F, 1.5F);
+            c.texOffs(189, 94).addBox(-0.75F, -1.5F, -0.75F, 1.5F, 1.5F, 1.5F);
         }
         b_booster_w.addOrReplaceChild("nav_a", c, PartPose.offset(0F, -31F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(156, 0).addBox(-2.5F, -26F, -2.5F, 5F, 26F, 5F);
-            c.texOffs(179, 73).addBox(-11F, -29F, -1.5F, 3F, 3F, 3F);
-            c.texOffs(72, 82).addBox(-10F, -31F, -0.5F, 1F, 2F, 1F);
+            c.texOffs(208, 0).addBox(-2.5F, -26F, -2.5F, 5F, 26F, 5F);
+            c.texOffs(57, 94).addBox(-12F, -29F, -1.5F, 3F, 3F, 3F);
+            c.texOffs(210, 94).addBox(-11F, -31F, -0.5F, 1F, 2F, 1F);
         }
-        PartDefinition b_booster_e = b_body.addOrReplaceChild("booster_e", c, PartPose.offset(9.5F, -8F, 0F));
+        PartDefinition b_booster_e = b_body.addOrReplaceChild("booster_e", c, PartPose.offset(10.5F, -8F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(244, 73).addBox(-1.5F, 0F, -1.5F, 3F, 2F, 3F);
-            c.texOffs(94, 73).addBox(-2.5F, 2F, -2.5F, 5F, 3F, 5F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
+            c.texOffs(124, 94).addBox(-1.5F, 0F, -1.5F, 3F, 2F, 3F);
+            c.texOffs(204, 81).addBox(-2.5F, 2F, -2.5F, 5F, 3F, 5F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
         }
         if (pass == Pass.GLOW) {
-            c.texOffs(0, 82).addBox(-1.5F, 2F, -1.5F, 3F, 1F, 3F);
+            c.texOffs(136, 94).addBox(-1.5F, 2F, -1.5F, 3F, 1F, 3F);
         }
         PartDefinition b_engine_booster_e = b_booster_e.addOrReplaceChild("engine_booster_e", c, PartPose.offset(0F, 0F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.PLUME) {
-            c.texOffs(132, 0).addBox(-3F, 0F, -3F, 6F, 26F, 6F);
-            c.texOffs(228, 0).addBox(-2F, 0F, -2F, 4F, 21F, 4F);
-            c.texOffs(56, 56).addBox(-1F, 0F, -1F, 2F, 14F, 2F);
+            c.texOffs(140, 0).addBox(-3F, 0F, -3F, 6F, 26F, 6F);
+            c.texOffs(0, 56).addBox(-2F, 0F, -2F, 4F, 21F, 4F);
+            c.texOffs(88, 56).addBox(-1F, 0F, -1F, 2F, 14F, 2F);
         }
         b_engine_booster_e.addOrReplaceChild("plume_booster_e", c, PartPose.offset(0F, 5F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.GLOW) {
-            c.texOffs(57, 82).addBox(-0.75F, -1.5F, -0.75F, 1.5F, 1.5F, 1.5F);
+            c.texOffs(195, 94).addBox(-0.75F, -1.5F, -0.75F, 1.5F, 1.5F, 1.5F);
         }
         b_booster_e.addOrReplaceChild("nav_b", c, PartPose.offset(0F, -31F, 0F));
-        PartDefinition b_fin_s = b_body.addOrReplaceChild("fin_s", CubeListBuilder.create(), PartPose.offsetAndRotation(0F, -20F, 6F, 0F, -1.5708F, 0F));
+        PartDefinition b_fin_s = b_body.addOrReplaceChild("fin_s", CubeListBuilder.create(), PartPose.offsetAndRotation(0F, -20F, 7F, 0F, -1.5708F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(64, 56).addBox(-2F, 0F, -0.5F, 7F, 14F, 1F);
-            c.texOffs(237, 56).addBox(4.5F, 6F, -0.75F, 1.5F, 8F, 1.5F);
+            c.texOffs(144, 56).addBox(-2F, 0F, -0.5F, 7F, 14F, 1F);
+            c.texOffs(104, 81).addBox(4.5F, 6F, -0.75F, 1.5F, 8F, 1.5F);
         }
         b_fin_s.addOrReplaceChild("fin_s_arm", c, PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, -0.3142F));
-        PartDefinition b_fin_n = b_body.addOrReplaceChild("fin_n", CubeListBuilder.create(), PartPose.offsetAndRotation(0F, -20F, -6F, 0F, 1.5708F, 0F));
+        PartDefinition b_fin_n = b_body.addOrReplaceChild("fin_n", CubeListBuilder.create(), PartPose.offsetAndRotation(0F, -20F, -7F, 0F, 1.5708F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(64, 56).addBox(-2F, 0F, -0.5F, 7F, 14F, 1F);
-            c.texOffs(237, 56).addBox(4.5F, 6F, -0.75F, 1.5F, 8F, 1.5F);
+            c.texOffs(144, 56).addBox(-2F, 0F, -0.5F, 7F, 14F, 1F);
+            c.texOffs(104, 81).addBox(4.5F, 6F, -0.75F, 1.5F, 8F, 1.5F);
         }
         b_fin_n.addOrReplaceChild("fin_n_arm", c, PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, -0.3142F));
-        PartDefinition b_leg_ne = b_body.addOrReplaceChild("leg_ne", CubeListBuilder.create(), PartPose.offsetAndRotation(7.5F, -16F, -7.5F, 0F, 0.7854F, 0F));
+        PartDefinition b_leg_ne = b_body.addOrReplaceChild("leg_ne", CubeListBuilder.create(), PartPose.offsetAndRotation(8.5F, -16F, -8.5F, 0F, 0.7854F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(244, 0).addBox(-1F, 0F, -1F, 2F, 18F, 2F);
-            c.texOffs(114, 73).addBox(-1.5F, 5F, -1.5F, 3F, 5F, 3F);
-            c.texOffs(228, 73).addBox(-1F, 18F, -2F, 4F, 1F, 4F);
+            c.texOffs(16, 56).addBox(-1F, 0F, -1F, 2F, 18F, 2F);
+            c.texOffs(224, 81).addBox(-1.5F, 5F, -1.5F, 3F, 5F, 3F);
+            c.texOffs(108, 94).addBox(-1F, 18F, -2F, 4F, 1F, 4F);
         }
         b_leg_ne.addOrReplaceChild("leg_ne_arm", c, PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, -0.5236F));
-        PartDefinition b_leg_se = b_body.addOrReplaceChild("leg_se", CubeListBuilder.create(), PartPose.offsetAndRotation(7.5F, -16F, 7.5F, 0F, -0.7854F, 0F));
+        PartDefinition b_leg_se = b_body.addOrReplaceChild("leg_se", CubeListBuilder.create(), PartPose.offsetAndRotation(8.5F, -16F, 8.5F, 0F, -0.7854F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(244, 0).addBox(-1F, 0F, -1F, 2F, 18F, 2F);
-            c.texOffs(114, 73).addBox(-1.5F, 5F, -1.5F, 3F, 5F, 3F);
-            c.texOffs(228, 73).addBox(-1F, 18F, -2F, 4F, 1F, 4F);
+            c.texOffs(16, 56).addBox(-1F, 0F, -1F, 2F, 18F, 2F);
+            c.texOffs(224, 81).addBox(-1.5F, 5F, -1.5F, 3F, 5F, 3F);
+            c.texOffs(108, 94).addBox(-1F, 18F, -2F, 4F, 1F, 4F);
         }
         b_leg_se.addOrReplaceChild("leg_se_arm", c, PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, -0.5236F));
-        PartDefinition b_leg_sw = b_body.addOrReplaceChild("leg_sw", CubeListBuilder.create(), PartPose.offsetAndRotation(-7.5F, -16F, 7.5F, 0F, -2.3562F, 0F));
+        PartDefinition b_leg_sw = b_body.addOrReplaceChild("leg_sw", CubeListBuilder.create(), PartPose.offsetAndRotation(-8.5F, -16F, 8.5F, 0F, -2.3562F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(244, 0).addBox(-1F, 0F, -1F, 2F, 18F, 2F);
-            c.texOffs(114, 73).addBox(-1.5F, 5F, -1.5F, 3F, 5F, 3F);
-            c.texOffs(228, 73).addBox(-1F, 18F, -2F, 4F, 1F, 4F);
+            c.texOffs(16, 56).addBox(-1F, 0F, -1F, 2F, 18F, 2F);
+            c.texOffs(224, 81).addBox(-1.5F, 5F, -1.5F, 3F, 5F, 3F);
+            c.texOffs(108, 94).addBox(-1F, 18F, -2F, 4F, 1F, 4F);
         }
         b_leg_sw.addOrReplaceChild("leg_sw_arm", c, PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, -0.5236F));
-        PartDefinition b_leg_nw = b_body.addOrReplaceChild("leg_nw", CubeListBuilder.create(), PartPose.offsetAndRotation(-7.5F, -16F, -7.5F, 0F, 2.3562F, 0F));
+        PartDefinition b_leg_nw = b_body.addOrReplaceChild("leg_nw", CubeListBuilder.create(), PartPose.offsetAndRotation(-8.5F, -16F, -8.5F, 0F, 2.3562F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(244, 0).addBox(-1F, 0F, -1F, 2F, 18F, 2F);
-            c.texOffs(114, 73).addBox(-1.5F, 5F, -1.5F, 3F, 5F, 3F);
-            c.texOffs(228, 73).addBox(-1F, 18F, -2F, 4F, 1F, 4F);
+            c.texOffs(16, 56).addBox(-1F, 0F, -1F, 2F, 18F, 2F);
+            c.texOffs(224, 81).addBox(-1.5F, 5F, -1.5F, 3F, 5F, 3F);
+            c.texOffs(108, 94).addBox(-1F, 18F, -2F, 4F, 1F, 4F);
         }
         b_leg_nw.addOrReplaceChild("leg_nw_arm", c, PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, -0.5236F));
     }
@@ -538,221 +540,222 @@ public final class RocketGeometry {
         CubeListBuilder c;
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(0, 58).addBox(-7F, -14F, -7F, 14F, 3F, 14F);
-            c.texOffs(0, 0).addBox(-6F, -60F, -6F, 12F, 46F, 12F);
-            c.texOffs(132, 0).addBox(-4.5F, -60F, -4.5F, 9F, 19F, 9F);
-            c.texOffs(158, 75).addBox(-3.5F, -49F, -4.25F, 7F, 3F, 2F);
-            c.texOffs(95, 58).addBox(-5F, -63F, -5F, 10F, 3F, 10F);
-            c.texOffs(135, 58).addBox(-4F, -67F, -4F, 8F, 4F, 8F);
-            c.texOffs(209, 58).addBox(-3F, -71F, -3F, 6F, 4F, 6F);
-            c.texOffs(38, 75).addBox(-2F, -75F, -2F, 4F, 4F, 4F);
-            c.texOffs(147, 75).addBox(-1F, -79F, -1F, 2F, 4F, 2F);
-            c.texOffs(7, 84).addBox(-0.5F, -82F, -0.5F, 1F, 3F, 1F);
+            c.texOffs(0, 60).addBox(-8F, -14F, -8F, 16F, 3F, 16F);
+            c.texOffs(0, 0).addBox(-7F, -60F, -7F, 14F, 46F, 14F);
+            c.texOffs(124, 0).addBox(-5.5F, -60F, -5.5F, 11F, 19F, 11F);
+            c.texOffs(222, 79).addBox(-4F, -49F, -5.25F, 8F, 3F, 2F);
+            c.texOffs(107, 60).addBox(-6F, -63F, -6F, 12F, 3F, 12F);
+            c.texOffs(155, 60).addBox(-5F, -66F, -5F, 10F, 3F, 10F);
+            c.texOffs(195, 60).addBox(-4F, -70F, -4F, 8F, 4F, 8F);
+            c.texOffs(36, 79).addBox(-3F, -74F, -3F, 6F, 4F, 6F);
+            c.texOffs(98, 79).addBox(-2F, -78F, -2F, 4F, 4F, 4F);
+            c.texOffs(211, 79).addBox(-1F, -82F, -1F, 2F, 4F, 2F);
+            c.texOffs(82, 90).addBox(-0.5F, -85F, -0.5F, 1F, 3F, 1F);
         }
         if (pass == Pass.GLASS) {
-            c.texOffs(90, 75).addBox(-4F, -56F, -5.25F, 8F, 6F, 0.5F);
-            c.texOffs(90, 75).addBox(-4F, -56F, 4.75F, 8F, 6F, 0.5F);
-            c.texOffs(78, 58).addBox(-5.25F, -56F, -4F, 0.5F, 6F, 8F);
-            c.texOffs(78, 58).addBox(4.75F, -56F, -4F, 0.5F, 6F, 8F);
+            c.texOffs(150, 79).addBox(-5F, -56F, -6.25F, 10F, 6F, 0.5F);
+            c.texOffs(150, 79).addBox(-5F, -56F, 5.75F, 10F, 6F, 0.5F);
+            c.texOffs(78, 60).addBox(-6.25F, -56F, -5F, 0.5F, 6F, 10F);
+            c.texOffs(78, 60).addBox(5.75F, -56F, -5F, 0.5F, 6F, 10F);
         }
         if (pass == Pass.GLOW) {
-            c.texOffs(11, 84).addBox(-2.5F, -48.5F, -2.25F, 5F, 2F, 0.5F);
-            c.texOffs(176, 75).addBox(-2F, -59.5F, -2F, 4F, 0.5F, 4F);
-            c.texOffs(155, 75).addBox(-4.25F, -49F, -0.5F, 0.5F, 5F, 1F);
-            c.texOffs(155, 75).addBox(3.75F, -49F, -0.5F, 0.5F, 5F, 1F);
+            c.texOffs(86, 90).addBox(-3F, -48.5F, -3.25F, 6F, 2F, 0.5F);
+            c.texOffs(0, 90).addBox(-2F, -59.5F, -2F, 4F, 0.5F, 4F);
+            c.texOffs(219, 79).addBox(-5.25F, -49F, -0.5F, 0.5F, 5F, 1F);
+            c.texOffs(219, 79).addBox(4.75F, -49F, -0.5F, 0.5F, 5F, 1F);
         }
         PartDefinition b_body = root.addOrReplaceChild("body", c, PartPose.offset(0F, 24F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(107, 75).addBox(-2F, 0F, -2F, 4F, 3F, 4F);
-            c.texOffs(0, 75).addBox(-3F, 3F, -3F, 6F, 3F, 6F);
-            c.texOffs(173, 58).addBox(-4F, 6F, -4F, 8F, 3F, 8F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
+            c.texOffs(171, 79).addBox(-2F, 0F, -2F, 4F, 3F, 4F);
+            c.texOffs(60, 79).addBox(-3F, 3F, -3F, 6F, 3F, 6F);
+            c.texOffs(0, 79).addBox(-4F, 6F, -4F, 8F, 3F, 8F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
         }
         if (pass == Pass.GLOW) {
-            c.texOffs(66, 75).addBox(-3F, 6F, -3F, 6F, 1F, 6F);
+            c.texOffs(126, 79).addBox(-3F, 6F, -3F, 6F, 1F, 6F);
         }
         PartDefinition b_engine_main = b_body.addOrReplaceChild("engine_main", c, PartPose.offset(0F, -11F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.PLUME) {
-            c.texOffs(48, 0).addBox(-5F, 0F, -5F, 10F, 46F, 10F);
-            c.texOffs(88, 0).addBox(-3F, 0F, -3F, 6F, 37F, 6F);
-            c.texOffs(116, 0).addBox(-2F, 0F, -2F, 4F, 25F, 4F);
+            c.texOffs(56, 0).addBox(-5F, 0F, -5F, 10F, 46F, 10F);
+            c.texOffs(96, 0).addBox(-3F, 0F, -3F, 6F, 37F, 6F);
+            c.texOffs(168, 0).addBox(-2F, 0F, -2F, 4F, 25F, 4F);
         }
         b_engine_main.addOrReplaceChild("plume_main", c, PartPose.offset(0F, 9F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(220, 75).addBox(-1F, 0F, -1F, 2F, 2F, 2F);
-            c.texOffs(208, 75).addBox(-1.5F, 2F, -1.5F, 3F, 2F, 3F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
+            c.texOffs(44, 90).addBox(-1F, 0F, -1F, 2F, 2F, 2F);
+            c.texOffs(32, 90).addBox(-1.5F, 2F, -1.5F, 3F, 2F, 3F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
         }
         PartDefinition b_engine_vernier_ne = b_body.addOrReplaceChild("engine_vernier_ne", c, PartPose.offset(4.75F, -10F, -4.75F));
         c = CubeListBuilder.create();
         if (pass == Pass.PLUME) {
-            c.texOffs(186, 0).addBox(-2F, 0F, -2F, 4F, 18F, 4F);
-            c.texOffs(70, 58).addBox(-1F, 0F, -1F, 2F, 14F, 2F);
-            c.texOffs(205, 58).addBox(-0.5F, 0F, -0.5F, 1F, 10F, 1F);
+            c.texOffs(202, 0).addBox(-2F, 0F, -2F, 4F, 18F, 4F);
+            c.texOffs(99, 60).addBox(-1F, 0F, -1F, 2F, 14F, 2F);
+            c.texOffs(32, 79).addBox(-0.5F, 0F, -0.5F, 1F, 10F, 1F);
         }
         b_engine_vernier_ne.addOrReplaceChild("plume_vernier_ne", c, PartPose.offset(0F, 4F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(220, 75).addBox(-1F, 0F, -1F, 2F, 2F, 2F);
-            c.texOffs(208, 75).addBox(-1.5F, 2F, -1.5F, 3F, 2F, 3F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
+            c.texOffs(44, 90).addBox(-1F, 0F, -1F, 2F, 2F, 2F);
+            c.texOffs(32, 90).addBox(-1.5F, 2F, -1.5F, 3F, 2F, 3F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
         }
         PartDefinition b_engine_vernier_se = b_body.addOrReplaceChild("engine_vernier_se", c, PartPose.offset(4.75F, -10F, 4.75F));
         c = CubeListBuilder.create();
         if (pass == Pass.PLUME) {
-            c.texOffs(186, 0).addBox(-2F, 0F, -2F, 4F, 18F, 4F);
-            c.texOffs(70, 58).addBox(-1F, 0F, -1F, 2F, 14F, 2F);
-            c.texOffs(205, 58).addBox(-0.5F, 0F, -0.5F, 1F, 10F, 1F);
+            c.texOffs(202, 0).addBox(-2F, 0F, -2F, 4F, 18F, 4F);
+            c.texOffs(99, 60).addBox(-1F, 0F, -1F, 2F, 14F, 2F);
+            c.texOffs(32, 79).addBox(-0.5F, 0F, -0.5F, 1F, 10F, 1F);
         }
         b_engine_vernier_se.addOrReplaceChild("plume_vernier_se", c, PartPose.offset(0F, 4F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(220, 75).addBox(-1F, 0F, -1F, 2F, 2F, 2F);
-            c.texOffs(208, 75).addBox(-1.5F, 2F, -1.5F, 3F, 2F, 3F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
+            c.texOffs(44, 90).addBox(-1F, 0F, -1F, 2F, 2F, 2F);
+            c.texOffs(32, 90).addBox(-1.5F, 2F, -1.5F, 3F, 2F, 3F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
         }
         PartDefinition b_engine_vernier_sw = b_body.addOrReplaceChild("engine_vernier_sw", c, PartPose.offset(-4.75F, -10F, 4.75F));
         c = CubeListBuilder.create();
         if (pass == Pass.PLUME) {
-            c.texOffs(186, 0).addBox(-2F, 0F, -2F, 4F, 18F, 4F);
-            c.texOffs(70, 58).addBox(-1F, 0F, -1F, 2F, 14F, 2F);
-            c.texOffs(205, 58).addBox(-0.5F, 0F, -0.5F, 1F, 10F, 1F);
+            c.texOffs(202, 0).addBox(-2F, 0F, -2F, 4F, 18F, 4F);
+            c.texOffs(99, 60).addBox(-1F, 0F, -1F, 2F, 14F, 2F);
+            c.texOffs(32, 79).addBox(-0.5F, 0F, -0.5F, 1F, 10F, 1F);
         }
         b_engine_vernier_sw.addOrReplaceChild("plume_vernier_sw", c, PartPose.offset(0F, 4F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(220, 75).addBox(-1F, 0F, -1F, 2F, 2F, 2F);
-            c.texOffs(208, 75).addBox(-1.5F, 2F, -1.5F, 3F, 2F, 3F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
+            c.texOffs(44, 90).addBox(-1F, 0F, -1F, 2F, 2F, 2F);
+            c.texOffs(32, 90).addBox(-1.5F, 2F, -1.5F, 3F, 2F, 3F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
         }
         PartDefinition b_engine_vernier_nw = b_body.addOrReplaceChild("engine_vernier_nw", c, PartPose.offset(-4.75F, -10F, -4.75F));
         c = CubeListBuilder.create();
         if (pass == Pass.PLUME) {
-            c.texOffs(186, 0).addBox(-2F, 0F, -2F, 4F, 18F, 4F);
-            c.texOffs(70, 58).addBox(-1F, 0F, -1F, 2F, 14F, 2F);
-            c.texOffs(205, 58).addBox(-0.5F, 0F, -0.5F, 1F, 10F, 1F);
+            c.texOffs(202, 0).addBox(-2F, 0F, -2F, 4F, 18F, 4F);
+            c.texOffs(99, 60).addBox(-1F, 0F, -1F, 2F, 14F, 2F);
+            c.texOffs(32, 79).addBox(-0.5F, 0F, -0.5F, 1F, 10F, 1F);
         }
         b_engine_vernier_nw.addOrReplaceChild("plume_vernier_nw", c, PartPose.offset(0F, 4F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(24, 75).addBox(-6F, 0F, 0F, 6F, 8F, 1F);
+            c.texOffs(84, 79).addBox(-6F, 0F, 0F, 6F, 8F, 1F);
         }
         if (pass == Pass.GLASS) {
-            c.texOffs(28, 84).addBox(-4F, 1F, 1F, 2F, 2F, 0.25F);
+            c.texOffs(105, 90).addBox(-4F, 1F, 1F, 2F, 2F, 0.25F);
         }
-        b_body.addOrReplaceChild("hatch", c, PartPose.offset(3F, -50F, 6F));
+        b_body.addOrReplaceChild("hatch", c, PartPose.offset(3F, -50F, 7F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(112, 0).addBox(-3F, 0F, 0F, 1F, 40F, 1F);
-            c.texOffs(112, 0).addBox(2F, 0F, 0F, 1F, 40F, 1F);
-            c.texOffs(33, 84).addBox(-2F, 37F, 0.25F, 4F, 1F, 0.5F);
-            c.texOffs(33, 84).addBox(-2F, 33F, 0.25F, 4F, 1F, 0.5F);
-            c.texOffs(33, 84).addBox(-2F, 29F, 0.25F, 4F, 1F, 0.5F);
-            c.texOffs(33, 84).addBox(-2F, 25F, 0.25F, 4F, 1F, 0.5F);
-            c.texOffs(33, 84).addBox(-2F, 21F, 0.25F, 4F, 1F, 0.5F);
-            c.texOffs(33, 84).addBox(-2F, 17F, 0.25F, 4F, 1F, 0.5F);
-            c.texOffs(33, 84).addBox(-2F, 13F, 0.25F, 4F, 1F, 0.5F);
-            c.texOffs(33, 84).addBox(-2F, 9F, 0.25F, 4F, 1F, 0.5F);
-            c.texOffs(33, 84).addBox(-2F, 5F, 0.25F, 4F, 1F, 0.5F);
-            c.texOffs(33, 84).addBox(-2F, 1F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(120, 0).addBox(-3F, 0F, 0F, 1F, 40F, 1F);
+            c.texOffs(120, 0).addBox(2F, 0F, 0F, 1F, 40F, 1F);
+            c.texOffs(110, 90).addBox(-2F, 37F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(110, 90).addBox(-2F, 33F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(110, 90).addBox(-2F, 29F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(110, 90).addBox(-2F, 25F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(110, 90).addBox(-2F, 21F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(110, 90).addBox(-2F, 17F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(110, 90).addBox(-2F, 13F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(110, 90).addBox(-2F, 9F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(110, 90).addBox(-2F, 5F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(110, 90).addBox(-2F, 1F, 0.25F, 4F, 1F, 0.5F);
         }
-        b_body.addOrReplaceChild("ladder", c, PartPose.offset(0F, -42F, 6F));
+        b_body.addOrReplaceChild("ladder", c, PartPose.offset(0F, -42F, 7F));
         c = CubeListBuilder.create();
         if (pass == Pass.GLOW) {
-            c.texOffs(228, 75).addBox(-1F, -2F, -1F, 2F, 2F, 2F);
+            c.texOffs(52, 90).addBox(-1F, -2F, -1F, 2F, 2F, 2F);
         }
-        b_body.addOrReplaceChild("strobe", c, PartPose.offset(0F, -82F, 0F));
-        PartDefinition b_wing_e = b_body.addOrReplaceChild("wing_e", CubeListBuilder.create(), PartPose.offset(7F, -38F, 0F));
+        b_body.addOrReplaceChild("strobe", c, PartPose.offset(0F, -85F, 0F));
+        PartDefinition b_wing_e = b_body.addOrReplaceChild("wing_e", CubeListBuilder.create(), PartPose.offset(8F, -38F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(168, 0).addBox(-0.5F, 0F, -4F, 1F, 14F, 8F);
-            c.texOffs(22, 84).addBox(-0.75F, 0F, -0.75F, 1.5F, 1F, 1.5F);
+            c.texOffs(184, 0).addBox(-0.5F, 0F, -4F, 1F, 14F, 8F);
+            c.texOffs(99, 90).addBox(-0.75F, 0F, -0.75F, 1.5F, 1F, 1.5F);
         }
         b_wing_e.addOrReplaceChild("wing_e_arm", c, PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, -1.5708F));
-        PartDefinition b_wing_w = b_body.addOrReplaceChild("wing_w", CubeListBuilder.create(), PartPose.offsetAndRotation(-7F, -38F, 0F, 0F, 3.1416F, 0F));
+        PartDefinition b_wing_w = b_body.addOrReplaceChild("wing_w", CubeListBuilder.create(), PartPose.offsetAndRotation(-8F, -38F, 0F, 0F, 3.1416F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(168, 0).addBox(-0.5F, 0F, -4F, 1F, 14F, 8F);
-            c.texOffs(22, 84).addBox(-0.75F, 0F, -0.75F, 1.5F, 1F, 1.5F);
+            c.texOffs(184, 0).addBox(-0.5F, 0F, -4F, 1F, 14F, 8F);
+            c.texOffs(99, 90).addBox(-0.75F, 0F, -0.75F, 1.5F, 1F, 1.5F);
         }
         b_wing_w.addOrReplaceChild("wing_w_arm", c, PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, -1.5708F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(123, 75).addBox(-0.5F, -0.5F, -5F, 1F, 1F, 5F);
+            c.texOffs(187, 79).addBox(-0.5F, -0.5F, -5F, 1F, 1F, 5F);
         }
-        PartDefinition b_dish_mast = b_body.addOrReplaceChild("dish_mast", c, PartPose.offset(0F, -46.5F, -6F));
+        PartDefinition b_dish_mast = b_body.addOrReplaceChild("dish_mast", c, PartPose.offset(0F, -46.5F, -7F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(236, 75).addBox(-1F, -1F, -2F, 2F, 2F, 2F);
-            c.texOffs(135, 75).addBox(-2.5F, -2.5F, -3F, 5F, 5F, 1F);
+            c.texOffs(60, 90).addBox(-1F, -1F, -2F, 2F, 2F, 2F);
+            c.texOffs(199, 79).addBox(-2.5F, -2.5F, -3F, 5F, 5F, 1F);
         }
         b_dish_mast.addOrReplaceChild("dish", c, PartPose.offset(0F, 0F, -5F));
-        PartDefinition b_fin_e = b_body.addOrReplaceChild("fin_e", CubeListBuilder.create(), PartPose.offset(6F, -20F, 0F));
+        PartDefinition b_fin_e = b_body.addOrReplaceChild("fin_e", CubeListBuilder.create(), PartPose.offset(7F, -20F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(56, 58).addBox(-2F, 0F, -0.5F, 6F, 16F, 1F);
-            c.texOffs(167, 58).addBox(3.5F, 6F, -0.75F, 1.5F, 10F, 1.5F);
+            c.texOffs(64, 60).addBox(-2F, 0F, -0.5F, 6F, 16F, 1F);
+            c.texOffs(227, 60).addBox(3.5F, 6F, -0.75F, 1.5F, 10F, 1.5F);
         }
         PartDefinition b_fin_e_arm = b_fin_e.addOrReplaceChild("fin_e_arm", c, PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, -0.3142F));
         c = CubeListBuilder.create();
         if (pass == Pass.GLOW) {
-            c.texOffs(244, 75).addBox(3.75F, 15F, -1F, 1.5F, 1.5F, 2F);
+            c.texOffs(68, 90).addBox(3.75F, 15F, -1F, 1.5F, 1.5F, 2F);
         }
         b_fin_e_arm.addOrReplaceChild("nav_b", c, PartPose.offset(0F, 0F, 0F));
-        PartDefinition b_fin_w = b_body.addOrReplaceChild("fin_w", CubeListBuilder.create(), PartPose.offsetAndRotation(-6F, -20F, 0F, 0F, 3.1416F, 0F));
+        PartDefinition b_fin_w = b_body.addOrReplaceChild("fin_w", CubeListBuilder.create(), PartPose.offsetAndRotation(-7F, -20F, 0F, 0F, 3.1416F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(56, 58).addBox(-2F, 0F, -0.5F, 6F, 16F, 1F);
-            c.texOffs(167, 58).addBox(3.5F, 6F, -0.75F, 1.5F, 10F, 1.5F);
+            c.texOffs(64, 60).addBox(-2F, 0F, -0.5F, 6F, 16F, 1F);
+            c.texOffs(227, 60).addBox(3.5F, 6F, -0.75F, 1.5F, 10F, 1.5F);
         }
         PartDefinition b_fin_w_arm = b_fin_w.addOrReplaceChild("fin_w_arm", c, PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, -0.3142F));
         c = CubeListBuilder.create();
         if (pass == Pass.GLOW) {
-            c.texOffs(0, 84).addBox(3.75F, 15F, -1F, 1.5F, 1.5F, 2F);
+            c.texOffs(75, 90).addBox(3.75F, 15F, -1F, 1.5F, 1.5F, 2F);
         }
         b_fin_w_arm.addOrReplaceChild("nav_a", c, PartPose.offset(0F, 0F, 0F));
-        PartDefinition b_fin_s = b_body.addOrReplaceChild("fin_s", CubeListBuilder.create(), PartPose.offsetAndRotation(0F, -20F, 6F, 0F, -1.5708F, 0F));
+        PartDefinition b_fin_s = b_body.addOrReplaceChild("fin_s", CubeListBuilder.create(), PartPose.offsetAndRotation(0F, -20F, 7F, 0F, -1.5708F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(56, 58).addBox(-2F, 0F, -0.5F, 6F, 16F, 1F);
-            c.texOffs(167, 58).addBox(3.5F, 6F, -0.75F, 1.5F, 10F, 1.5F);
+            c.texOffs(64, 60).addBox(-2F, 0F, -0.5F, 6F, 16F, 1F);
+            c.texOffs(227, 60).addBox(3.5F, 6F, -0.75F, 1.5F, 10F, 1.5F);
         }
         b_fin_s.addOrReplaceChild("fin_s_arm", c, PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, -0.3142F));
-        PartDefinition b_fin_n = b_body.addOrReplaceChild("fin_n", CubeListBuilder.create(), PartPose.offsetAndRotation(0F, -20F, -6F, 0F, 1.5708F, 0F));
+        PartDefinition b_fin_n = b_body.addOrReplaceChild("fin_n", CubeListBuilder.create(), PartPose.offsetAndRotation(0F, -20F, -7F, 0F, 1.5708F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(56, 58).addBox(-2F, 0F, -0.5F, 6F, 16F, 1F);
-            c.texOffs(167, 58).addBox(3.5F, 6F, -0.75F, 1.5F, 10F, 1.5F);
+            c.texOffs(64, 60).addBox(-2F, 0F, -0.5F, 6F, 16F, 1F);
+            c.texOffs(227, 60).addBox(3.5F, 6F, -0.75F, 1.5F, 10F, 1.5F);
         }
         b_fin_n.addOrReplaceChild("fin_n_arm", c, PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, -0.3142F));
-        PartDefinition b_leg_ne = b_body.addOrReplaceChild("leg_ne", CubeListBuilder.create(), PartPose.offsetAndRotation(7.5F, -16F, -7.5F, 0F, 0.7854F, 0F));
+        PartDefinition b_leg_ne = b_body.addOrReplaceChild("leg_ne", CubeListBuilder.create(), PartPose.offsetAndRotation(8.5F, -16F, -8.5F, 0F, 0.7854F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(202, 0).addBox(-1F, 0F, -1F, 2F, 18F, 2F);
-            c.texOffs(54, 75).addBox(-1.5F, 5F, -1.5F, 3F, 5F, 3F);
-            c.texOffs(192, 75).addBox(-1F, 18F, -2F, 4F, 1F, 4F);
+            c.texOffs(218, 0).addBox(-1F, 0F, -1F, 2F, 18F, 2F);
+            c.texOffs(114, 79).addBox(-1.5F, 5F, -1.5F, 3F, 5F, 3F);
+            c.texOffs(16, 90).addBox(-1F, 18F, -2F, 4F, 1F, 4F);
         }
         b_leg_ne.addOrReplaceChild("leg_ne_arm", c, PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, -0.5236F));
-        PartDefinition b_leg_se = b_body.addOrReplaceChild("leg_se", CubeListBuilder.create(), PartPose.offsetAndRotation(7.5F, -16F, 7.5F, 0F, -0.7854F, 0F));
+        PartDefinition b_leg_se = b_body.addOrReplaceChild("leg_se", CubeListBuilder.create(), PartPose.offsetAndRotation(8.5F, -16F, 8.5F, 0F, -0.7854F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(202, 0).addBox(-1F, 0F, -1F, 2F, 18F, 2F);
-            c.texOffs(54, 75).addBox(-1.5F, 5F, -1.5F, 3F, 5F, 3F);
-            c.texOffs(192, 75).addBox(-1F, 18F, -2F, 4F, 1F, 4F);
+            c.texOffs(218, 0).addBox(-1F, 0F, -1F, 2F, 18F, 2F);
+            c.texOffs(114, 79).addBox(-1.5F, 5F, -1.5F, 3F, 5F, 3F);
+            c.texOffs(16, 90).addBox(-1F, 18F, -2F, 4F, 1F, 4F);
         }
         b_leg_se.addOrReplaceChild("leg_se_arm", c, PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, -0.5236F));
-        PartDefinition b_leg_sw = b_body.addOrReplaceChild("leg_sw", CubeListBuilder.create(), PartPose.offsetAndRotation(-7.5F, -16F, 7.5F, 0F, -2.3562F, 0F));
+        PartDefinition b_leg_sw = b_body.addOrReplaceChild("leg_sw", CubeListBuilder.create(), PartPose.offsetAndRotation(-8.5F, -16F, 8.5F, 0F, -2.3562F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(202, 0).addBox(-1F, 0F, -1F, 2F, 18F, 2F);
-            c.texOffs(54, 75).addBox(-1.5F, 5F, -1.5F, 3F, 5F, 3F);
-            c.texOffs(192, 75).addBox(-1F, 18F, -2F, 4F, 1F, 4F);
+            c.texOffs(218, 0).addBox(-1F, 0F, -1F, 2F, 18F, 2F);
+            c.texOffs(114, 79).addBox(-1.5F, 5F, -1.5F, 3F, 5F, 3F);
+            c.texOffs(16, 90).addBox(-1F, 18F, -2F, 4F, 1F, 4F);
         }
         b_leg_sw.addOrReplaceChild("leg_sw_arm", c, PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, -0.5236F));
-        PartDefinition b_leg_nw = b_body.addOrReplaceChild("leg_nw", CubeListBuilder.create(), PartPose.offsetAndRotation(-7.5F, -16F, -7.5F, 0F, 2.3562F, 0F));
+        PartDefinition b_leg_nw = b_body.addOrReplaceChild("leg_nw", CubeListBuilder.create(), PartPose.offsetAndRotation(-8.5F, -16F, -8.5F, 0F, 2.3562F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(202, 0).addBox(-1F, 0F, -1F, 2F, 18F, 2F);
-            c.texOffs(54, 75).addBox(-1.5F, 5F, -1.5F, 3F, 5F, 3F);
-            c.texOffs(192, 75).addBox(-1F, 18F, -2F, 4F, 1F, 4F);
+            c.texOffs(218, 0).addBox(-1F, 0F, -1F, 2F, 18F, 2F);
+            c.texOffs(114, 79).addBox(-1.5F, 5F, -1.5F, 3F, 5F, 3F);
+            c.texOffs(16, 90).addBox(-1F, 18F, -2F, 4F, 1F, 4F);
         }
         b_leg_nw.addOrReplaceChild("leg_nw_arm", c, PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, -0.5236F));
     }
@@ -761,327 +764,328 @@ public final class RocketGeometry {
         CubeListBuilder c;
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(28, 64).addBox(-8F, -14F, -8F, 16F, 3F, 16F);
-            c.texOffs(0, 0).addBox(-7F, -64F, -7F, 14F, 50F, 14F);
-            c.texOffs(204, 0).addBox(-5.5F, -64F, -5.5F, 11F, 17F, 11F);
-            c.texOffs(60, 104).addBox(-4F, -53F, -5.25F, 8F, 3F, 2F);
-            c.texOffs(100, 64).addBox(-6F, -67F, -6F, 12F, 3F, 12F);
-            c.texOffs(165, 64).addBox(-5F, -70F, -5F, 10F, 3F, 10F);
-            c.texOffs(0, 92).addBox(-4F, -74F, -4F, 8F, 4F, 8F);
-            c.texOffs(78, 92).addBox(-3F, -78F, -3F, 6F, 4F, 6F);
-            c.texOffs(208, 92).addBox(-2F, -82F, -2F, 4F, 4F, 4F);
-            c.texOffs(108, 104).addBox(-1F, -85F, -1F, 2F, 3F, 2F);
-            c.texOffs(160, 104).addBox(-0.5F, -88F, -0.5F, 1F, 3F, 1F);
-            c.texOffs(136, 104).addBox(-8F, -13F, -1.5F, 1F, 1F, 3F);
-            c.texOffs(136, 104).addBox(-8F, -37F, -1.5F, 1F, 1F, 3F);
-            c.texOffs(136, 104).addBox(7F, -13F, -1.5F, 1F, 1F, 3F);
-            c.texOffs(136, 104).addBox(7F, -37F, -1.5F, 1F, 1F, 3F);
-            c.texOffs(209, 104).addBox(-1.5F, -13F, -8F, 3F, 1F, 1F);
-            c.texOffs(209, 104).addBox(-1.5F, -37F, -8F, 3F, 1F, 1F);
-            c.texOffs(209, 104).addBox(-1.5F, -13F, 7F, 3F, 1F, 1F);
-            c.texOffs(209, 104).addBox(-1.5F, -37F, 7F, 3F, 1F, 1F);
+            c.texOffs(68, 66).addBox(-9F, -14F, -9F, 18F, 3F, 18F);
+            c.texOffs(0, 0).addBox(-8F, -64F, -8F, 16F, 50F, 16F);
+            c.texOffs(0, 66).addBox(-6.5F, -64F, -6.5F, 13F, 17F, 13F);
+            c.texOffs(210, 111).addBox(-4F, -53F, -6.25F, 8F, 3F, 2F);
+            c.texOffs(160, 66).addBox(-7F, -67F, -7F, 14F, 3F, 14F);
+            c.texOffs(0, 96).addBox(-6F, -70F, -6F, 12F, 3F, 12F);
+            c.texOffs(48, 96).addBox(-5F, -73F, -5F, 10F, 3F, 10F);
+            c.texOffs(128, 96).addBox(-4F, -77F, -4F, 8F, 4F, 8F);
+            c.texOffs(206, 96).addBox(-3F, -81F, -3F, 6F, 4F, 6F);
+            c.texOffs(106, 111).addBox(-2F, -85F, -2F, 4F, 4F, 4F);
+            c.texOffs(12, 120).addBox(-1F, -88F, -1F, 2F, 3F, 2F);
+            c.texOffs(64, 120).addBox(-0.5F, -91F, -0.5F, 1F, 3F, 1F);
+            c.texOffs(40, 120).addBox(-9F, -13F, -1.5F, 1F, 1F, 3F);
+            c.texOffs(40, 120).addBox(-9F, -37F, -1.5F, 1F, 1F, 3F);
+            c.texOffs(40, 120).addBox(8F, -13F, -1.5F, 1F, 1F, 3F);
+            c.texOffs(40, 120).addBox(8F, -37F, -1.5F, 1F, 1F, 3F);
+            c.texOffs(113, 120).addBox(-1.5F, -13F, -9F, 3F, 1F, 1F);
+            c.texOffs(113, 120).addBox(-1.5F, -37F, -9F, 3F, 1F, 1F);
+            c.texOffs(113, 120).addBox(-1.5F, -13F, 8F, 3F, 1F, 1F);
+            c.texOffs(113, 120).addBox(-1.5F, -37F, 8F, 3F, 1F, 1F);
         }
         if (pass == Pass.GLASS) {
-            c.texOffs(0, 104).addBox(-4F, -60F, -6.25F, 8F, 6F, 0.5F);
-            c.texOffs(0, 104).addBox(-4F, -60F, 5.75F, 8F, 6F, 0.5F);
-            c.texOffs(148, 64).addBox(-6.25F, -60F, -4F, 0.5F, 6F, 8F);
-            c.texOffs(148, 64).addBox(5.75F, -60F, -4F, 0.5F, 6F, 8F);
+            c.texOffs(146, 111).addBox(-5F, -60F, -7.25F, 10F, 6F, 0.5F);
+            c.texOffs(146, 111).addBox(-5F, -60F, 6.75F, 10F, 6F, 0.5F);
+            c.texOffs(216, 66).addBox(-7.25F, -60F, -5F, 0.5F, 6F, 10F);
+            c.texOffs(216, 66).addBox(6.75F, -60F, -5F, 0.5F, 6F, 10F);
         }
         if (pass == Pass.GLOW) {
-            c.texOffs(164, 104).addBox(-3F, -52.5F, -3.25F, 6F, 2F, 0.5F);
-            c.texOffs(80, 104).addBox(-2F, -63.5F, -2F, 4F, 0.5F, 4F);
-            c.texOffs(57, 104).addBox(-5.25F, -53F, -0.5F, 0.5F, 5F, 1F);
-            c.texOffs(57, 104).addBox(4.75F, -53F, -0.5F, 0.5F, 5F, 1F);
+            c.texOffs(68, 120).addBox(-3F, -52.5F, -4.25F, 6F, 2F, 0.5F);
+            c.texOffs(230, 111).addBox(-2F, -63.5F, -2F, 4F, 0.5F, 4F);
+            c.texOffs(207, 111).addBox(-6.25F, -53F, -0.5F, 0.5F, 5F, 1F);
+            c.texOffs(207, 111).addBox(5.75F, -53F, -0.5F, 0.5F, 5F, 1F);
         }
         PartDefinition b_body = root.addOrReplaceChild("body", c, PartPose.offset(0F, 24F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(134, 92).addBox(-3F, 0F, -3F, 6F, 3F, 6F);
-            c.texOffs(46, 92).addBox(-4F, 3F, -4F, 8F, 3F, 8F);
-            c.texOffs(205, 64).addBox(-5F, 6F, -5F, 10F, 3F, 10F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
+            c.texOffs(32, 111).addBox(-3F, 0F, -3F, 6F, 3F, 6F);
+            c.texOffs(174, 96).addBox(-4F, 3F, -4F, 8F, 3F, 8F);
+            c.texOffs(88, 96).addBox(-5F, 6F, -5F, 10F, 3F, 10F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
         }
         if (pass == Pass.GLOW) {
-            c.texOffs(102, 92).addBox(-4F, 6F, -4F, 8F, 1F, 8F);
+            c.texOffs(0, 111).addBox(-4F, 6F, -4F, 8F, 1F, 8F);
         }
         PartDefinition b_engine_main = b_body.addOrReplaceChild("engine_main", c, PartPose.offset(0F, -11F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.PLUME) {
-            c.texOffs(56, 0).addBox(-6F, 0F, -6F, 12F, 52F, 12F);
-            c.texOffs(104, 0).addBox(-4F, 0F, -4F, 8F, 42F, 8F);
-            c.texOffs(188, 0).addBox(-2F, 0F, -2F, 4F, 29F, 4F);
+            c.texOffs(64, 0).addBox(-6F, 0F, -6F, 12F, 52F, 12F);
+            c.texOffs(112, 0).addBox(-4F, 0F, -4F, 8F, 42F, 8F);
+            c.texOffs(196, 0).addBox(-2F, 0F, -2F, 4F, 29F, 4F);
         }
         b_engine_main.addOrReplaceChild("plume_main", c, PartPose.offset(0F, 9F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(96, 104).addBox(-1.5F, 0F, -1.5F, 3F, 2F, 3F);
-            c.texOffs(188, 92).addBox(-2.5F, 2F, -2.5F, 5F, 3F, 5F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
+            c.texOffs(0, 120).addBox(-1.5F, 0F, -1.5F, 3F, 2F, 3F);
+            c.texOffs(86, 111).addBox(-2.5F, 2F, -2.5F, 5F, 3F, 5F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
         }
         if (pass == Pass.GLOW) {
-            c.texOffs(124, 104).addBox(-1.5F, 2F, -1.5F, 3F, 1F, 3F);
+            c.texOffs(28, 120).addBox(-1.5F, 2F, -1.5F, 3F, 1F, 3F);
         }
         PartDefinition b_engine_outer_ne = b_body.addOrReplaceChild("engine_outer_ne", c, PartPose.offset(5F, -9F, -5F));
         c = CubeListBuilder.create();
         if (pass == Pass.PLUME) {
-            c.texOffs(164, 0).addBox(-3F, 0F, -3F, 6F, 30F, 6F);
-            c.texOffs(0, 64).addBox(-2F, 0F, -2F, 4F, 24F, 4F);
-            c.texOffs(92, 64).addBox(-1F, 0F, -1F, 2F, 16F, 2F);
+            c.texOffs(172, 0).addBox(-3F, 0F, -3F, 6F, 30F, 6F);
+            c.texOffs(52, 66).addBox(-2F, 0F, -2F, 4F, 24F, 4F);
+            c.texOffs(152, 66).addBox(-1F, 0F, -1F, 2F, 16F, 2F);
         }
         b_engine_outer_ne.addOrReplaceChild("plume_outer_ne", c, PartPose.offset(0F, 5F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(96, 104).addBox(-1.5F, 0F, -1.5F, 3F, 2F, 3F);
-            c.texOffs(188, 92).addBox(-2.5F, 2F, -2.5F, 5F, 3F, 5F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
+            c.texOffs(0, 120).addBox(-1.5F, 0F, -1.5F, 3F, 2F, 3F);
+            c.texOffs(86, 111).addBox(-2.5F, 2F, -2.5F, 5F, 3F, 5F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
         }
         if (pass == Pass.GLOW) {
-            c.texOffs(124, 104).addBox(-1.5F, 2F, -1.5F, 3F, 1F, 3F);
+            c.texOffs(28, 120).addBox(-1.5F, 2F, -1.5F, 3F, 1F, 3F);
         }
         PartDefinition b_engine_outer_se = b_body.addOrReplaceChild("engine_outer_se", c, PartPose.offset(5F, -9F, 5F));
         c = CubeListBuilder.create();
         if (pass == Pass.PLUME) {
-            c.texOffs(164, 0).addBox(-3F, 0F, -3F, 6F, 30F, 6F);
-            c.texOffs(0, 64).addBox(-2F, 0F, -2F, 4F, 24F, 4F);
-            c.texOffs(92, 64).addBox(-1F, 0F, -1F, 2F, 16F, 2F);
+            c.texOffs(172, 0).addBox(-3F, 0F, -3F, 6F, 30F, 6F);
+            c.texOffs(52, 66).addBox(-2F, 0F, -2F, 4F, 24F, 4F);
+            c.texOffs(152, 66).addBox(-1F, 0F, -1F, 2F, 16F, 2F);
         }
         b_engine_outer_se.addOrReplaceChild("plume_outer_se", c, PartPose.offset(0F, 5F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(96, 104).addBox(-1.5F, 0F, -1.5F, 3F, 2F, 3F);
-            c.texOffs(188, 92).addBox(-2.5F, 2F, -2.5F, 5F, 3F, 5F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
+            c.texOffs(0, 120).addBox(-1.5F, 0F, -1.5F, 3F, 2F, 3F);
+            c.texOffs(86, 111).addBox(-2.5F, 2F, -2.5F, 5F, 3F, 5F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
         }
         if (pass == Pass.GLOW) {
-            c.texOffs(124, 104).addBox(-1.5F, 2F, -1.5F, 3F, 1F, 3F);
+            c.texOffs(28, 120).addBox(-1.5F, 2F, -1.5F, 3F, 1F, 3F);
         }
         PartDefinition b_engine_outer_sw = b_body.addOrReplaceChild("engine_outer_sw", c, PartPose.offset(-5F, -9F, 5F));
         c = CubeListBuilder.create();
         if (pass == Pass.PLUME) {
-            c.texOffs(164, 0).addBox(-3F, 0F, -3F, 6F, 30F, 6F);
-            c.texOffs(0, 64).addBox(-2F, 0F, -2F, 4F, 24F, 4F);
-            c.texOffs(92, 64).addBox(-1F, 0F, -1F, 2F, 16F, 2F);
+            c.texOffs(172, 0).addBox(-3F, 0F, -3F, 6F, 30F, 6F);
+            c.texOffs(52, 66).addBox(-2F, 0F, -2F, 4F, 24F, 4F);
+            c.texOffs(152, 66).addBox(-1F, 0F, -1F, 2F, 16F, 2F);
         }
         b_engine_outer_sw.addOrReplaceChild("plume_outer_sw", c, PartPose.offset(0F, 5F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(96, 104).addBox(-1.5F, 0F, -1.5F, 3F, 2F, 3F);
-            c.texOffs(188, 92).addBox(-2.5F, 2F, -2.5F, 5F, 3F, 5F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
+            c.texOffs(0, 120).addBox(-1.5F, 0F, -1.5F, 3F, 2F, 3F);
+            c.texOffs(86, 111).addBox(-2.5F, 2F, -2.5F, 5F, 3F, 5F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
         }
         if (pass == Pass.GLOW) {
-            c.texOffs(124, 104).addBox(-1.5F, 2F, -1.5F, 3F, 1F, 3F);
+            c.texOffs(28, 120).addBox(-1.5F, 2F, -1.5F, 3F, 1F, 3F);
         }
         PartDefinition b_engine_outer_nw = b_body.addOrReplaceChild("engine_outer_nw", c, PartPose.offset(-5F, -9F, -5F));
         c = CubeListBuilder.create();
         if (pass == Pass.PLUME) {
-            c.texOffs(164, 0).addBox(-3F, 0F, -3F, 6F, 30F, 6F);
-            c.texOffs(0, 64).addBox(-2F, 0F, -2F, 4F, 24F, 4F);
-            c.texOffs(92, 64).addBox(-1F, 0F, -1F, 2F, 16F, 2F);
+            c.texOffs(172, 0).addBox(-3F, 0F, -3F, 6F, 30F, 6F);
+            c.texOffs(52, 66).addBox(-2F, 0F, -2F, 4F, 24F, 4F);
+            c.texOffs(152, 66).addBox(-1F, 0F, -1F, 2F, 16F, 2F);
         }
         b_engine_outer_nw.addOrReplaceChild("plume_outer_nw", c, PartPose.offset(0F, 5F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(174, 92).addBox(-6F, 0F, 0F, 6F, 8F, 1F);
+            c.texOffs(72, 111).addBox(-6F, 0F, 0F, 6F, 8F, 1F);
         }
         if (pass == Pass.GLASS) {
-            c.texOffs(195, 104).addBox(-4F, 1F, 1F, 2F, 2F, 0.25F);
+            c.texOffs(99, 120).addBox(-4F, 1F, 1F, 2F, 2F, 0.25F);
         }
-        b_body.addOrReplaceChild("hatch", c, PartPose.offset(3F, -56F, 7F));
+        b_body.addOrReplaceChild("hatch", c, PartPose.offset(3F, -56F, 8F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(136, 0).addBox(-3F, 0F, 0F, 1F, 46F, 1F);
-            c.texOffs(136, 0).addBox(2F, 0F, 0F, 1F, 46F, 1F);
-            c.texOffs(200, 104).addBox(-2F, 43F, 0.25F, 4F, 1F, 0.5F);
-            c.texOffs(200, 104).addBox(-2F, 39F, 0.25F, 4F, 1F, 0.5F);
-            c.texOffs(200, 104).addBox(-2F, 35F, 0.25F, 4F, 1F, 0.5F);
-            c.texOffs(200, 104).addBox(-2F, 31F, 0.25F, 4F, 1F, 0.5F);
-            c.texOffs(200, 104).addBox(-2F, 27F, 0.25F, 4F, 1F, 0.5F);
-            c.texOffs(200, 104).addBox(-2F, 23F, 0.25F, 4F, 1F, 0.5F);
-            c.texOffs(200, 104).addBox(-2F, 19F, 0.25F, 4F, 1F, 0.5F);
-            c.texOffs(200, 104).addBox(-2F, 15F, 0.25F, 4F, 1F, 0.5F);
-            c.texOffs(200, 104).addBox(-2F, 11F, 0.25F, 4F, 1F, 0.5F);
-            c.texOffs(200, 104).addBox(-2F, 7F, 0.25F, 4F, 1F, 0.5F);
-            c.texOffs(200, 104).addBox(-2F, 3F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(144, 0).addBox(-3F, 0F, 0F, 1F, 46F, 1F);
+            c.texOffs(144, 0).addBox(2F, 0F, 0F, 1F, 46F, 1F);
+            c.texOffs(104, 120).addBox(-2F, 43F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(104, 120).addBox(-2F, 39F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(104, 120).addBox(-2F, 35F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(104, 120).addBox(-2F, 31F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(104, 120).addBox(-2F, 27F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(104, 120).addBox(-2F, 23F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(104, 120).addBox(-2F, 19F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(104, 120).addBox(-2F, 15F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(104, 120).addBox(-2F, 11F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(104, 120).addBox(-2F, 7F, 0.25F, 4F, 1F, 0.5F);
+            c.texOffs(104, 120).addBox(-2F, 3F, 0.25F, 4F, 1F, 0.5F);
         }
-        b_body.addOrReplaceChild("ladder", c, PartPose.offset(0F, -48F, 7F));
+        b_body.addOrReplaceChild("ladder", c, PartPose.offset(0F, -48F, 8F));
         c = CubeListBuilder.create();
         if (pass == Pass.GLOW) {
-            c.texOffs(144, 104).addBox(-1F, -2F, -1F, 2F, 2F, 2F);
+            c.texOffs(48, 120).addBox(-1F, -2F, -1F, 2F, 2F, 2F);
         }
-        b_body.addOrReplaceChild("strobe", c, PartPose.offset(0F, -88F, 0F));
+        b_body.addOrReplaceChild("strobe", c, PartPose.offset(0F, -91F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(140, 0).addBox(-3F, -34F, -3F, 6F, 34F, 6F);
-            c.texOffs(17, 104).addBox(9F, -37F, -2F, 4F, 3F, 4F);
-            c.texOffs(116, 104).addBox(10F, -40F, -1F, 2F, 3F, 2F);
+            c.texOffs(148, 0).addBox(-3F, -34F, -3F, 6F, 34F, 6F);
+            c.texOffs(167, 111).addBox(10F, -37F, -2F, 4F, 3F, 4F);
+            c.texOffs(20, 120).addBox(11F, -40F, -1F, 2F, 3F, 2F);
         }
-        PartDefinition b_booster_w = b_body.addOrReplaceChild("booster_w", c, PartPose.offset(-11F, -8F, 0F));
+        PartDefinition b_booster_w = b_body.addOrReplaceChild("booster_w", c, PartPose.offset(-12F, -8F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(96, 104).addBox(-1.5F, 0F, -1.5F, 3F, 2F, 3F);
-            c.texOffs(188, 92).addBox(-2.5F, 2F, -2.5F, 5F, 3F, 5F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
+            c.texOffs(0, 120).addBox(-1.5F, 0F, -1.5F, 3F, 2F, 3F);
+            c.texOffs(86, 111).addBox(-2.5F, 2F, -2.5F, 5F, 3F, 5F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
         }
         if (pass == Pass.GLOW) {
-            c.texOffs(124, 104).addBox(-1.5F, 2F, -1.5F, 3F, 1F, 3F);
+            c.texOffs(28, 120).addBox(-1.5F, 2F, -1.5F, 3F, 1F, 3F);
         }
         PartDefinition b_engine_booster_w = b_booster_w.addOrReplaceChild("engine_booster_w", c, PartPose.offset(0F, 0F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.PLUME) {
-            c.texOffs(164, 0).addBox(-3F, 0F, -3F, 6F, 30F, 6F);
-            c.texOffs(0, 64).addBox(-2F, 0F, -2F, 4F, 24F, 4F);
-            c.texOffs(92, 64).addBox(-1F, 0F, -1F, 2F, 16F, 2F);
+            c.texOffs(172, 0).addBox(-3F, 0F, -3F, 6F, 30F, 6F);
+            c.texOffs(52, 66).addBox(-2F, 0F, -2F, 4F, 24F, 4F);
+            c.texOffs(152, 66).addBox(-1F, 0F, -1F, 2F, 16F, 2F);
         }
         b_engine_booster_w.addOrReplaceChild("plume_booster_w", c, PartPose.offset(0F, 5F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.GLOW) {
-            c.texOffs(177, 104).addBox(-0.75F, -1.5F, -0.75F, 1.5F, 1.5F, 1.5F);
+            c.texOffs(81, 120).addBox(-0.75F, -1.5F, -0.75F, 1.5F, 1.5F, 1.5F);
         }
         b_booster_w.addOrReplaceChild("nav_a", c, PartPose.offset(0F, -40F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(140, 0).addBox(-3F, -34F, -3F, 6F, 34F, 6F);
-            c.texOffs(17, 104).addBox(-13F, -37F, -2F, 4F, 3F, 4F);
-            c.texOffs(116, 104).addBox(-12F, -40F, -1F, 2F, 3F, 2F);
+            c.texOffs(148, 0).addBox(-3F, -34F, -3F, 6F, 34F, 6F);
+            c.texOffs(167, 111).addBox(-14F, -37F, -2F, 4F, 3F, 4F);
+            c.texOffs(20, 120).addBox(-13F, -40F, -1F, 2F, 3F, 2F);
         }
-        PartDefinition b_booster_e = b_body.addOrReplaceChild("booster_e", c, PartPose.offset(11F, -8F, 0F));
+        PartDefinition b_booster_e = b_body.addOrReplaceChild("booster_e", c, PartPose.offset(12F, -8F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(96, 104).addBox(-1.5F, 0F, -1.5F, 3F, 2F, 3F);
-            c.texOffs(188, 92).addBox(-2.5F, 2F, -2.5F, 5F, 3F, 5F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
+            c.texOffs(0, 120).addBox(-1.5F, 0F, -1.5F, 3F, 2F, 3F);
+            c.texOffs(86, 111).addBox(-2.5F, 2F, -2.5F, 5F, 3F, 5F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
         }
         if (pass == Pass.GLOW) {
-            c.texOffs(124, 104).addBox(-1.5F, 2F, -1.5F, 3F, 1F, 3F);
+            c.texOffs(28, 120).addBox(-1.5F, 2F, -1.5F, 3F, 1F, 3F);
         }
         PartDefinition b_engine_booster_e = b_booster_e.addOrReplaceChild("engine_booster_e", c, PartPose.offset(0F, 0F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.PLUME) {
-            c.texOffs(164, 0).addBox(-3F, 0F, -3F, 6F, 30F, 6F);
-            c.texOffs(0, 64).addBox(-2F, 0F, -2F, 4F, 24F, 4F);
-            c.texOffs(92, 64).addBox(-1F, 0F, -1F, 2F, 16F, 2F);
+            c.texOffs(172, 0).addBox(-3F, 0F, -3F, 6F, 30F, 6F);
+            c.texOffs(52, 66).addBox(-2F, 0F, -2F, 4F, 24F, 4F);
+            c.texOffs(152, 66).addBox(-1F, 0F, -1F, 2F, 16F, 2F);
         }
         b_engine_booster_e.addOrReplaceChild("plume_booster_e", c, PartPose.offset(0F, 5F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.GLOW) {
-            c.texOffs(183, 104).addBox(-0.75F, -1.5F, -0.75F, 1.5F, 1.5F, 1.5F);
+            c.texOffs(87, 120).addBox(-0.75F, -1.5F, -0.75F, 1.5F, 1.5F, 1.5F);
         }
         b_booster_e.addOrReplaceChild("nav_b", c, PartPose.offset(0F, -40F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(140, 0).addBox(-3F, -34F, -3F, 6F, 34F, 6F);
-            c.texOffs(17, 104).addBox(-2F, -37F, 9F, 4F, 3F, 4F);
-            c.texOffs(116, 104).addBox(-1F, -40F, 10F, 2F, 3F, 2F);
+            c.texOffs(148, 0).addBox(-3F, -34F, -3F, 6F, 34F, 6F);
+            c.texOffs(167, 111).addBox(-2F, -37F, 10F, 4F, 3F, 4F);
+            c.texOffs(20, 120).addBox(-1F, -40F, 11F, 2F, 3F, 2F);
         }
-        PartDefinition b_booster_n = b_body.addOrReplaceChild("booster_n", c, PartPose.offset(0F, -8F, -11F));
+        PartDefinition b_booster_n = b_body.addOrReplaceChild("booster_n", c, PartPose.offset(0F, -8F, -12F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(96, 104).addBox(-1.5F, 0F, -1.5F, 3F, 2F, 3F);
-            c.texOffs(188, 92).addBox(-2.5F, 2F, -2.5F, 5F, 3F, 5F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
+            c.texOffs(0, 120).addBox(-1.5F, 0F, -1.5F, 3F, 2F, 3F);
+            c.texOffs(86, 111).addBox(-2.5F, 2F, -2.5F, 5F, 3F, 5F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
         }
         if (pass == Pass.GLOW) {
-            c.texOffs(124, 104).addBox(-1.5F, 2F, -1.5F, 3F, 1F, 3F);
+            c.texOffs(28, 120).addBox(-1.5F, 2F, -1.5F, 3F, 1F, 3F);
         }
         PartDefinition b_engine_booster_n = b_booster_n.addOrReplaceChild("engine_booster_n", c, PartPose.offset(0F, 0F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.PLUME) {
-            c.texOffs(164, 0).addBox(-3F, 0F, -3F, 6F, 30F, 6F);
-            c.texOffs(0, 64).addBox(-2F, 0F, -2F, 4F, 24F, 4F);
-            c.texOffs(92, 64).addBox(-1F, 0F, -1F, 2F, 16F, 2F);
+            c.texOffs(172, 0).addBox(-3F, 0F, -3F, 6F, 30F, 6F);
+            c.texOffs(52, 66).addBox(-2F, 0F, -2F, 4F, 24F, 4F);
+            c.texOffs(152, 66).addBox(-1F, 0F, -1F, 2F, 16F, 2F);
         }
         b_engine_booster_n.addOrReplaceChild("plume_booster_n", c, PartPose.offset(0F, 5F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.GLOW) {
-            c.texOffs(189, 104).addBox(-0.75F, -1.5F, -0.75F, 1.5F, 1.5F, 1.5F);
+            c.texOffs(93, 120).addBox(-0.75F, -1.5F, -0.75F, 1.5F, 1.5F, 1.5F);
         }
         b_booster_n.addOrReplaceChild("nav_n", c, PartPose.offset(0F, -40F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(140, 0).addBox(-3F, -34F, -3F, 6F, 34F, 6F);
-            c.texOffs(17, 104).addBox(-2F, -37F, -13F, 4F, 3F, 4F);
-            c.texOffs(116, 104).addBox(-1F, -40F, -12F, 2F, 3F, 2F);
+            c.texOffs(148, 0).addBox(-3F, -34F, -3F, 6F, 34F, 6F);
+            c.texOffs(167, 111).addBox(-2F, -37F, -14F, 4F, 3F, 4F);
+            c.texOffs(20, 120).addBox(-1F, -40F, -13F, 2F, 3F, 2F);
         }
-        PartDefinition b_booster_s = b_body.addOrReplaceChild("booster_s", c, PartPose.offset(0F, -8F, 11F));
+        PartDefinition b_booster_s = b_body.addOrReplaceChild("booster_s", c, PartPose.offset(0F, -8F, 12F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(96, 104).addBox(-1.5F, 0F, -1.5F, 3F, 2F, 3F);
-            c.texOffs(188, 92).addBox(-2.5F, 2F, -2.5F, 5F, 3F, 5F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
+            c.texOffs(0, 120).addBox(-1.5F, 0F, -1.5F, 3F, 2F, 3F);
+            c.texOffs(86, 111).addBox(-2.5F, 2F, -2.5F, 5F, 3F, 5F, Set.of(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP));
         }
         if (pass == Pass.GLOW) {
-            c.texOffs(124, 104).addBox(-1.5F, 2F, -1.5F, 3F, 1F, 3F);
+            c.texOffs(28, 120).addBox(-1.5F, 2F, -1.5F, 3F, 1F, 3F);
         }
         PartDefinition b_engine_booster_s = b_booster_s.addOrReplaceChild("engine_booster_s", c, PartPose.offset(0F, 0F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.PLUME) {
-            c.texOffs(164, 0).addBox(-3F, 0F, -3F, 6F, 30F, 6F);
-            c.texOffs(0, 64).addBox(-2F, 0F, -2F, 4F, 24F, 4F);
-            c.texOffs(92, 64).addBox(-1F, 0F, -1F, 2F, 16F, 2F);
+            c.texOffs(172, 0).addBox(-3F, 0F, -3F, 6F, 30F, 6F);
+            c.texOffs(52, 66).addBox(-2F, 0F, -2F, 4F, 24F, 4F);
+            c.texOffs(152, 66).addBox(-1F, 0F, -1F, 2F, 16F, 2F);
         }
         b_engine_booster_s.addOrReplaceChild("plume_booster_s", c, PartPose.offset(0F, 5F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.GLOW) {
-            c.texOffs(189, 104).addBox(-0.75F, -1.5F, -0.75F, 1.5F, 1.5F, 1.5F);
+            c.texOffs(93, 120).addBox(-0.75F, -1.5F, -0.75F, 1.5F, 1.5F, 1.5F);
         }
         b_booster_s.addOrReplaceChild("nav_s", c, PartPose.offset(0F, -40F, 0F));
-        PartDefinition b_grid_e = b_body.addOrReplaceChild("grid_e", CubeListBuilder.create(), PartPose.offset(8F, -50F, 0F));
+        PartDefinition b_grid_e = b_body.addOrReplaceChild("grid_e", CubeListBuilder.create(), PartPose.offset(9F, -50F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(32, 92).addBox(-0.5F, 0F, -3F, 1F, 6F, 6F);
+            c.texOffs(160, 96).addBox(-0.5F, 0F, -3F, 1F, 6F, 6F);
         }
         b_grid_e.addOrReplaceChild("grid_e_arm", c, PartPose.offset(0F, 0F, 0F));
-        PartDefinition b_grid_w = b_body.addOrReplaceChild("grid_w", CubeListBuilder.create(), PartPose.offsetAndRotation(-8F, -50F, 0F, 0F, 3.1416F, 0F));
+        PartDefinition b_grid_w = b_body.addOrReplaceChild("grid_w", CubeListBuilder.create(), PartPose.offsetAndRotation(-9F, -50F, 0F, 0F, 3.1416F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(32, 92).addBox(-0.5F, 0F, -3F, 1F, 6F, 6F);
+            c.texOffs(160, 96).addBox(-0.5F, 0F, -3F, 1F, 6F, 6F);
         }
         b_grid_w.addOrReplaceChild("grid_w_arm", c, PartPose.offset(0F, 0F, 0F));
-        PartDefinition b_grid_s = b_body.addOrReplaceChild("grid_s", CubeListBuilder.create(), PartPose.offsetAndRotation(0F, -50F, 8F, 0F, -1.5708F, 0F));
+        PartDefinition b_grid_s = b_body.addOrReplaceChild("grid_s", CubeListBuilder.create(), PartPose.offsetAndRotation(0F, -50F, 9F, 0F, -1.5708F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(32, 92).addBox(-0.5F, 0F, -3F, 1F, 6F, 6F);
+            c.texOffs(160, 96).addBox(-0.5F, 0F, -3F, 1F, 6F, 6F);
         }
         b_grid_s.addOrReplaceChild("grid_s_arm", c, PartPose.offset(0F, 0F, 0F));
-        PartDefinition b_grid_n = b_body.addOrReplaceChild("grid_n", CubeListBuilder.create(), PartPose.offsetAndRotation(0F, -50F, -8F, 0F, 1.5708F, 0F));
+        PartDefinition b_grid_n = b_body.addOrReplaceChild("grid_n", CubeListBuilder.create(), PartPose.offsetAndRotation(0F, -50F, -9F, 0F, 1.5708F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(32, 92).addBox(-0.5F, 0F, -3F, 1F, 6F, 6F);
+            c.texOffs(160, 96).addBox(-0.5F, 0F, -3F, 1F, 6F, 6F);
         }
         b_grid_n.addOrReplaceChild("grid_n_arm", c, PartPose.offset(0F, 0F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(33, 104).addBox(-0.5F, -0.5F, -5F, 1F, 1F, 5F);
+            c.texOffs(183, 111).addBox(-0.5F, -0.5F, -5F, 1F, 1F, 5F);
         }
-        PartDefinition b_dish_mast = b_body.addOrReplaceChild("dish_mast", c, PartPose.offset(0F, -52.5F, -7F));
+        PartDefinition b_dish_mast = b_body.addOrReplaceChild("dish_mast", c, PartPose.offset(0F, -52.5F, -8F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(152, 104).addBox(-1F, -1F, -2F, 2F, 2F, 2F);
-            c.texOffs(45, 104).addBox(-2.5F, -2.5F, -3F, 5F, 5F, 1F);
+            c.texOffs(56, 120).addBox(-1F, -1F, -2F, 2F, 2F, 2F);
+            c.texOffs(195, 111).addBox(-2.5F, -2.5F, -3F, 5F, 5F, 1F);
         }
         b_dish_mast.addOrReplaceChild("dish", c, PartPose.offset(0F, 0F, -5F));
-        PartDefinition b_leg_ne = b_body.addOrReplaceChild("leg_ne", CubeListBuilder.create(), PartPose.offsetAndRotation(9F, -16F, -9F, 0F, 0.7854F, 0F));
+        PartDefinition b_leg_ne = b_body.addOrReplaceChild("leg_ne", CubeListBuilder.create(), PartPose.offsetAndRotation(10F, -16F, -10F, 0F, 0.7854F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(16, 64).addBox(-1.5F, 0F, -1.5F, 3F, 18F, 3F);
-            c.texOffs(158, 92).addBox(-2F, 5F, -2F, 4F, 5F, 4F);
-            c.texOffs(224, 92).addBox(-1.5F, 18F, -3F, 6F, 1F, 6F);
+            c.texOffs(140, 66).addBox(-1.5F, 0F, -1.5F, 3F, 18F, 3F);
+            c.texOffs(56, 111).addBox(-2F, 5F, -2F, 4F, 5F, 4F);
+            c.texOffs(122, 111).addBox(-1.5F, 18F, -3F, 6F, 1F, 6F);
         }
         b_leg_ne.addOrReplaceChild("leg_ne_arm", c, PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, -0.5236F));
-        PartDefinition b_leg_se = b_body.addOrReplaceChild("leg_se", CubeListBuilder.create(), PartPose.offsetAndRotation(9F, -16F, 9F, 0F, -0.7854F, 0F));
+        PartDefinition b_leg_se = b_body.addOrReplaceChild("leg_se", CubeListBuilder.create(), PartPose.offsetAndRotation(10F, -16F, 10F, 0F, -0.7854F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(16, 64).addBox(-1.5F, 0F, -1.5F, 3F, 18F, 3F);
-            c.texOffs(158, 92).addBox(-2F, 5F, -2F, 4F, 5F, 4F);
-            c.texOffs(224, 92).addBox(-1.5F, 18F, -3F, 6F, 1F, 6F);
+            c.texOffs(140, 66).addBox(-1.5F, 0F, -1.5F, 3F, 18F, 3F);
+            c.texOffs(56, 111).addBox(-2F, 5F, -2F, 4F, 5F, 4F);
+            c.texOffs(122, 111).addBox(-1.5F, 18F, -3F, 6F, 1F, 6F);
         }
         b_leg_se.addOrReplaceChild("leg_se_arm", c, PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, -0.5236F));
-        PartDefinition b_leg_sw = b_body.addOrReplaceChild("leg_sw", CubeListBuilder.create(), PartPose.offsetAndRotation(-9F, -16F, 9F, 0F, -2.3562F, 0F));
+        PartDefinition b_leg_sw = b_body.addOrReplaceChild("leg_sw", CubeListBuilder.create(), PartPose.offsetAndRotation(-10F, -16F, 10F, 0F, -2.3562F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(16, 64).addBox(-1.5F, 0F, -1.5F, 3F, 18F, 3F);
-            c.texOffs(158, 92).addBox(-2F, 5F, -2F, 4F, 5F, 4F);
-            c.texOffs(224, 92).addBox(-1.5F, 18F, -3F, 6F, 1F, 6F);
+            c.texOffs(140, 66).addBox(-1.5F, 0F, -1.5F, 3F, 18F, 3F);
+            c.texOffs(56, 111).addBox(-2F, 5F, -2F, 4F, 5F, 4F);
+            c.texOffs(122, 111).addBox(-1.5F, 18F, -3F, 6F, 1F, 6F);
         }
         b_leg_sw.addOrReplaceChild("leg_sw_arm", c, PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, -0.5236F));
-        PartDefinition b_leg_nw = b_body.addOrReplaceChild("leg_nw", CubeListBuilder.create(), PartPose.offsetAndRotation(-9F, -16F, -9F, 0F, 2.3562F, 0F));
+        PartDefinition b_leg_nw = b_body.addOrReplaceChild("leg_nw", CubeListBuilder.create(), PartPose.offsetAndRotation(-10F, -16F, -10F, 0F, 2.3562F, 0F));
         c = CubeListBuilder.create();
         if (pass == Pass.HULL) {
-            c.texOffs(16, 64).addBox(-1.5F, 0F, -1.5F, 3F, 18F, 3F);
-            c.texOffs(158, 92).addBox(-2F, 5F, -2F, 4F, 5F, 4F);
-            c.texOffs(224, 92).addBox(-1.5F, 18F, -3F, 6F, 1F, 6F);
+            c.texOffs(140, 66).addBox(-1.5F, 0F, -1.5F, 3F, 18F, 3F);
+            c.texOffs(56, 111).addBox(-2F, 5F, -2F, 4F, 5F, 4F);
+            c.texOffs(122, 111).addBox(-1.5F, 18F, -3F, 6F, 1F, 6F);
         }
         b_leg_nw.addOrReplaceChild("leg_nw_arm", c, PartPose.offsetAndRotation(0F, 0F, 0F, 0F, 0F, -0.5236F));
     }

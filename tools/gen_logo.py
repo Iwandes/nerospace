@@ -260,5 +260,50 @@ def main():
         print("wrote", os.path.relpath(p, ROOT))
 
 
+
+
+def generate_gif(source=None, output=None):
+    source = source or os.path.join(OUT, "nerospace_logo.png")
+    output = output or os.path.join(OUT, "nerospace_logo.gif")
+    with Image.open(source) as image:
+        logo = image.convert("RGB")
+    logo.thumbnail((400, 400), Image.Resampling.LANCZOS)
+    w, h = logo.size
+    color = (255, 138, 216)
+    frames = []
+    for index in range(16):
+        t = index / 16
+        phase = 2 * math.pi * t
+        overlay = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(overlay)
+        for j in range(5):
+            u=(t+j/5)%1
+            x=0.17-0.07*u
+            y=0.57+0.09*u
+            r=0.013*(1-u)+0.004
+            draw.ellipse((w*(x-r),h*(y-r),w*(x+r),h*(y+r)),fill=(255,155,90,int(200*(1-u))))
+        for trail in range(6, -1, -1):
+            a = phase - trail * 0.07
+            x, y = 0.5 + 0.34 * math.cos(a), 0.42 + 0.18 * math.sin(a)
+            r = 0.012 * (1 - trail / 9)
+            draw.ellipse((w*(x-r), h*(y-r), w*(x+r), h*(y+r)), fill=color+(int(230*(1-trail/7)),))
+        pulse = (1 - math.cos(phase)) / 2
+        draw.ellipse((w*0.46, h*0.38, w*0.54, h*0.46), fill=(255, 200, 245, int(85*pulse)))
+        overlay = overlay.filter(ImageFilter.MaxFilter(3))
+        image = logo.convert("RGBA")
+        image.alpha_composite(overlay.filter(ImageFilter.GaussianBlur(max(1, w * 0.008))))
+        image.alpha_composite(overlay)
+        frames.append(image.convert("RGB"))
+    frames[0].save(output, save_all=True, append_images=frames[1:], duration=180, loop=0, optimize=True)
+    return output
+
+
 if __name__ == "__main__":
-    main()
+    import argparse
+    parser = argparse.ArgumentParser(description="Generate the logo or animate its existing master PNG.")
+    parser.add_argument("--gif", action="store_true", help="generate the animated logo")
+    args = parser.parse_args()
+    if args.gif:
+        print("wrote", os.path.relpath(generate_gif(), ROOT))
+    else:
+        main()

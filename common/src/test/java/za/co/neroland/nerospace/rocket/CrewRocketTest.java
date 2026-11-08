@@ -403,19 +403,44 @@ class CrewRocketTest {
     }
 
     @Test
-    @DisplayName("seat offsets: four per tier, distinct, inside the hull wall at that tier's scale")
-    void seatOffsets() {
+    @DisplayName("seat offsets: four per tier, distinct, a seated torso inside the cabin wall with margin, no overlap")
+    void seatOffsets() throws Exception {
+        // The cabin walls the seats are tuned to (2.1.0-beta.1 widened hulls): the outer cabin cube of each tier in the
+        // generated RocketGeometry, 14 px wide on Tiers 1-3 and 16 px on Tier 4. Pinned here so a hull edit in
+        // tools/rocket_models.py that forgets the seats fails this test rather than clipping players in-game.
+        String geometry = PodArrivalTest.source("../client/RocketGeometry.java");
+        String[] cabin = {
+                "addBox(-7F, -49F, -7F, 14F, 35F, 14F)",
+                "addBox(-7F, -55F, -7F, 14F, 41F, 14F)",
+                "addBox(-7F, -60F, -7F, 14F, 46F, 14F)",
+                "addBox(-8F, -64F, -8F, 16F, 50F, 16F)",
+        };
         double[] scale = { 1.5D, 1.8D, 2.1D, 2.4D };
-        double shoulderBlocks = 0.3D;
-        double hullWallPx = 7.0D;
+        double torsoHalfBlocks = 0.3D; // a seated player's torso is 0.6 wide (the hitbox); arms reach wider
+        double marginBlocks = 0.05D;
         for (RocketTier tier : RocketTier.values()) {
+            int i = tier.ordinal();
+            assertTrue(geometry.contains(cabin[i]), tier + " cabin cube changed: retune hullHalfPx and the seats");
+            assertEquals(i == 3 ? 8F : 7F, tier.hullHalfPx(), tier.name());
             List<RocketTier.Seat> seats = tier.seatOffsets();
             assertEquals(Crew.HARD_CAP, seats.size(), tier.name());
             assertEquals(seats.size(), new java.util.HashSet<>(seats).size(), "distinct seats " + tier);
-            double shoulderPx = shoulderBlocks * 16.0D / scale[tier.ordinal()];
+            double s = scale[i];
+            double wall = tier.hullHalfPx() * s / 16.0D;
             for (RocketTier.Seat seat : seats) {
-                double r = Math.hypot(seat.xPx(), seat.zPx());
-                assertTrue(r + shoulderPx <= hullWallPx, tier + " seat " + seat + " pokes through the hull");
+                for (double axis : new double[] { seat.xPx(), seat.zPx() }) {
+                    double reach = Math.abs(axis) * s / 16.0D + torsoHalfBlocks;
+                    assertTrue(reach + marginBlocks <= wall + 1.0E-6D,
+                            tier + " seat " + seat + " torso reaches " + reach + " of a " + wall + " wall");
+                }
+            }
+            for (int a = 0; a < seats.size(); a++) {
+                for (int b = a + 1; b < seats.size(); b++) {
+                    double dx = (seats.get(a).xPx() - seats.get(b).xPx()) * s / 16.0D;
+                    double dz = (seats.get(a).zPx() - seats.get(b).zPx()) * s / 16.0D;
+                    assertTrue(Math.hypot(dx, dz) >= 2.0D * torsoHalfBlocks - 1.0E-6D,
+                            tier + " seats " + a + " and " + b + " overlap");
+                }
             }
         }
     }

@@ -20,6 +20,10 @@ Render passes (see RocketModel/RocketRenderer): HULL (cutout, lit), GLASS (trans
 GLOW (emissive, full-bright: lamps, screens, beacons, engine throats), PLUME (additive exhaust).
 Every pass bakes the SAME bone skeleton, so the Java animation addresses bones by name in all four.
 
+Hull widths (2.1.0-beta.1): the crewed cabins are 14 px wide on Tiers 1-3 and 16 px on Tier 4 (one
+pixel wider per side than 2.0.0) so four seated crew fit inside - the seat offsets in
+RocketTier.seatOffsets() are tuned to these walls; change `half` and the seats together.
+
 Coordinates in the spec are "ground space": x/z centred on the hull, h = height above the pad in
 model pixels (ground = 0). Java is Y-down with the ground at y=24 (jy = 24 - h); Blockbench is Y-up
 (bb_y = h). Rotations are given in degrees with the JAVA sign convention (ModelPart ZYX):
@@ -339,12 +343,12 @@ def build_t1():
     four landing legs, porthole cockpit."""
     rig = Rig(1)
     body = rig.body
-    half = 6
+    half = 7
     engine(rig, body, "main", 0, 0, 11, BELL_L, 40)
-    centred(rig, body, "trim", 11, 14, 3)
-    cabin(rig, body, half, 14, 49, 26, windows=(6, 6, 40), hatch=(6, 8, 28), digit="1",
+    centred(rig, body, "trim", 11, 16, 3)
+    cabin(rig, body, half, 14, 49, 26, windows=(8, 6, 40), hatch=(6, 8, 28), digit="1",
           bands=((20, 23),))
-    top = nose(rig, body, 49, ((10, 3), (8, 3), (6, 3), (4, 3), (2, 3)))
+    top = nose(rig, body, 49, ((12, 3), (10, 3), (8, 3), (6, 3), (4, 3), (2, 3)))
     antenna(rig, body, top, rod=4)
     fins(rig, body, half, 22, 5, 16)
     legs(rig, body, half, 16, 18)
@@ -356,14 +360,14 @@ def build_t2():
     spinning radar dish, two raked fins."""
     rig = Rig(2)
     body = rig.body
-    half = 6
+    half = 7
     engine(rig, body, "main", 0, 0, 11, BELL_L, 44)
-    centred(rig, body, "trim", 11, 14, 3)
-    cabin(rig, body, half, 14, 55, 35, windows=(6, 6, 46), hatch=(6, 8, 36), digit="2",
+    centred(rig, body, "trim", 11, 16, 3)
+    cabin(rig, body, half, 14, 55, 35, windows=(8, 6, 46), hatch=(6, 8, 36), digit="2",
           bands=((20, 23), (53, 54)))
-    top = nose(rig, body, 55, ((10, 3), (8, 3), (6, 3), (4, 3)))
+    top = nose(rig, body, 55, ((12, 3), (10, 3), (8, 3), (6, 3), (4, 3)))
     dish_on_mast(rig, body, top, mast=3, plate=6)
-    for tag, cx, beacon in (("w", -9.5, "beacon_red"), ("e", 9.5, "beacon_green")):
+    for tag, cx, beacon in (("w", -10.5, "beacon_red"), ("e", 10.5, "beacon_green")):
         booster(rig, body, tag, cx, 0, 5, 8, 34, ((3, 3), (1, 2)), BELL_S, 26, half, beacon)
     fins(rig, body, half, 20, 5, 14, dirs=CARDINALS[2:], beacons=False)
     legs(rig, body, half, 16, 18)
@@ -375,14 +379,14 @@ def build_t3():
     verniers, fold-out solar wings, a scanning dish boom, panoramic canopy, long stepped nose."""
     rig = Rig(3)
     body = rig.body
-    half = 6
+    half = 7
     engine(rig, body, "main", 0, 0, 11, BELL_M, 46)
     for tag, sx, sz, _ in CORNERS:
         engine(rig, body, "vernier_" + tag, sx * 4.75, sz * 4.75, 10, BELL_XS, 18, glow=False)
-    centred(rig, body, "trim", 11, 14, 3)
-    cabin(rig, body, half, 14, 60, 41, windows=(8, 6, 50), hatch=(6, 8, 42), digit="3",
+    centred(rig, body, "trim", 11, 16, 3)
+    cabin(rig, body, half, 14, 60, 41, windows=(10, 6, 50), hatch=(6, 8, 42), digit="3",
           bands=((22, 25), (26, 27)))
-    top = nose(rig, body, 60, ((10, 3), (8, 4), (6, 4), (4, 4), (2, 4)))
+    top = nose(rig, body, 60, ((12, 3), (10, 3), (8, 4), (6, 4), (4, 4), (2, 4)))
     antenna(rig, body, top, rod=3)
     solar_wings(rig, body, half, 38, 14, 8)
     dish_on_boom(rig, body, half, 46)
@@ -396,17 +400,17 @@ def build_t4():
     boosters, grid fins that deploy in flight, heavy legs, side dish boom, panoramic canopy."""
     rig = Rig(4)
     body = rig.body
-    half = 7
+    half = 8
     engine(rig, body, "main", 0, 0, 11, BELL_L, 52)
     for tag, sx, sz, _ in CORNERS:
         engine(rig, body, "outer_" + tag, sx * 5, sz * 5, 9, BELL_S, 30)
-    centred(rig, body, "trim", 11, 16, 3)
-    cabin(rig, body, half, 14, 64, 47, windows=(8, 6, 54), hatch=(6, 8, 48), digit="4",
+    centred(rig, body, "trim", 11, 18, 3)
+    cabin(rig, body, half, 14, 64, 47, windows=(10, 6, 54), hatch=(6, 8, 48), digit="4",
           bands=((22, 26), (27, 28)), portholes=(41,))
-    top = nose(rig, body, 64, ((12, 3), (10, 3), (8, 4), (6, 4), (4, 4), (2, 3)))
+    top = nose(rig, body, 64, ((14, 3), (12, 3), (10, 3), (8, 4), (6, 4), (4, 4), (2, 3)))
     antenna(rig, body, top, rod=3)
-    for tag, cx, cz, beacon in (("w", -11, 0, "beacon_red"), ("e", 11, 0, "beacon_green"),
-                                ("n", 0, -11, "beacon_accent"), ("s", 0, 11, "beacon_accent")):
+    for tag, cx, cz, beacon in (("w", -12, 0, "beacon_red"), ("e", 12, 0, "beacon_green"),
+                                ("n", 0, -12, "beacon_accent"), ("s", 0, 12, "beacon_accent")):
         booster(rig, body, tag, cx, cz, 6, 8, 42, ((4, 3), (2, 3)), BELL_S, 30, half, beacon)
     grid_fins(rig, body, half, 50, 6)
     dish_on_boom(rig, body, half, 52, reach=5, plate=5)

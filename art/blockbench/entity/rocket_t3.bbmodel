@@ -25,21 +25,21 @@
       "box_uv": true,
       "uv_offset": [
         0,
-        58
+        60
       ],
       "rescale": false,
       "locked": false,
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        -7.0,
+        -8.0,
         11.0,
-        -7.0
+        -8.0
       ],
       "to": [
-        7.0,
+        8.0,
         14.0,
-        7.0
+        8.0
       ],
       "autouv": 0,
       "color": 0,
@@ -119,14 +119,14 @@
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        -6.0,
+        -7.0,
         14.0,
-        -6.0
+        -7.0
       ],
       "to": [
-        6.0,
+        7.0,
         60.0,
-        6.0
+        7.0
       ],
       "autouv": 0,
       "color": 0,
@@ -198,7 +198,7 @@
       "name": "hull.liner",
       "box_uv": true,
       "uv_offset": [
-        132,
+        124,
         0
       ],
       "rescale": false,
@@ -206,14 +206,14 @@
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        -4.5,
+        -5.5,
         41.0,
-        -4.5
+        -5.5
       ],
       "to": [
-        4.5,
+        5.5,
         60.0,
-        4.5
+        5.5
       ],
       "autouv": 0,
       "color": 0,
@@ -285,22 +285,22 @@
       "name": "glass.glass",
       "box_uv": true,
       "uv_offset": [
-        90,
-        75
+        150,
+        79
       ],
       "rescale": false,
       "locked": false,
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        -4.0,
+        -5.0,
         50.0,
-        -5.25
+        -6.25
       ],
       "to": [
-        4.0,
+        5.0,
         56.0,
-        -4.75
+        -5.75
       ],
       "autouv": 0,
       "color": 0,
@@ -372,22 +372,22 @@
       "name": "glass.glass",
       "box_uv": true,
       "uv_offset": [
-        90,
-        75
+        150,
+        79
       ],
       "rescale": false,
       "locked": false,
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        -4.0,
+        -5.0,
         50.0,
-        4.75
+        5.75
       ],
       "to": [
-        4.0,
+        5.0,
         56.0,
-        5.25
+        6.25
       ],
       "autouv": 0,
       "color": 0,
@@ -460,21 +460,21 @@
       "box_uv": true,
       "uv_offset": [
         78,
-        58
+        60
       ],
       "rescale": false,
       "locked": false,
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        -5.25,
+        -6.25,
         50.0,
-        -4.0
+        -5.0
       ],
       "to": [
-        -4.75,
+        -5.75,
         56.0,
-        4.0
+        5.0
       ],
       "autouv": 0,
       "color": 0,
@@ -547,21 +547,21 @@
       "box_uv": true,
       "uv_offset": [
         78,
-        58
+        60
       ],
       "rescale": false,
       "locked": false,
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        4.75,
+        5.75,
         50.0,
-        -4.0
+        -5.0
       ],
       "to": [
-        5.25,
+        6.25,
         56.0,
-        4.0
+        5.0
       ],
       "autouv": 0,
       "color": 0,
@@ -633,22 +633,22 @@
       "name": "hull.console",
       "box_uv": true,
       "uv_offset": [
-        158,
-        75
+        222,
+        79
       ],
       "rescale": false,
       "locked": false,
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        -3.5,
+        -4.0,
         46.0,
-        -4.25
+        -5.25
       ],
       "to": [
-        3.5,
+        4.0,
         49.0,
-        -2.25
+        -3.25
       ],
       "autouv": 0,
       "color": 0,
@@ -720,22 +720,22 @@
       "name": "glow.screen",
       "box_uv": true,
       "uv_offset": [
-        11,
-        84
+        86,
+        90
       ],
       "rescale": false,
       "locked": false,
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        -2.5,
+        -3.0,
         46.5,
-        -2.25
+        -3.25
       ],
       "to": [
-        2.5,
+        3.0,
         48.5,
-        -1.75
+        -2.75
       ],
       "autouv": 0,
       "color": 0,
@@ -807,8 +807,8 @@
       "name": "glow.lamp",
       "box_uv": true,
       "uv_offset": [
-        176,
-        75
+        0,
+        90
       ],
       "rescale": false,
       "locked": false,
@@ -894,20 +894,20 @@
       "name": "glow.strip",
       "box_uv": true,
       "uv_offset": [
-        155,
-        75
+        219,
+        79
       ],
       "rescale": false,
       "locked": false,
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        -4.25,
+        -5.25,
         44.0,
         -0.5
       ],
       "to": [
-        -3.75,
+        -4.75,
         49.0,
         0.5
       ],
@@ -981,20 +981,20 @@
       "name": "glow.strip",
       "box_uv": true,
       "uv_offset": [
-        155,
-        75
+        219,
+        79
       ],
       "rescale": false,
       "locked": false,
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        3.75,
+        4.75,
         44.0,
         -0.5
       ],
       "to": [
-        4.25,
+        5.25,
         49.0,
         0.5
       ],
@@ -1068,22 +1068,22 @@
       "name": "hull.hull",
       "box_uv": true,
       "uv_offset": [
-        95,
-        58
+        107,
+        60
       ],
       "rescale": false,
       "locked": false,
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        -5.0,
+        -6.0,
         60.0,
-        -5.0
+        -6.0
       ],
       "to": [
-        5.0,
+        6.0,
         63.0,
-        5.0
+        6.0
       ],
       "autouv": 0,
       "color": 0,
@@ -1155,22 +1155,22 @@
       "name": "hull.hull",
       "box_uv": true,
       "uv_offset": [
-        135,
-        58
+        155,
+        60
       ],
       "rescale": false,
       "locked": false,
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        -4.0,
+        -5.0,
         63.0,
-        -4.0
+        -5.0
       ],
       "to": [
-        4.0,
-        67.0,
-        4.0
+        5.0,
+        66.0,
+        5.0
       ],
       "autouv": 0,
       "color": 0,
@@ -1242,22 +1242,22 @@
       "name": "hull.hull",
       "box_uv": true,
       "uv_offset": [
-        209,
-        58
+        195,
+        60
       ],
       "rescale": false,
       "locked": false,
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        -3.0,
-        67.0,
-        -3.0
+        -4.0,
+        66.0,
+        -4.0
       ],
       "to": [
-        3.0,
-        71.0,
-        3.0
+        4.0,
+        70.0,
+        4.0
       ],
       "autouv": 0,
       "color": 0,
@@ -1329,22 +1329,22 @@
       "name": "hull.hull",
       "box_uv": true,
       "uv_offset": [
-        38,
-        75
+        36,
+        79
       ],
       "rescale": false,
       "locked": false,
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        -2.0,
-        71.0,
-        -2.0
+        -3.0,
+        70.0,
+        -3.0
       ],
       "to": [
-        2.0,
-        75.0,
-        2.0
+        3.0,
+        74.0,
+        3.0
       ],
       "autouv": 0,
       "color": 0,
@@ -1416,22 +1416,22 @@
       "name": "hull.hull",
       "box_uv": true,
       "uv_offset": [
-        147,
-        75
+        98,
+        79
       ],
       "rescale": false,
       "locked": false,
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        -1.0,
-        75.0,
-        -1.0
+        -2.0,
+        74.0,
+        -2.0
       ],
       "to": [
-        1.0,
-        79.0,
-        1.0
+        2.0,
+        78.0,
+        2.0
       ],
       "autouv": 0,
       "color": 0,
@@ -1500,25 +1500,25 @@
       "uuid": "01dc7597-aba9-550c-f92d-230987576996"
     },
     {
-      "name": "hull.mast",
+      "name": "hull.hull",
       "box_uv": true,
       "uv_offset": [
-        7,
-        84
+        211,
+        79
       ],
       "rescale": false,
       "locked": false,
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        -0.5,
-        79.0,
-        -0.5
+        -1.0,
+        78.0,
+        -1.0
       ],
       "to": [
-        0.5,
+        1.0,
         82.0,
-        0.5
+        1.0
       ],
       "autouv": 0,
       "color": 0,
@@ -1587,11 +1587,98 @@
       "uuid": "49fdb352-d8d8-91c9-b202-2701e83131fc"
     },
     {
+      "name": "hull.mast",
+      "box_uv": true,
+      "uv_offset": [
+        82,
+        90
+      ],
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "from": [
+        -0.5,
+        82.0,
+        -0.5
+      ],
+      "to": [
+        0.5,
+        85.0,
+        0.5
+      ],
+      "autouv": 0,
+      "color": 0,
+      "origin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "texture": 0
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "texture": 0
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "texture": 0
+        }
+      },
+      "type": "cube",
+      "uuid": "63ac2c3d-4daf-9948-e37b-ef3707745241"
+    },
+    {
       "name": "hull.engine",
       "box_uv": true,
       "uv_offset": [
-        107,
-        75
+        171,
+        79
       ],
       "rescale": false,
       "locked": false,
@@ -1677,8 +1764,8 @@
       "name": "hull.engine",
       "box_uv": true,
       "uv_offset": [
-        0,
-        75
+        60,
+        79
       ],
       "rescale": false,
       "locked": false,
@@ -1764,8 +1851,8 @@
       "name": "hull.engine",
       "box_uv": true,
       "uv_offset": [
-        173,
-        58
+        0,
+        79
       ],
       "rescale": false,
       "locked": false,
@@ -1851,8 +1938,8 @@
       "name": "glow.throat",
       "box_uv": true,
       "uv_offset": [
-        66,
-        75
+        126,
+        79
       ],
       "rescale": false,
       "locked": false,
@@ -1938,7 +2025,7 @@
       "name": "plume.plume_outer",
       "box_uv": true,
       "uv_offset": [
-        48,
+        56,
         0
       ],
       "rescale": false,
@@ -2025,7 +2112,7 @@
       "name": "plume.plume_mid",
       "box_uv": true,
       "uv_offset": [
-        88,
+        96,
         0
       ],
       "rescale": false,
@@ -2112,7 +2199,7 @@
       "name": "plume.plume_core",
       "box_uv": true,
       "uv_offset": [
-        116,
+        168,
         0
       ],
       "rescale": false,
@@ -2199,8 +2286,8 @@
       "name": "hull.engine",
       "box_uv": true,
       "uv_offset": [
-        220,
-        75
+        44,
+        90
       ],
       "rescale": false,
       "locked": false,
@@ -2286,8 +2373,8 @@
       "name": "hull.engine",
       "box_uv": true,
       "uv_offset": [
-        208,
-        75
+        32,
+        90
       ],
       "rescale": false,
       "locked": false,
@@ -2373,7 +2460,7 @@
       "name": "plume.plume_outer",
       "box_uv": true,
       "uv_offset": [
-        186,
+        202,
         0
       ],
       "rescale": false,
@@ -2460,8 +2547,8 @@
       "name": "plume.plume_mid",
       "box_uv": true,
       "uv_offset": [
-        70,
-        58
+        99,
+        60
       ],
       "rescale": false,
       "locked": false,
@@ -2547,8 +2634,8 @@
       "name": "plume.plume_core",
       "box_uv": true,
       "uv_offset": [
-        205,
-        58
+        32,
+        79
       ],
       "rescale": false,
       "locked": false,
@@ -2634,8 +2721,8 @@
       "name": "hull.engine",
       "box_uv": true,
       "uv_offset": [
-        220,
-        75
+        44,
+        90
       ],
       "rescale": false,
       "locked": false,
@@ -2721,8 +2808,8 @@
       "name": "hull.engine",
       "box_uv": true,
       "uv_offset": [
-        208,
-        75
+        32,
+        90
       ],
       "rescale": false,
       "locked": false,
@@ -2808,7 +2895,7 @@
       "name": "plume.plume_outer",
       "box_uv": true,
       "uv_offset": [
-        186,
+        202,
         0
       ],
       "rescale": false,
@@ -2895,8 +2982,8 @@
       "name": "plume.plume_mid",
       "box_uv": true,
       "uv_offset": [
-        70,
-        58
+        99,
+        60
       ],
       "rescale": false,
       "locked": false,
@@ -2982,8 +3069,8 @@
       "name": "plume.plume_core",
       "box_uv": true,
       "uv_offset": [
-        205,
-        58
+        32,
+        79
       ],
       "rescale": false,
       "locked": false,
@@ -3069,8 +3156,8 @@
       "name": "hull.engine",
       "box_uv": true,
       "uv_offset": [
-        220,
-        75
+        44,
+        90
       ],
       "rescale": false,
       "locked": false,
@@ -3156,8 +3243,8 @@
       "name": "hull.engine",
       "box_uv": true,
       "uv_offset": [
-        208,
-        75
+        32,
+        90
       ],
       "rescale": false,
       "locked": false,
@@ -3243,7 +3330,7 @@
       "name": "plume.plume_outer",
       "box_uv": true,
       "uv_offset": [
-        186,
+        202,
         0
       ],
       "rescale": false,
@@ -3330,8 +3417,8 @@
       "name": "plume.plume_mid",
       "box_uv": true,
       "uv_offset": [
-        70,
-        58
+        99,
+        60
       ],
       "rescale": false,
       "locked": false,
@@ -3417,8 +3504,8 @@
       "name": "plume.plume_core",
       "box_uv": true,
       "uv_offset": [
-        205,
-        58
+        32,
+        79
       ],
       "rescale": false,
       "locked": false,
@@ -3504,8 +3591,8 @@
       "name": "hull.engine",
       "box_uv": true,
       "uv_offset": [
-        220,
-        75
+        44,
+        90
       ],
       "rescale": false,
       "locked": false,
@@ -3591,8 +3678,8 @@
       "name": "hull.engine",
       "box_uv": true,
       "uv_offset": [
-        208,
-        75
+        32,
+        90
       ],
       "rescale": false,
       "locked": false,
@@ -3678,7 +3765,7 @@
       "name": "plume.plume_outer",
       "box_uv": true,
       "uv_offset": [
-        186,
+        202,
         0
       ],
       "rescale": false,
@@ -3765,8 +3852,8 @@
       "name": "plume.plume_mid",
       "box_uv": true,
       "uv_offset": [
-        70,
-        58
+        99,
+        60
       ],
       "rescale": false,
       "locked": false,
@@ -3852,8 +3939,8 @@
       "name": "plume.plume_core",
       "box_uv": true,
       "uv_offset": [
-        205,
-        58
+        32,
+        79
       ],
       "rescale": false,
       "locked": false,
@@ -3939,8 +4026,8 @@
       "name": "hull.hatch",
       "box_uv": true,
       "uv_offset": [
-        24,
-        75
+        84,
+        79
       ],
       "rescale": false,
       "locked": false,
@@ -3949,19 +4036,19 @@
       "from": [
         -3.0,
         42.0,
-        6.0
+        7.0
       ],
       "to": [
         3.0,
         50.0,
-        7.0
+        8.0
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
         3.0,
         50.0,
-        6.0
+        7.0
       ],
       "faces": {
         "north": {
@@ -4026,8 +4113,8 @@
       "name": "glass.hatch_window",
       "box_uv": true,
       "uv_offset": [
-        28,
-        84
+        105,
+        90
       ],
       "rescale": false,
       "locked": false,
@@ -4036,19 +4123,19 @@
       "from": [
         -1.0,
         47.0,
-        7.0
+        8.0
       ],
       "to": [
         1.0,
         49.0,
-        7.25
+        8.25
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
         3.0,
         50.0,
-        6.0
+        7.0
       ],
       "faces": {
         "north": {
@@ -4113,7 +4200,7 @@
       "name": "hull.ladder",
       "box_uv": true,
       "uv_offset": [
-        112,
+        120,
         0
       ],
       "rescale": false,
@@ -4123,19 +4210,19 @@
       "from": [
         -3.0,
         2.0,
-        6.0
+        7.0
       ],
       "to": [
         -2.0,
         42.0,
-        7.0
+        8.0
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
         0.0,
         42.0,
-        6.0
+        7.0
       ],
       "faces": {
         "north": {
@@ -4200,7 +4287,7 @@
       "name": "hull.ladder",
       "box_uv": true,
       "uv_offset": [
-        112,
+        120,
         0
       ],
       "rescale": false,
@@ -4210,19 +4297,19 @@
       "from": [
         2.0,
         2.0,
-        6.0
+        7.0
       ],
       "to": [
         3.0,
         42.0,
-        7.0
+        8.0
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
         0.0,
         42.0,
-        6.0
+        7.0
       ],
       "faces": {
         "north": {
@@ -4287,8 +4374,8 @@
       "name": "hull.ladder",
       "box_uv": true,
       "uv_offset": [
-        33,
-        84
+        110,
+        90
       ],
       "rescale": false,
       "locked": false,
@@ -4297,19 +4384,19 @@
       "from": [
         -2.0,
         4.0,
-        6.25
+        7.25
       ],
       "to": [
         2.0,
         5.0,
-        6.75
+        7.75
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
         0.0,
         42.0,
-        6.0
+        7.0
       ],
       "faces": {
         "north": {
@@ -4374,8 +4461,8 @@
       "name": "hull.ladder",
       "box_uv": true,
       "uv_offset": [
-        33,
-        84
+        110,
+        90
       ],
       "rescale": false,
       "locked": false,
@@ -4384,19 +4471,19 @@
       "from": [
         -2.0,
         8.0,
-        6.25
+        7.25
       ],
       "to": [
         2.0,
         9.0,
-        6.75
+        7.75
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
         0.0,
         42.0,
-        6.0
+        7.0
       ],
       "faces": {
         "north": {
@@ -4461,8 +4548,8 @@
       "name": "hull.ladder",
       "box_uv": true,
       "uv_offset": [
-        33,
-        84
+        110,
+        90
       ],
       "rescale": false,
       "locked": false,
@@ -4471,19 +4558,19 @@
       "from": [
         -2.0,
         12.0,
-        6.25
+        7.25
       ],
       "to": [
         2.0,
         13.0,
-        6.75
+        7.75
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
         0.0,
         42.0,
-        6.0
+        7.0
       ],
       "faces": {
         "north": {
@@ -4548,8 +4635,8 @@
       "name": "hull.ladder",
       "box_uv": true,
       "uv_offset": [
-        33,
-        84
+        110,
+        90
       ],
       "rescale": false,
       "locked": false,
@@ -4558,19 +4645,19 @@
       "from": [
         -2.0,
         16.0,
-        6.25
+        7.25
       ],
       "to": [
         2.0,
         17.0,
-        6.75
+        7.75
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
         0.0,
         42.0,
-        6.0
+        7.0
       ],
       "faces": {
         "north": {
@@ -4635,8 +4722,8 @@
       "name": "hull.ladder",
       "box_uv": true,
       "uv_offset": [
-        33,
-        84
+        110,
+        90
       ],
       "rescale": false,
       "locked": false,
@@ -4645,19 +4732,19 @@
       "from": [
         -2.0,
         20.0,
-        6.25
+        7.25
       ],
       "to": [
         2.0,
         21.0,
-        6.75
+        7.75
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
         0.0,
         42.0,
-        6.0
+        7.0
       ],
       "faces": {
         "north": {
@@ -4722,8 +4809,8 @@
       "name": "hull.ladder",
       "box_uv": true,
       "uv_offset": [
-        33,
-        84
+        110,
+        90
       ],
       "rescale": false,
       "locked": false,
@@ -4732,19 +4819,19 @@
       "from": [
         -2.0,
         24.0,
-        6.25
+        7.25
       ],
       "to": [
         2.0,
         25.0,
-        6.75
+        7.75
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
         0.0,
         42.0,
-        6.0
+        7.0
       ],
       "faces": {
         "north": {
@@ -4809,8 +4896,8 @@
       "name": "hull.ladder",
       "box_uv": true,
       "uv_offset": [
-        33,
-        84
+        110,
+        90
       ],
       "rescale": false,
       "locked": false,
@@ -4819,19 +4906,19 @@
       "from": [
         -2.0,
         28.0,
-        6.25
+        7.25
       ],
       "to": [
         2.0,
         29.0,
-        6.75
+        7.75
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
         0.0,
         42.0,
-        6.0
+        7.0
       ],
       "faces": {
         "north": {
@@ -4896,8 +4983,8 @@
       "name": "hull.ladder",
       "box_uv": true,
       "uv_offset": [
-        33,
-        84
+        110,
+        90
       ],
       "rescale": false,
       "locked": false,
@@ -4906,19 +4993,19 @@
       "from": [
         -2.0,
         32.0,
-        6.25
+        7.25
       ],
       "to": [
         2.0,
         33.0,
-        6.75
+        7.75
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
         0.0,
         42.0,
-        6.0
+        7.0
       ],
       "faces": {
         "north": {
@@ -4983,8 +5070,8 @@
       "name": "hull.ladder",
       "box_uv": true,
       "uv_offset": [
-        33,
-        84
+        110,
+        90
       ],
       "rescale": false,
       "locked": false,
@@ -4993,19 +5080,19 @@
       "from": [
         -2.0,
         36.0,
-        6.25
+        7.25
       ],
       "to": [
         2.0,
         37.0,
-        6.75
+        7.75
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
         0.0,
         42.0,
-        6.0
+        7.0
       ],
       "faces": {
         "north": {
@@ -5070,8 +5157,8 @@
       "name": "hull.ladder",
       "box_uv": true,
       "uv_offset": [
-        33,
-        84
+        110,
+        90
       ],
       "rescale": false,
       "locked": false,
@@ -5080,19 +5167,19 @@
       "from": [
         -2.0,
         40.0,
-        6.25
+        7.25
       ],
       "to": [
         2.0,
         41.0,
-        6.75
+        7.75
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
         0.0,
         42.0,
-        6.0
+        7.0
       ],
       "faces": {
         "north": {
@@ -5157,8 +5244,8 @@
       "name": "glow.beacon_white",
       "box_uv": true,
       "uv_offset": [
-        228,
-        75
+        52,
+        90
       ],
       "rescale": false,
       "locked": false,
@@ -5166,19 +5253,19 @@
       "allow_mirror_modeling": true,
       "from": [
         -1.0,
-        82.0,
+        85.0,
         -1.0
       ],
       "to": [
         1.0,
-        84.0,
+        87.0,
         1.0
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
         0.0,
-        82.0,
+        85.0,
         0.0
       ],
       "faces": {
@@ -5244,7 +5331,7 @@
       "name": "hull.solar",
       "box_uv": true,
       "uv_offset": [
-        168,
+        184,
         0
       ],
       "rescale": false,
@@ -5252,19 +5339,19 @@
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        6.5,
+        7.5,
         24.0,
         -4.0
       ],
       "to": [
-        7.5,
+        8.5,
         38.0,
         4.0
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
-        7.0,
+        8.0,
         38.0,
         0.0
       ],
@@ -5331,27 +5418,27 @@
       "name": "hull.mast",
       "box_uv": true,
       "uv_offset": [
-        22,
-        84
+        99,
+        90
       ],
       "rescale": false,
       "locked": false,
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        6.25,
+        7.25,
         37.0,
         -0.75
       ],
       "to": [
-        7.75,
+        8.75,
         38.0,
         0.75
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
-        7.0,
+        8.0,
         38.0,
         0.0
       ],
@@ -5418,7 +5505,7 @@
       "name": "hull.solar",
       "box_uv": true,
       "uv_offset": [
-        168,
+        184,
         0
       ],
       "rescale": false,
@@ -5426,19 +5513,19 @@
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        -7.5,
+        -8.5,
         24.0,
         -4.0
       ],
       "to": [
-        -6.5,
+        -7.5,
         38.0,
         4.0
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
-        -7.0,
+        -8.0,
         38.0,
         0.0
       ],
@@ -5505,27 +5592,27 @@
       "name": "hull.mast",
       "box_uv": true,
       "uv_offset": [
-        22,
-        84
+        99,
+        90
       ],
       "rescale": false,
       "locked": false,
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        -7.75,
+        -8.75,
         37.0,
         -0.75
       ],
       "to": [
-        -6.25,
+        -7.25,
         38.0,
         0.75
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
-        -7.0,
+        -8.0,
         38.0,
         0.0
       ],
@@ -5592,8 +5679,8 @@
       "name": "hull.mast",
       "box_uv": true,
       "uv_offset": [
-        123,
-        75
+        187,
+        79
       ],
       "rescale": false,
       "locked": false,
@@ -5602,19 +5689,19 @@
       "from": [
         -0.5,
         46.0,
-        -11.0
+        -12.0
       ],
       "to": [
         0.5,
         47.0,
-        -6.0
+        -7.0
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
         0.0,
         46.5,
-        -6.0
+        -7.0
       ],
       "faces": {
         "north": {
@@ -5679,8 +5766,8 @@
       "name": "hull.dish_hub",
       "box_uv": true,
       "uv_offset": [
-        236,
-        75
+        60,
+        90
       ],
       "rescale": false,
       "locked": false,
@@ -5689,19 +5776,19 @@
       "from": [
         -1.0,
         45.5,
-        -13.0
+        -14.0
       ],
       "to": [
         1.0,
         47.5,
-        -11.0
+        -12.0
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
         0.0,
         46.5,
-        -11.0
+        -12.0
       ],
       "faces": {
         "north": {
@@ -5766,8 +5853,8 @@
       "name": "hull.dish",
       "box_uv": true,
       "uv_offset": [
-        135,
-        75
+        199,
+        79
       ],
       "rescale": false,
       "locked": false,
@@ -5776,19 +5863,19 @@
       "from": [
         -2.5,
         44.0,
-        -14.0
+        -15.0
       ],
       "to": [
         2.5,
         49.0,
-        -13.0
+        -14.0
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
         0.0,
         46.5,
-        -11.0
+        -12.0
       ],
       "faces": {
         "north": {
@@ -5853,27 +5940,27 @@
       "name": "hull.fin",
       "box_uv": true,
       "uv_offset": [
-        56,
-        58
+        64,
+        60
       ],
       "rescale": false,
       "locked": false,
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        4.0,
+        5.0,
         4.0,
         -0.5
       ],
       "to": [
-        10.0,
+        11.0,
         20.0,
         0.5
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
-        6.0,
+        7.0,
         20.0,
         0.0
       ],
@@ -5940,27 +6027,27 @@
       "name": "hull.fin_edge",
       "box_uv": true,
       "uv_offset": [
-        167,
-        58
+        227,
+        60
       ],
       "rescale": false,
       "locked": false,
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        9.5,
+        10.5,
         4.0,
         -0.75
       ],
       "to": [
-        11.0,
+        12.0,
         14.0,
         0.75
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
-        6.0,
+        7.0,
         20.0,
         0.0
       ],
@@ -6027,27 +6114,27 @@
       "name": "glow.beacon_green",
       "box_uv": true,
       "uv_offset": [
-        244,
-        75
+        68,
+        90
       ],
       "rescale": false,
       "locked": false,
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        9.75,
+        10.75,
         3.5,
         -1.0
       ],
       "to": [
-        11.25,
+        12.25,
         5.0,
         1.0
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
-        6.0,
+        7.0,
         20.0,
         0.0
       ],
@@ -6114,27 +6201,27 @@
       "name": "hull.fin",
       "box_uv": true,
       "uv_offset": [
-        56,
-        58
+        64,
+        60
       ],
       "rescale": false,
       "locked": false,
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        -8.0,
+        -9.0,
         4.0,
         -0.5
       ],
       "to": [
-        -2.0,
+        -3.0,
         20.0,
         0.5
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
-        -6.0,
+        -7.0,
         20.0,
         0.0
       ],
@@ -6201,27 +6288,27 @@
       "name": "hull.fin_edge",
       "box_uv": true,
       "uv_offset": [
-        167,
-        58
+        227,
+        60
       ],
       "rescale": false,
       "locked": false,
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        -2.5,
+        -3.5,
         4.0,
         -0.75
       ],
       "to": [
-        -1.0,
+        -2.0,
         14.0,
         0.75
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
-        -6.0,
+        -7.0,
         20.0,
         0.0
       ],
@@ -6288,27 +6375,27 @@
       "name": "glow.beacon_red",
       "box_uv": true,
       "uv_offset": [
-        0,
-        84
+        75,
+        90
       ],
       "rescale": false,
       "locked": false,
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        -2.25,
+        -3.25,
         3.5,
         -1.0
       ],
       "to": [
-        -0.75,
+        -1.75,
         5.0,
         1.0
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
-        -6.0,
+        -7.0,
         20.0,
         0.0
       ],
@@ -6375,8 +6462,8 @@
       "name": "hull.fin",
       "box_uv": true,
       "uv_offset": [
-        56,
-        58
+        64,
+        60
       ],
       "rescale": false,
       "locked": false,
@@ -6385,19 +6472,19 @@
       "from": [
         -2.0,
         4.0,
-        5.5
+        6.5
       ],
       "to": [
         4.0,
         20.0,
-        6.5
+        7.5
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
         0.0,
         20.0,
-        6.0
+        7.0
       ],
       "faces": {
         "north": {
@@ -6462,8 +6549,8 @@
       "name": "hull.fin_edge",
       "box_uv": true,
       "uv_offset": [
-        167,
-        58
+        227,
+        60
       ],
       "rescale": false,
       "locked": false,
@@ -6472,19 +6559,19 @@
       "from": [
         3.5,
         4.0,
-        5.25
+        6.25
       ],
       "to": [
         5.0,
         14.0,
-        6.75
+        7.75
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
         0.0,
         20.0,
-        6.0
+        7.0
       ],
       "faces": {
         "north": {
@@ -6549,8 +6636,8 @@
       "name": "hull.fin",
       "box_uv": true,
       "uv_offset": [
-        56,
-        58
+        64,
+        60
       ],
       "rescale": false,
       "locked": false,
@@ -6559,19 +6646,19 @@
       "from": [
         -2.0,
         4.0,
-        -6.5
+        -7.5
       ],
       "to": [
         4.0,
         20.0,
-        -5.5
+        -6.5
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
         0.0,
         20.0,
-        -6.0
+        -7.0
       ],
       "faces": {
         "north": {
@@ -6636,8 +6723,8 @@
       "name": "hull.fin_edge",
       "box_uv": true,
       "uv_offset": [
-        167,
-        58
+        227,
+        60
       ],
       "rescale": false,
       "locked": false,
@@ -6646,19 +6733,19 @@
       "from": [
         3.5,
         4.0,
-        -6.75
+        -7.75
       ],
       "to": [
         5.0,
         14.0,
-        -5.25
+        -6.25
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
         0.0,
         20.0,
-        -6.0
+        -7.0
       ],
       "faces": {
         "north": {
@@ -6723,7 +6810,7 @@
       "name": "hull.leg",
       "box_uv": true,
       "uv_offset": [
-        202,
+        218,
         0
       ],
       "rescale": false,
@@ -6731,21 +6818,21 @@
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        6.5,
+        7.5,
         -2.0,
-        -8.5
+        -9.5
       ],
       "to": [
-        8.5,
+        9.5,
         16.0,
-        -6.5
+        -7.5
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
-        7.5,
+        8.5,
         16.0,
-        -7.5
+        -8.5
       ],
       "faces": {
         "north": {
@@ -6810,29 +6897,29 @@
       "name": "hull.leg_piston",
       "box_uv": true,
       "uv_offset": [
-        54,
-        75
+        114,
+        79
       ],
       "rescale": false,
       "locked": false,
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
+        7.0,
         6.0,
-        6.0,
-        -9.0
+        -10.0
       ],
       "to": [
-        9.0,
+        10.0,
         11.0,
-        -6.0
+        -7.0
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
-        7.5,
+        8.5,
         16.0,
-        -7.5
+        -8.5
       ],
       "faces": {
         "north": {
@@ -6897,29 +6984,29 @@
       "name": "hull.foot",
       "box_uv": true,
       "uv_offset": [
-        192,
-        75
+        16,
+        90
       ],
       "rescale": false,
       "locked": false,
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        6.5,
+        7.5,
         -3.0,
-        -9.5
+        -10.5
       ],
       "to": [
-        10.5,
+        11.5,
         -2.0,
-        -5.5
+        -6.5
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
-        7.5,
+        8.5,
         16.0,
-        -7.5
+        -8.5
       ],
       "faces": {
         "north": {
@@ -6984,7 +7071,7 @@
       "name": "hull.leg",
       "box_uv": true,
       "uv_offset": [
-        202,
+        218,
         0
       ],
       "rescale": false,
@@ -6992,21 +7079,21 @@
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        6.5,
+        7.5,
         -2.0,
-        6.5
+        7.5
       ],
       "to": [
-        8.5,
+        9.5,
         16.0,
-        8.5
+        9.5
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
-        7.5,
+        8.5,
         16.0,
-        7.5
+        8.5
       ],
       "faces": {
         "north": {
@@ -7071,29 +7158,29 @@
       "name": "hull.leg_piston",
       "box_uv": true,
       "uv_offset": [
-        54,
-        75
+        114,
+        79
       ],
       "rescale": false,
       "locked": false,
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
+        7.0,
         6.0,
-        6.0,
-        6.0
+        7.0
       ],
       "to": [
-        9.0,
+        10.0,
         11.0,
-        9.0
+        10.0
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
-        7.5,
+        8.5,
         16.0,
-        7.5
+        8.5
       ],
       "faces": {
         "north": {
@@ -7158,29 +7245,29 @@
       "name": "hull.foot",
       "box_uv": true,
       "uv_offset": [
-        192,
-        75
+        16,
+        90
       ],
       "rescale": false,
       "locked": false,
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        6.5,
+        7.5,
         -3.0,
-        5.5
+        6.5
       ],
       "to": [
-        10.5,
+        11.5,
         -2.0,
-        9.5
+        10.5
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
-        7.5,
+        8.5,
         16.0,
-        7.5
+        8.5
       ],
       "faces": {
         "north": {
@@ -7245,7 +7332,7 @@
       "name": "hull.leg",
       "box_uv": true,
       "uv_offset": [
-        202,
+        218,
         0
       ],
       "rescale": false,
@@ -7253,21 +7340,21 @@
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        -8.5,
+        -9.5,
         -2.0,
-        6.5
+        7.5
       ],
       "to": [
-        -6.5,
+        -7.5,
         16.0,
-        8.5
+        9.5
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
-        -7.5,
+        -8.5,
         16.0,
-        7.5
+        8.5
       ],
       "faces": {
         "north": {
@@ -7332,29 +7419,29 @@
       "name": "hull.leg_piston",
       "box_uv": true,
       "uv_offset": [
-        54,
-        75
+        114,
+        79
       ],
       "rescale": false,
       "locked": false,
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        -9.0,
+        -10.0,
         6.0,
-        6.0
+        7.0
       ],
       "to": [
-        -6.0,
+        -7.0,
         11.0,
-        9.0
+        10.0
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
-        -7.5,
+        -8.5,
         16.0,
-        7.5
+        8.5
       ],
       "faces": {
         "north": {
@@ -7419,29 +7506,29 @@
       "name": "hull.foot",
       "box_uv": true,
       "uv_offset": [
-        192,
-        75
+        16,
+        90
       ],
       "rescale": false,
       "locked": false,
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        -8.5,
+        -9.5,
         -3.0,
-        5.5
+        6.5
       ],
       "to": [
-        -4.5,
+        -5.5,
         -2.0,
-        9.5
+        10.5
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
-        -7.5,
+        -8.5,
         16.0,
-        7.5
+        8.5
       ],
       "faces": {
         "north": {
@@ -7506,7 +7593,7 @@
       "name": "hull.leg",
       "box_uv": true,
       "uv_offset": [
-        202,
+        218,
         0
       ],
       "rescale": false,
@@ -7514,21 +7601,21 @@
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        -8.5,
+        -9.5,
         -2.0,
-        -8.5
+        -9.5
       ],
       "to": [
-        -6.5,
+        -7.5,
         16.0,
-        -6.5
+        -7.5
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
-        -7.5,
+        -8.5,
         16.0,
-        -7.5
+        -8.5
       ],
       "faces": {
         "north": {
@@ -7593,29 +7680,29 @@
       "name": "hull.leg_piston",
       "box_uv": true,
       "uv_offset": [
-        54,
-        75
+        114,
+        79
       ],
       "rescale": false,
       "locked": false,
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        -9.0,
+        -10.0,
         6.0,
-        -9.0
+        -10.0
       ],
       "to": [
-        -6.0,
+        -7.0,
         11.0,
-        -6.0
+        -7.0
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
-        -7.5,
+        -8.5,
         16.0,
-        -7.5
+        -8.5
       ],
       "faces": {
         "north": {
@@ -7680,29 +7767,29 @@
       "name": "hull.foot",
       "box_uv": true,
       "uv_offset": [
-        192,
-        75
+        16,
+        90
       ],
       "rescale": false,
       "locked": false,
       "render_order": "default",
       "allow_mirror_modeling": true,
       "from": [
-        -8.5,
+        -9.5,
         -3.0,
-        -9.5
+        -10.5
       ],
       "to": [
-        -4.5,
+        -5.5,
         -2.0,
-        -5.5
+        -6.5
       ],
       "autouv": 0,
       "color": 0,
       "origin": [
-        -7.5,
+        -8.5,
         16.0,
-        -7.5
+        -8.5
       ],
       "faces": {
         "north": {
@@ -7802,6 +7889,7 @@
         "dc373a16-5d92-8c90-acea-6df4a7d7738d",
         "01dc7597-aba9-550c-f92d-230987576996",
         "49fdb352-d8d8-91c9-b202-2701e83131fc",
+        "63ac2c3d-4daf-9948-e37b-ef3707745241",
         {
           "name": "engine_main",
           "origin": [
@@ -8044,7 +8132,7 @@
           "origin": [
             3.0,
             50.0,
-            6.0
+            7.0
           ],
           "rotation": [
             -0.0,
@@ -8067,7 +8155,7 @@
           "origin": [
             0.0,
             42.0,
-            6.0
+            7.0
           ],
           "rotation": [
             -0.0,
@@ -8099,7 +8187,7 @@
           "name": "strobe",
           "origin": [
             0.0,
-            82.0,
+            85.0,
             0.0
           ],
           "rotation": [
@@ -8120,7 +8208,7 @@
         {
           "name": "wing_e",
           "origin": [
-            7.0,
+            8.0,
             38.0,
             0.0
           ],
@@ -8139,7 +8227,7 @@
             {
               "name": "wing_e_arm",
               "origin": [
-                7.0,
+                8.0,
                 38.0,
                 0.0
               ],
@@ -8164,7 +8252,7 @@
         {
           "name": "wing_w",
           "origin": [
-            -7.0,
+            -8.0,
             38.0,
             0.0
           ],
@@ -8183,7 +8271,7 @@
             {
               "name": "wing_w_arm",
               "origin": [
-                -7.0,
+                -8.0,
                 38.0,
                 0.0
               ],
@@ -8210,7 +8298,7 @@
           "origin": [
             0.0,
             46.5,
-            -6.0
+            -7.0
           ],
           "rotation": [
             -0.0,
@@ -8230,7 +8318,7 @@
               "origin": [
                 0.0,
                 46.5,
-                -11.0
+                -12.0
               ],
               "rotation": [
                 -0.0,
@@ -8253,7 +8341,7 @@
         {
           "name": "fin_e",
           "origin": [
-            6.0,
+            7.0,
             20.0,
             0.0
           ],
@@ -8272,7 +8360,7 @@
             {
               "name": "fin_e_arm",
               "origin": [
-                6.0,
+                7.0,
                 20.0,
                 0.0
               ],
@@ -8293,7 +8381,7 @@
                 {
                   "name": "nav_b",
                   "origin": [
-                    6.0,
+                    7.0,
                     20.0,
                     0.0
                   ],
@@ -8319,7 +8407,7 @@
         {
           "name": "fin_w",
           "origin": [
-            -6.0,
+            -7.0,
             20.0,
             0.0
           ],
@@ -8338,7 +8426,7 @@
             {
               "name": "fin_w_arm",
               "origin": [
-                -6.0,
+                -7.0,
                 20.0,
                 0.0
               ],
@@ -8359,7 +8447,7 @@
                 {
                   "name": "nav_a",
                   "origin": [
-                    -6.0,
+                    -7.0,
                     20.0,
                     0.0
                   ],
@@ -8387,7 +8475,7 @@
           "origin": [
             0.0,
             20.0,
-            6.0
+            7.0
           ],
           "rotation": [
             -0.0,
@@ -8406,7 +8494,7 @@
               "origin": [
                 0.0,
                 20.0,
-                6.0
+                7.0
               ],
               "rotation": [
                 -0.0,
@@ -8431,7 +8519,7 @@
           "origin": [
             0.0,
             20.0,
-            -6.0
+            -7.0
           ],
           "rotation": [
             -0.0,
@@ -8450,7 +8538,7 @@
               "origin": [
                 0.0,
                 20.0,
-                -6.0
+                -7.0
               ],
               "rotation": [
                 -0.0,
@@ -8473,9 +8561,9 @@
         {
           "name": "leg_ne",
           "origin": [
-            7.5,
+            8.5,
             16.0,
-            -7.5
+            -8.5
           ],
           "rotation": [
             -0.0,
@@ -8492,9 +8580,9 @@
             {
               "name": "leg_ne_arm",
               "origin": [
-                7.5,
+                8.5,
                 16.0,
-                -7.5
+                -8.5
               ],
               "rotation": [
                 -0.0,
@@ -8518,9 +8606,9 @@
         {
           "name": "leg_se",
           "origin": [
-            7.5,
+            8.5,
             16.0,
-            7.5
+            8.5
           ],
           "rotation": [
             -0.0,
@@ -8537,9 +8625,9 @@
             {
               "name": "leg_se_arm",
               "origin": [
-                7.5,
+                8.5,
                 16.0,
-                7.5
+                8.5
               ],
               "rotation": [
                 -0.0,
@@ -8563,9 +8651,9 @@
         {
           "name": "leg_sw",
           "origin": [
-            -7.5,
+            -8.5,
             16.0,
-            7.5
+            8.5
           ],
           "rotation": [
             -0.0,
@@ -8582,9 +8670,9 @@
             {
               "name": "leg_sw_arm",
               "origin": [
-                -7.5,
+                -8.5,
                 16.0,
-                7.5
+                8.5
               ],
               "rotation": [
                 -0.0,
@@ -8608,9 +8696,9 @@
         {
           "name": "leg_nw",
           "origin": [
-            -7.5,
+            -8.5,
             16.0,
-            -7.5
+            -8.5
           ],
           "rotation": [
             -0.0,
@@ -8627,9 +8715,9 @@
             {
               "name": "leg_nw_arm",
               "origin": [
-                -7.5,
+                -8.5,
                 16.0,
-                -7.5
+                -8.5
               ],
               "rotation": [
                 -0.0,
@@ -8655,7 +8743,7 @@
   ],
   "textures": [
     {
-      "path": "C:\\Users\\dario\\Documents\\projects\\github\\nerospace\\common\\src\\main\\resources\\assets\\nerospace\\textures\\entity\\rocket_t3.png",
+      "path": "/sessions/rcw-01jhxmeldp75zrxfgnt5jm1y/mnt/nerospace/common/src/main/resources/assets/nerospace/textures/entity/rocket_t3.png",
       "name": "rocket_t3.png",
       "folder": "entity",
       "namespace": "nerospace",
@@ -8672,7 +8760,7 @@
       "saved": true,
       "uuid": "35965617-b604-6ce6-e211-0ffa01ed9c7f",
       "relative_path": "../../../common/src/main/resources/assets/nerospace/textures/entity/rocket_t3.png",
-      "source": "data:image/png;base64,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"
+      "source": "data:image/png;base64,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"
     }
   ]
 }

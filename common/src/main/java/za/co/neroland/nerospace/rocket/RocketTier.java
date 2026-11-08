@@ -147,16 +147,27 @@ public enum RocketTier {
     public record Seat(float xPx, float zPx) {
     }
 
-    // Append-only per tier: seat i of a rocket is passenger i. Every seat stays inside the 7 px hull wall with room for
-    // a seated player's shoulders at that tier's scale (T1 1.5x .. T4 2.4x).
-    private static final List<Seat> SEATS_T1 = List.of(new Seat(0F, -3F), new Seat(-3F, 1F), new Seat(3F, 1F),
-            new Seat(0F, 3.5F));
-    private static final List<Seat> SEATS_T2 = List.of(new Seat(0F, -3.5F), new Seat(-3.5F, 1F), new Seat(3.5F, 1F),
-            new Seat(0F, 4F));
-    private static final List<Seat> SEATS_T3 = List.of(new Seat(0F, -4F), new Seat(-4F, 1F), new Seat(4F, 1F),
-            new Seat(0F, 4.5F));
-    private static final List<Seat> SEATS_T4 = List.of(new Seat(0F, -4.5F), new Seat(-4.5F, 1F), new Seat(4.5F, 1F),
-            new Seat(0F, 5F));
+    // Append-only per tier: seat i of a rocket is passenger i. A tidy 2x2 (pilot port-forward, then starboard-forward,
+    // port-aft, starboard-aft): symmetric, so the layout reads the same at any pad yaw. Every seat keeps a seated
+    // player's torso (0.6 wide) inside the cabin wall of tools/rocket_models.py ({@link #hullHalfPx()}; 2.1.0-beta.1 widened
+    // hulls: 14 px on Tiers 1-3, 16 px on Tier 4) with at least 0.05 blocks to spare at that tier's render scale
+    // (T1 1.5x .. T4 2.4x), and at least 0.6 blocks between seats so torsos never overlap.
+    private static final List<Seat> SEATS_T1 = List.of(new Seat(-3.25F, -3.25F), new Seat(3.25F, -3.25F),
+            new Seat(-3.25F, 3.25F), new Seat(3.25F, 3.25F));
+    private static final List<Seat> SEATS_T2 = List.of(new Seat(-3F, -3F), new Seat(3F, -3F), new Seat(-3F, 3F),
+            new Seat(3F, 3F));
+    private static final List<Seat> SEATS_T3 = List.of(new Seat(-3F, -3F), new Seat(3F, -3F), new Seat(-3F, 3F),
+            new Seat(3F, 3F));
+    private static final List<Seat> SEATS_T4 = List.of(new Seat(-3.5F, -3.5F), new Seat(3.5F, -3.5F),
+            new Seat(-3.5F, 3.5F), new Seat(3.5F, 3.5F));
+
+    /**
+     * Half-width of this tier's crew cabin, in model pixels from the hull axis: the outer wall of the cabin cube in
+     * {@code tools/rocket_models.py} ({@code half}), which the seats above are tuned to. Change the two together.
+     */
+    public float hullHalfPx() {
+        return this == TIER_4 ? 8F : 7F;
+    }
 
     /** The four crew seats of this tier's hull ({@link Seat}; append-only, seat 0 = pilot). */
     public List<Seat> seatOffsets() {

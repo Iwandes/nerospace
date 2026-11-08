@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [2.1.0] - 2026-11-08
+## [2.1.0-beta.1] - 2026-11-08
 
 Fly with friends, put your station where you want it, and drive around Mars. This update answers player
 feedback on 2.0: rockets now go to the station you choose, you can found a station where you stand, up to four
@@ -61,7 +61,10 @@ players share one rocket, and there is a Mars Rover. Back up your world before u
   dock or pad. Their Station Charter, Deep Space progress and NeroEconomy launch fee (charged once per flight) are
   the ones that count. Every crew member has their own launch cooldown, so riding along doesn't skip yours.
 - **Everyone travels.** The whole crew flies, rides the descent, steps out beside the rocket and gets their own
-  arrival message, Star Guide progress and first-visit record. Crew sit side by side inside the hull.
+  arrival message, Star Guide progress and first-visit record. Crew sit two by two inside the hull.
+- **Wider hulls.** Every rocket cabin is one pixel wider per side (14 px on tiers 1–3, 16 px on tier 4, with wider
+  windows and a matching nose and skirt) so four seated crew fit inside the wall. Same silhouettes, same hitbox and
+  pads; the cargo rocket shares the tier-2 hull and widens with it.
 - **Shared oxygen.** With two or more aboard on a flight to or from an airless world, the rocket needs onboard
   oxygen for every seat; the consoles show **CREW n/4 · O₂ FOR n**. Leftover oxygen is shared out on arrival.
 - **Drop-outs are safe.** If the pilot disconnects mid-flight, the next player aboard lands the rocket (without
@@ -105,7 +108,7 @@ players share one rocket, and there is a Mars Rover. Back up your world before u
 
 ### Compatibility
 
-- **Client and server must both run 2.1.0.** The network format changed (station, pad and dock lists, rocket
+- **Client and server must both run 2.1.0-beta.1.** The network format changed (station, pad and dock lists, rocket
   screen data), so a 2.0 client cannot join a 2.1 server or the reverse.
 - Worlds from 2.0 load unchanged; every new saved value is optional. A rocket parked at the origin in 2.0 picks
   up your own station once, the first time you open its console. Requires Neroland Core 1.17.0 or newer.
