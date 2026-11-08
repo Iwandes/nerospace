@@ -87,11 +87,11 @@ class StationPlacementSaveCompatTest {
         StationRegistry r = store200();
         r.foundAt("Placed", StationPlacementTest.OWNER, new BlockPos(-9000, 130, 7000));
         CompoundTag root = (CompoundTag) encode(r);
-        assertEquals(Set.of("stations", "next_slot"), root.keySet());
-        ListTag stations = root.getListOrEmpty("stations");
+        assertEquals(Set.of("stations", "next_slot"), TagReads.keys(root));
+        ListTag stations = TagReads.listOrEmpty(root, "stations");
         assertEquals(3, stations.size());
         for (int i = 0; i < stations.size(); i++) {
-            Set<String> keys = stations.getCompoundOrEmpty(i).keySet();
+            Set<String> keys = TagReads.keys(TagReads.compoundAt(stations, i));
             assertTrue(ENTRY_KEYS_200.containsAll(keys), "unexpected key in " + keys);
         }
         StationRegistry back = decode(root);
@@ -110,8 +110,8 @@ class StationPlacementSaveCompatTest {
         String select = PodArrivalTest.body(rocket, "public DestinationSelection.Outcome selectStation(");
         assertTrue(select.contains("this.entityData.set(DATA_STATION, DockSelection.ORIGIN);"));
         CompoundTag rocket200 = RocketDockSaveCompatTest.rocket200(DockSelection.ORIGIN);
-        assertEquals(-1, rocket200.getIntOr("FreeDock", -1));
-        assertFalse(rocket200.getBooleanOr("HasLastStation", false));
+        assertEquals(-1, TagReads.intOr(rocket200, "FreeDock", -1));
+        assertFalse(TagReads.booleanOr(rocket200, "HasLastStation", false));
     }
 
     @Test

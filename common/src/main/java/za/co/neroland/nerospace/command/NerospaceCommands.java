@@ -808,7 +808,11 @@ public final class NerospaceCommands {
             crew.setItemSlot(EquipmentSlot.FEET, new ItemStack(suit[3]));
             makeInvulnerable(crew);
             level.addFreshEntity(crew);
+            //? if >=1.21.9 {
             crew.startRiding(rocket, true, false);
+            //?} else {
+            /*crew.startRiding(rocket, true);
+            *///?}
         }
         spawnLabelStand(level, new BlockPos(x + 1, fy + 6, z),
                 Component.translatable("command.nerospace.gallery.label.crew_rocket"));

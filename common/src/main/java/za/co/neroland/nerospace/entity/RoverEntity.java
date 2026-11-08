@@ -29,7 +29,9 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
+//? if >=1.21.2 {
 import net.minecraft.world.entity.player.Input;
+//?}
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.DismountHelper;
 import net.minecraft.world.inventory.ChestMenu;
@@ -60,8 +62,8 @@ import za.co.neroland.nerospace.world.planet.mars.MarsContent;
  *
  * <ul>
  *   <li><b>Driving.</b> The server reads the driver's movement keys from the vanilla vehicle input path
- *       ({@link ServerPlayer#getLastClientInput()}, the same {@code ServerboundPlayerInputPacket} every ridden entity
- *       uses) — forward/back throttle, left/right steer, jump hops (or honks at a standstill). The rover has no
+ *       ({@code ServerPlayer#getLastClientInput()}, the same {@code ServerboundPlayerInputPacket} every ridden entity
+ *       uses; on 1.21.1 the packet's strafe/forward impulses, which carry no jump, so no hop or horn there) — forward/back throttle, left/right steer, jump hops (or honks at a standstill). The rover has no
  *       controlling passenger in vanilla's sense, so the client never simulates it: the server moves it inside the
  *       normal entity tick and clients interpolate. Speed and hop height scale with the local gravity
  *       ({@link GravityManager#factorAt}, re-read every half second) through {@link RoverRules}.</li>
@@ -259,8 +261,23 @@ public class RoverEntity extends Entity {
         return Mth.lerp(partialTick, this.wheelAngleO, this.wheelAngle);
     }
 
-    private Input driverInput() {
-        return getFirstPassenger() instanceof ServerPlayer driver ? driver.getLastClientInput() : Input.EMPTY;
+    /** The driver's movement keys, version-neutral (1.21.1 has no {@code Input} record). */
+    private record Drive(boolean forward, boolean backward, boolean left, boolean right, boolean jump) {
+        static final Drive NONE = new Drive(false, false, false, false, false);
+    }
+
+    private Drive driverInput() {
+        if (!(getFirstPassenger() instanceof ServerPlayer driver)) {
+            return Drive.NONE;
+        }
+        //? if >=1.21.2 {
+        Input input = driver.getLastClientInput();
+        return new Drive(input.forward(), input.backward(), input.left(), input.right(), input.jump());
+        //?} else {
+        /*// 1.21.1: ServerboundPlayerInputPacket lands in the driver's strafe/forward impulses (left is positive).
+        // Its jump flag is not readable from here, so the rover neither hops nor honks on 1.21.1.
+        return new Drive(driver.zza > 0.0F, driver.zza < 0.0F, driver.xxa > 0.0F, driver.xxa < 0.0F, false);
+        *///?}
     }
 
     private void tickServer(ServerLevel level) {
@@ -272,7 +289,7 @@ public class RoverEntity extends Entity {
             return; // parked and empty: settle (and charge) every tenth tick only, no per-tick collision work
         }
 
-        Input input = driverInput();
+        Drive input = driverInput();
         boolean inFluid = isInWater() || isInLava();
         int drain = NerospaceConfig.roverDrainPerTick();
         boolean powered = RoverRules.canDrive(getEnergy(), drain);
@@ -408,7 +425,12 @@ public class RoverEntity extends Entity {
     @Override
     protected void positionRider(Entity passenger, Entity.MoveFunction moveFunction) {
         super.positionRider(passenger, moveFunction);
-        if (passenger.isLocalInstanceAuthoritative() && this.yawDelta != 0.0F) {
+        //? if >=1.21.5 {
+        boolean local = passenger.isLocalInstanceAuthoritative();
+        //?} else {
+        /*boolean local = passenger.isControlledByLocalInstance();
+        *///?}
+        if (local && this.yawDelta != 0.0F) {
             passenger.setYRot(passenger.getYRot() + this.yawDelta);
             passenger.setYHeadRot(passenger.getYHeadRot() + this.yawDelta);
         }
@@ -490,7 +512,17 @@ public class RoverEntity extends Entity {
      * Sneak + punch packs the rover up (owner, operator, or anyone when unowned; nobody may be aboard): the cargo
      * spills, the item keeps the charge. Nothing else damages a rover.
      */
+    //? if <1.21.2 {
+    /*// Before 1.21.2 hurt(..) runs on both sides; only the server applies it.
     @Override
+    public boolean hurt(DamageSource damageSource, float amount) {
+        return this.level() instanceof ServerLevel level && hurtServer(level, damageSource, amount);
+    }
+
+    *///?}
+    //? if >=1.21.2 {
+    @Override
+    //?}
     public boolean hurtServer(ServerLevel level, DamageSource damageSource, float amount) {
         if (this.isRemoved() || !(damageSource.getEntity() instanceof ServerPlayer player)) {
             return false;
@@ -545,7 +577,22 @@ public class RoverEntity extends Entity {
 
     // --- Persistence ------------------------------------------------------------------------------------------------
 
+    //? if <1.21.6 {
+    /*// Before 1.21.6 entities save a CompoundTag; Core's ValueInput/ValueOutput look-alikes wrap it.
     @Override
+    public void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag) {
+        readAdditionalSaveData(ValueInput.of(tag, this.registryAccess()));
+    }
+
+    @Override
+    public void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag) {
+        addAdditionalSaveData(ValueOutput.of(tag, this.registryAccess()));
+    }
+
+    *///?}
+    //? if >=1.21.6 {
+    @Override
+    //?}
     protected void readAdditionalSaveData(ValueInput input) {
         UUID stored = RoverRules.readOwner(input.getStringOr(OWNER_KEY, ""));
         // A rover that was unloaded when its owner was erased drops the owner the moment it loads.
@@ -557,7 +604,9 @@ public class RoverEntity extends Entity {
         }
     }
 
+    //? if >=1.21.6 {
     @Override
+    //?}
     protected void addAdditionalSaveData(ValueOutput output) {
         if (this.owner != null) {
             output.putString(OWNER_KEY, RoverRules.writeOwner(this.owner));

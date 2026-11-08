@@ -82,11 +82,16 @@ public class RoverRenderer extends EntityRenderer<RoverEntity, RoverRenderState>
         poseStack.translate(0.0F, -1.501F, 0.0F);
 
         this.hull.setupAnim(state);
+        //? if >=1.21.9 {
+        int light = state.lightCoords;
+        //?} else {
+        /*int light = this.light();
+        *///?}
         //? if >=26.3 {
-        /*collector.order(0).submitModel(this.hull, state, poseStack, this.hull.renderType(TEXTURE), state.lightCoords, OverlayTexture.NO_OVERLAY, -1);
+        /*collector.order(0).submitModel(this.hull, state, poseStack, this.hull.renderType(TEXTURE), light, OverlayTexture.NO_OVERLAY, -1);
         *///?} else {
         collector.order(0).submitModel(this.hull, state, poseStack, this.hull.renderType(TEXTURE),
-                state.lightCoords, OverlayTexture.NO_OVERLAY, -1, null, 0, null);
+                light, OverlayTexture.NO_OVERLAY, -1, null, 0, null);
         //?}
         if (state.lit) {
             this.glow.setupAnim(state);

@@ -185,6 +185,24 @@ class RoverRulesTest {
         assertFalse(source("entity/RoverEntity.java").contains("SavedData"), "no per-player counter store");
     }
 
+    /** The stored Owner string, "" when absent (getString already defaulted to "" before 1.21.5). */
+    private static String ownerTag(CompoundTag tag) {
+        //? if >=1.21.5 {
+        return tag.getStringOr(RoverEntity.OWNER_KEY, "");
+        //?} else {
+        /*return tag.getString(RoverEntity.OWNER_KEY);
+        *///?}
+    }
+
+    /** The stored charge, 0 when absent (getInt already defaulted to 0 before 1.21.5). */
+    private static int energyTag(CompoundTag tag) {
+        //? if >=1.21.5 {
+        return tag.getIntOr(RoverEntity.ENERGY_KEY, 0);
+        //?} else {
+        /*return tag.getInt(RoverEntity.ENERGY_KEY);
+        *///?}
+    }
+
     @Test
     @DisplayName("owner NBT round-trips with and without an owner; malformed reads as unowned; absent key is written")
     void nbtRoundTrip() throws Exception {
@@ -192,12 +210,12 @@ class RoverRulesTest {
         owned.putString(RoverEntity.OWNER_KEY, RoverRules.writeOwner(OWNER));
         owned.putInt(RoverEntity.ENERGY_KEY, 1234);
         CompoundTag back = owned.copy();
-        assertEquals(OWNER, RoverRules.readOwner(back.getStringOr(RoverEntity.OWNER_KEY, "")));
-        assertEquals(1234, back.getIntOr(RoverEntity.ENERGY_KEY, 0));
+        assertEquals(OWNER, RoverRules.readOwner(ownerTag(back)));
+        assertEquals(1234, energyTag(back));
 
         CompoundTag unowned = new CompoundTag(); // a 2.1 rover with no owner writes no Owner key at all
-        assertNull(RoverRules.readOwner(unowned.getStringOr(RoverEntity.OWNER_KEY, "")));
-        assertEquals(0, unowned.getIntOr(RoverEntity.ENERGY_KEY, 0), "absent energy = flat");
+        assertNull(RoverRules.readOwner(ownerTag(unowned)));
+        assertEquals(0, energyTag(unowned), "absent energy = flat");
         assertNull(RoverRules.readOwner("not-a-uuid"));
         assertNull(RoverRules.readOwner(null));
         assertEquals("", RoverRules.writeOwner(null));

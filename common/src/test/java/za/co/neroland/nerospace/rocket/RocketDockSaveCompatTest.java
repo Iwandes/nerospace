@@ -30,11 +30,11 @@ class RocketDockSaveCompatTest {
     }
 
     static int loadSlot(CompoundTag tag) {
-        return DockSelection.onLoad(tag.getIntOr("StationSlot", DockSelection.ORIGIN));
+        return DockSelection.onLoad(TagReads.intOr(tag, "StationSlot", DockSelection.ORIGIN));
     }
 
     static boolean loadChosen(CompoundTag tag) {
-        return tag.getBooleanOr("StationChosen", false);
+        return TagReads.booleanOr(tag, "StationChosen", false);
     }
 
     @Test

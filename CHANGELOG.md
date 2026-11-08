@@ -114,6 +114,8 @@ players share one rocket, and there is a Mars Rover. Back up your world before u
   screen data), so a 2.0 client cannot join a 2.1 server or the reverse.
 - Worlds from 2.0 load unchanged; every new saved value is optional. A rocket parked at the origin in 2.0 picks
   up your own station once, the first time you open its console. Requires Neroland Core 1.17.0 or newer.
+- On Minecraft 1.21.1 the Mars Rover drives and steers normally but cannot hop or sound its horn, because that version
+  gives the server no way to read the driver's jump key.
 
 ## [2.0.0-beta.1] - 2026-11-04
 
